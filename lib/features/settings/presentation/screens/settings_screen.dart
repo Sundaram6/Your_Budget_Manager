@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../routing/route_names.dart';
 import '../../../../core/widgets/cards/glass_card.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../categories/presentation/screens/category_management_screen.dart';
@@ -28,6 +30,39 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const Text(
+            'FEATURES',
+            style: TextStyle(
+              color: AppColors.darkTextTertiary,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.savings, color: Colors.green),
+                  title: const Text('Savings Goals', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Track and manage your savings', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
+                  onTap: () => context.pushNamed(RouteNames.savingsGoals),
+                ),
+                const Divider(height: 1, color: AppColors.darkBorderGlass),
+                ListTile(
+                  leading: const Icon(Icons.message, color: Colors.blue),
+                  title: const Text('SMS Auto-Tracking', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Extract expenses from messages', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
+                  onTap: () => context.pushNamed(RouteNames.smsSettings),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           const Text(
             'PREFERENCES & SECURITY',
             style: TextStyle(

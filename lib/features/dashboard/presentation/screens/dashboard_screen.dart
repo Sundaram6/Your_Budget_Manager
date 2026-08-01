@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../routing/route_names.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/layout/section_header.dart';
 import '../controllers/dashboard_controller.dart';
@@ -49,6 +50,20 @@ class DashboardScreen extends ConsumerWidget {
               CategoryBreakdownWidget(breakdowns: data.categoryBreakdown),
               const SizedBox(height: AppSpacing.space4),
               
+              SectionHeader(
+                title: 'Savings Goals',
+                actionLabel: 'See All',
+                onActionPressed: () => context.pushNamed(RouteNames.savingsGoals),
+              ),
+              const SizedBox(height: AppSpacing.space3),
+              ListTile(
+                leading: const Icon(Icons.savings),
+                title: const Text('Savings Goals'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(RouteNames.savingsGoals),
+              ),
+              const SizedBox(height: AppSpacing.space4),
+
               SectionHeader(
                 title: 'Budgets',
                 actionLabel: 'See All',

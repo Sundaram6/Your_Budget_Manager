@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +19,7 @@ import '../features/sms_permissions/presentation/screens/sms_consent_screen.dart
 import '../features/savings/presentation/screens/savings_goals_screen.dart';
 import '../features/savings/presentation/screens/add_savings_goal_screen.dart';
 import '../features/savings/presentation/screens/savings_goal_detail_screen.dart';
+import '../features/settings/presentation/screens/sms_settings_screen.dart';
 import 'route_names.dart';
 
 part 'app_router.g.dart';
@@ -136,6 +136,11 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/sms-consent',
         name: RouteNames.smsConsent,
         builder: (context, state) => const SmsConsentScreen(),
+      ),
+      GoRoute(
+        path: '/sms-settings',
+        name: RouteNames.smsSettings,
+        builder: (context, state) => const SmsSettingsScreen(),
       ),
       GoRoute(
         path: '/savings',
