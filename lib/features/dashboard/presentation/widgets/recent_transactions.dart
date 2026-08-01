@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../features/transactions/domain/entities/transaction.dart';
+
+import '../../../../core/extensions/number_extensions.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/extensions/number_extensions.dart';
+import '../../../../features/transactions/domain/entities/transaction.dart';
 
 class RecentTransactionsWidget extends StatelessWidget {
   final List<Transaction> transactions;

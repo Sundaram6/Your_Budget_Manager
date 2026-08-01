@@ -36,7 +36,7 @@ class CategoryPicker extends ConsumerWidget {
                       onCategorySelected(category.id);
                     }
                   },
-                  selectedColor: color.withOpacity(0.2),
+                  selectedColor: color.withValues(alpha: 0.2),
                   labelStyle: TextStyle(
                     color: isSelected ? color : null,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

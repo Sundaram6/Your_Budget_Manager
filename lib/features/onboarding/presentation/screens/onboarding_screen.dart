@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../widgets/privacy_promise_page.dart';
-import '../widgets/feature_highlight_page.dart';
-import '../widgets/category_setup_page.dart';
-import '../controllers/onboarding_controller.dart';
 import '../../../../routing/route_names.dart';
+import '../controllers/onboarding_controller.dart';
+import '../widgets/category_setup_page.dart';
+import '../widgets/feature_highlight_page.dart';
+import '../widgets/privacy_promise_page.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -21,7 +21,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _nextPage() {
     if (_pageController.page == 2) {
       ref.read(onboardingControllerProvider.notifier).completeOnboarding().then((_) {
-        context.goNamed(RouteNames.pinSetup);
+        if (mounted) {
+          context.goNamed(RouteNames.pinSetup);
+        }
       });
     } else {
       _pageController.nextPage(

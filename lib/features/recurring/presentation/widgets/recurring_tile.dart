@@ -7,7 +7,7 @@ class RecurringTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return const ListTile(
       title: Text('Amount: \${transaction.amount.value}'),
       subtitle: Text('Frequency: \${transaction.frequency.name}'),
     );

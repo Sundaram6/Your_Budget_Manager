@@ -1,9 +1,11 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../theme/app_elevation.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -18,7 +20,7 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         boxShadow: AppElevation.level2,
       ),
       child: ClipRect(

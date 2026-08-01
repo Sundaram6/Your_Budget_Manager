@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_budget_manager/core/theme/app_theme.dart';
 import 'package:your_budget_manager/core/theme/app_colors.dart';
 import 'package:your_budget_manager/core/theme/app_custom_tokens.dart';
 import 'package:your_budget_manager/core/theme/app_radius.dart';
 import 'package:your_budget_manager/core/theme/app_spacing.dart';
+import 'package:your_budget_manager/core/theme/app_theme.dart';
 
 void main() {
   group('AppTheme Tests', () {
@@ -27,7 +27,7 @@ void main() {
     });
     
     test('AppCustomTokens copyWith works correctly', () {
-      final tokens = const AppCustomTokens(
+      const tokens = AppCustomTokens(
         incomeColor: Colors.green,
         expenseColor: Colors.red,
         goldAccent: Colors.amber,
@@ -48,7 +48,7 @@ void main() {
     });
 
     test('AppCustomTokens lerp works correctly', () {
-      final tokens1 = const AppCustomTokens(
+      const tokens1 = AppCustomTokens(
         incomeColor: Colors.black,
         expenseColor: Colors.black,
         goldAccent: Colors.black,
@@ -61,7 +61,7 @@ void main() {
         gridUnit: 0,
       );
       
-      final tokens2 = const AppCustomTokens(
+      const tokens2 = AppCustomTokens(
         incomeColor: Colors.white,
         expenseColor: Colors.white,
         goldAccent: Colors.white,

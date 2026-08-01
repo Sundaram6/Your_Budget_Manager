@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/core/theme/app_theme.dart';
-import 'package:your_budget_manager/features/dashboard/presentation/widgets/daily_allowance_card.dart';
 import 'package:your_budget_manager/engines/budget/models/daily_allowance.dart';
+import 'package:your_budget_manager/features/dashboard/presentation/widgets/daily_allowance_card.dart';
 
 void main() {
   testWidgets('DailyAllowanceCard renders correctly', (WidgetTester tester) async {

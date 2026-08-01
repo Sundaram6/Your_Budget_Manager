@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
+import '../../theme/app_elevation.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
-import '../../theme/app_elevation.dart';
+import '../../theme/app_typography.dart';
 
 enum SnackbarType { success, error, info }
 
@@ -30,7 +31,6 @@ class AppSnackbar {
         iconColor = AppColors.darkExpense;
         break;
       case SnackbarType.info:
-      default:
         backgroundColor = AppColors.darkSurface2;
         icon = Icons.info;
         iconColor = AppColors.darkGoldPrimary;

@@ -78,10 +78,10 @@ class FeatureHighlightPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: Theme.of(context).colorScheme.primary,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+              child: Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -90,7 +90,7 @@ class FeatureHighlightPage extends StatelessWidget {
                 children: [
                   Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(description, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
+                  Text(description, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
                 ],
               ),
             ),

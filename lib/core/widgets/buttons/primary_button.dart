@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 
 class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;

@@ -15,7 +15,7 @@ class QuickAddFab extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: tokens.goldGlow.withOpacity(0.3),
+            color: tokens.goldGlow.withValues(alpha: 0.3),
             blurRadius: 12,
             spreadRadius: 2,
           ),

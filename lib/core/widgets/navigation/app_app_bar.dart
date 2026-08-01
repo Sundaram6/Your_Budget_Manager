@@ -19,7 +19,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget appBar = AppBar(
+    final Widget appBar = AppBar(
       backgroundColor: showGlassEffect ? AppColors.darkSurfaceGlass : Colors.transparent,
       elevation: 0,
       centerTitle: true,

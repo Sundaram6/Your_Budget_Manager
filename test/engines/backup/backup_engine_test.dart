@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:flutter_test/flutter_test.dart';
+
+import 'package:crypto/crypto.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:your_budget_manager/core/security/encryption_service.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/engines/backup/backup_engine.dart';
-import 'package:your_budget_manager/core/security/encryption_service.dart';
-import 'package:crypto/crypto.dart';
 
 void main() {
   late AppDatabase db;
@@ -22,7 +23,7 @@ void main() {
 
   test('exportData and importData should round-trip correctly', () async {
     // Insert some test data
-    final category = Category(
+    const category = Category(
       id: 'cat-1',
       name: 'Food',
       icon: 'food_icon',
@@ -34,7 +35,7 @@ void main() {
     );
     await db.into(db.categoriesTable).insert(category);
 
-    final merchant = Merchant(
+    const merchant = Merchant(
       id: 'merch-1',
       name: 'Supermarket',
       icon: 'supermarket_icon',

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/core/widgets/buttons/primary_button.dart';
-import 'package:your_budget_manager/core/theme/app_colors.dart';
 
 void main() {
   group('PrimaryButton', () {

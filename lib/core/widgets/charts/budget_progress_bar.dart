@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
+import '../../theme/app_animation.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
-import '../../theme/app_animation.dart';
 
 class BudgetProgressBar extends StatelessWidget {
   final double progress; // 0.0 to 1.0
@@ -27,7 +28,7 @@ class BudgetProgressBar extends StatelessWidget {
         return Container(
           width: constraints.maxWidth,
           height: height,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.darkSurface3,
             borderRadius: AppRadius.full,
           ),
@@ -43,7 +44,7 @@ class BudgetProgressBar extends StatelessWidget {
                   borderRadius: AppRadius.full,
                   boxShadow: [
                     BoxShadow(
-                      color: barColor.withOpacity(0.5),
+                      color: barColor.withValues(alpha: 0.5),
                       blurRadius: 8,
                       offset: const Offset(0, 0),
                     )

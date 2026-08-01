@@ -1,13 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:your_budget_manager/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:your_budget_manager/features/transactions/domain/entities/transaction.dart';
-import 'package:your_budget_manager/features/transactions/domain/value_objects/amount.dart';
-import 'package:your_budget_manager/features/categories/domain/repositories/category_repository.dart';
-import 'package:your_budget_manager/features/categories/domain/entities/category.dart';
-import 'package:your_budget_manager/engines/analytics/analytics_engine.dart';
-import 'package:your_budget_manager/engines/analytics/models/analytics_models.dart';
 import 'package:your_budget_manager/core/enums.dart';
+import 'package:your_budget_manager/engines/analytics/analytics_engine.dart';
+import 'package:your_budget_manager/features/categories/domain/entities/category.dart';
+import 'package:your_budget_manager/features/categories/domain/repositories/category_repository.dart';
+import 'package:your_budget_manager/features/transactions/domain/entities/transaction.dart';
+import 'package:your_budget_manager/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:your_budget_manager/features/transactions/domain/value_objects/amount.dart';
 
 class MockTransactionRepository extends Mock implements TransactionRepository {}
 class MockCategoryRepository extends Mock implements CategoryRepository {}
@@ -27,33 +26,33 @@ void main() {
   });
 
   group('AnalyticsEngine', () {
-    final cat1 = Category(id: 'c1', name: 'Food', color: 1, icon: 'icon1');
-    final cat2 = Category(id: 'c2', name: 'Transport', color: 2, icon: 'icon2');
+    const cat1 = Category(id: 'c1', name: 'Food', color: 1, icon: 'icon1');
+    const cat2 = Category(id: 'c2', name: 'Transport', color: 2, icon: 'icon2');
 
     final t1 = Transaction(
       id: 't1',
-      amount: Amount(50),
+      amount: const Amount(50),
       date: DateTime(2023, 10, 5),
       categoryId: 'c1',
       type: TransactionType.expense,
     );
     final t2 = Transaction(
       id: 't2',
-      amount: Amount(150),
+      amount: const Amount(150),
       date: DateTime(2023, 10, 15),
       categoryId: 'c2',
       type: TransactionType.expense,
     );
     final t3 = Transaction(
       id: 't3',
-      amount: Amount(100),
+      amount: const Amount(100),
       date: DateTime(2023, 10, 20),
       categoryId: 'c1',
       type: TransactionType.expense,
     );
     final tIncome = Transaction(
       id: 't4',
-      amount: Amount(500),
+      amount: const Amount(500),
       date: DateTime(2023, 10, 10),
       categoryId: 'c3',
       type: TransactionType.income,
@@ -111,7 +110,7 @@ void main() {
           DateTime(2023, 10, 1),
           DateTime(2023, 11, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_cur', amount: Amount(200), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_cur', amount: const Amount(200), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         // Mock prev month (Sep)
@@ -119,7 +118,7 @@ void main() {
           DateTime(2023, 9, 1),
           DateTime(2023, 10, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_prev', amount: Amount(100), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_prev', amount: const Amount(100), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         final comparison = await analyticsEngine.getMonthOverMonthComparison(2023, 10);
@@ -134,14 +133,14 @@ void main() {
           DateTime(2023, 10, 1),
           DateTime(2023, 11, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_cur', amount: Amount(50), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_cur', amount: const Amount(50), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         when(() => mockTransactionRepository.watchTransactionsByDateRange(
           DateTime(2023, 9, 1),
           DateTime(2023, 10, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_prev', amount: Amount(100), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_prev', amount: const Amount(100), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         final comparison = await analyticsEngine.getMonthOverMonthComparison(2023, 10);
@@ -156,7 +155,7 @@ void main() {
           DateTime(2023, 10, 1),
           DateTime(2023, 11, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_cur', amount: Amount(100), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_cur', amount: const Amount(100), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         when(() => mockTransactionRepository.watchTransactionsByDateRange(

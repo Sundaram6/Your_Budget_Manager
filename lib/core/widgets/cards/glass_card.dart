@@ -1,8 +1,10 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
 import '../../theme/app_elevation.dart';
+import '../../theme/app_radius.dart';
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -23,7 +25,7 @@ class GlassCard extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         borderRadius: AppRadius.lg,
         boxShadow: AppElevation.level1,
       ),

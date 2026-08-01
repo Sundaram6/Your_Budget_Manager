@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:your_budget_manager/features/auth/presentation/screens/pin_setup_screen.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/features/auth/presentation/screens/pin_lock_screen.dart';
+import 'package:your_budget_manager/features/auth/presentation/screens/pin_setup_screen.dart';
 
 void main() {
   testWidgets('PinSetupScreen renders', (WidgetTester tester) async {

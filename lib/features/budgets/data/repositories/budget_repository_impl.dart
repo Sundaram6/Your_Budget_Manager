@@ -1,9 +1,9 @@
 import '../../../../core/enums.dart';
 import '../../../../database/app_database.dart' as db;
 import '../../../../database/daos/budget_dao.dart';
+import '../../../transactions/domain/value_objects/amount.dart';
 import '../../domain/entities/budget.dart' as domain;
 import '../../domain/repositories/budget_repository.dart';
-import '../../../transactions/domain/value_objects/amount.dart';
 
 class BudgetRepositoryImpl implements BudgetRepository {
   final BudgetDao _dao;

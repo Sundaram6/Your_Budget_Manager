@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
-import '../cards/glass_card.dart';
-import '../buttons/primary_button.dart';
+import '../../theme/app_typography.dart';
 import '../buttons/ghost_button.dart';
+import '../buttons/primary_button.dart';
+import '../cards/glass_card.dart';
 
 class AppDialog extends StatelessWidget {
   final String title;
@@ -29,7 +30,7 @@ class AppDialog extends StatelessWidget {
   static Future<T?> show<T>(BuildContext context, {required Widget child}) {
     return showDialog<T>(
       context: context,
-      barrierColor: AppColors.darkCanvas.withOpacity(0.8),
+      barrierColor: AppColors.darkCanvas.withValues(alpha: 0.8),
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,

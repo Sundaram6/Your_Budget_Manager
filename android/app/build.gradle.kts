@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.ybm.your_budget_manager"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

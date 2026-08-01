@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/core/theme/app_theme.dart';
-import 'package:your_budget_manager/features/dashboard/presentation/widgets/category_breakdown.dart';
 import 'package:your_budget_manager/engines/analytics/models/analytics_models.dart';
+import 'package:your_budget_manager/features/dashboard/presentation/widgets/category_breakdown.dart';
 
 void main() {
   testWidgets('CategoryBreakdownWidget renders correctly', (WidgetTester tester) async {

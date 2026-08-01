@@ -1,6 +1,6 @@
-import '../../features/transactions/domain/repositories/transaction_repository.dart';
-import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../core/enums.dart';
+import '../../features/categories/domain/repositories/category_repository.dart';
+import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import 'models/analytics_models.dart';
 
 class AnalyticsEngine {

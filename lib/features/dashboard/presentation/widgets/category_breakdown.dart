@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../../engines/analytics/models/analytics_models.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../core/extensions/number_extensions.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/extensions/number_extensions.dart';
+import '../../../../engines/analytics/models/analytics_models.dart';
 
 class CategoryBreakdownWidget extends StatelessWidget {
   final List<CategoryBreakdown> breakdowns;

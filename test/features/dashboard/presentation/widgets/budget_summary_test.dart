@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/core/theme/app_theme.dart';
-import 'package:your_budget_manager/features/dashboard/presentation/widgets/budget_summary.dart';
 import 'package:your_budget_manager/engines/budget/models/budget_progress.dart';
+import 'package:your_budget_manager/features/dashboard/presentation/widgets/budget_summary.dart';
 
 void main() {
   testWidgets('BudgetSummaryWidget renders correctly', (WidgetTester tester) async {

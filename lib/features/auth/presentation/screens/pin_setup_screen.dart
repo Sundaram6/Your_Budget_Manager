@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../controllers/auth_controller.dart';
 import '../../../../routing/route_names.dart';
+import '../controllers/auth_controller.dart';
 
 class PinSetupScreen extends ConsumerStatefulWidget {
   const PinSetupScreen({super.key});
@@ -34,7 +34,9 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
         return;
       }
       ref.read(authControllerProvider.notifier).setupPin(_pinController.text).then((_) {
-        context.goNamed(RouteNames.dashboard);
+        if (mounted) {
+          context.goNamed(RouteNames.dashboard);
+        }
       });
     }
   }
@@ -82,6 +84,16 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
               onPressed: _onNext,
               child: Text(_isConfirming ? 'Save PIN' : 'Next'),
             ),
+            if (!_isConfirming)
+              TextButton(
+                onPressed: () {
+                  ref.read(authControllerProvider.notifier).skipPinSetup().then((_) {
+                    if (!context.mounted) return;
+                    context.goNamed(RouteNames.dashboard);
+                  });
+                },
+                child: const Text('Skip'),
+              ),
             if (_isConfirming)
               TextButton(
                 onPressed: () {

@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/database/app_database.dart';
-import 'package:your_budget_manager/database/daos/transaction_dao.dart';
 import 'package:your_budget_manager/database/daos/category_dao.dart';
+import 'package:your_budget_manager/database/daos/transaction_dao.dart';
 
 void main() {
   late AppDatabase database;

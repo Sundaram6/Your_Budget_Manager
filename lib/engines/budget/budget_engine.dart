@@ -1,13 +1,14 @@
 import 'package:uuid/uuid.dart';
+
+import '../../core/enums.dart';
 import '../../core/errors/app_exception.dart';
 import '../../features/budgets/domain/entities/budget.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../../features/recurring/domain/repositories/recurring_repository.dart';
+import '../../features/transactions/domain/value_objects/amount.dart';
 import '../expense/expense_engine.dart';
 import 'models/budget_progress.dart';
 import 'models/daily_allowance.dart';
-import '../../features/transactions/domain/value_objects/amount.dart';
-import '../../core/enums.dart';
 
 class BudgetEngine {
   final BudgetRepository _budgetRepository;

@@ -1,9 +1,9 @@
 import '../../../../core/enums.dart';
 import '../../../../database/app_database.dart' as db;
 import '../../../../database/daos/recurring_transaction_dao.dart';
+import '../../../transactions/domain/value_objects/amount.dart';
 import '../../domain/entities/recurring_transaction.dart' as domain;
 import '../../domain/repositories/recurring_repository.dart';
-import '../../../transactions/domain/value_objects/amount.dart';
 
 class RecurringRepositoryImpl implements RecurringRepository {
   final RecurringTransactionDao _dao;

@@ -39,7 +39,7 @@ class AmountKeypad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

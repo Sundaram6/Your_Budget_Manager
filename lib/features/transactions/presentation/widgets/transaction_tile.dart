@@ -35,7 +35,7 @@ class TransactionTile extends ConsumerWidget {
         return ListTile(
           onTap: onTap,
           leading: CircleAvatar(
-            backgroundColor: Color(category.color).withOpacity(0.2),
+            backgroundColor: Color(category.color).withValues(alpha: 0.2),
             child: Icon(
               // Using a placeholder icon mapping if needed, or just a default
               Icons.category, 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
 import '../../theme/app_elevation.dart';
+import '../../theme/app_radius.dart';
 
 class GoldCard extends StatelessWidget {
   final Widget child;

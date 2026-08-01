@@ -1,20 +1,20 @@
 import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
-import 'tables/categories_table.dart';
-import 'tables/merchants_table.dart';
-import 'tables/transactions_table.dart';
-import 'tables/budgets_table.dart';
-import 'tables/recurring_transactions_table.dart';
-import 'tables/app_settings_table.dart';
-
+import 'daos/budget_dao.dart';
 import 'daos/category_dao.dart';
 import 'daos/merchant_dao.dart';
-import 'daos/transaction_dao.dart';
-import 'daos/budget_dao.dart';
 import 'daos/recurring_transaction_dao.dart';
 import 'daos/settings_dao.dart';
+import 'daos/transaction_dao.dart';
+import 'tables/app_settings_table.dart';
+import 'tables/budgets_table.dart';
+import 'tables/categories_table.dart';
+import 'tables/merchants_table.dart';
+import 'tables/recurring_transactions_table.dart';
+import 'tables/transactions_table.dart';
 
 part 'app_database.g.dart';
 

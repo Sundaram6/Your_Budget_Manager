@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../engines/budget/models/budget_progress.dart';
+
+import '../../../../core/extensions/number_extensions.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/extensions/number_extensions.dart';
+import '../../../../engines/budget/models/budget_progress.dart';
 
 class BudgetSummaryWidget extends StatelessWidget {
   final List<BudgetProgress> budgets;

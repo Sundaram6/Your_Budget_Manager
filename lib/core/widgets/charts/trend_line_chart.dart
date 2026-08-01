@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+
+import '../../theme/app_animation.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-import '../../theme/app_animation.dart';
 
 class TrendLineChart extends StatelessWidget {
   final List<FlSpot> spots;
@@ -31,7 +32,7 @@ class TrendLineChart extends StatelessWidget {
             drawVerticalLine: false,
             horizontalInterval: (maxY - minY) / 4 == 0 ? 1 : (maxY - minY) / 4,
             getDrawingHorizontalLine: (value) {
-              return FlLine(
+              return const FlLine(
                 color: AppColors.darkBorderMedium,
                 strokeWidth: 1,
                 dashArray: [4, 4],
@@ -40,8 +41,8 @@ class TrendLineChart extends StatelessWidget {
           ),
           titlesData: FlTitlesData(
             show: true,
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -86,13 +87,13 @@ class TrendLineChart extends StatelessWidget {
               color: color,
               barWidth: 3,
               isStrokeCapRound: true,
-              dotData: FlDotData(show: false),
+              dotData: const FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    color.withOpacity(0.3),
-                    color.withOpacity(0.0),
+                    color.withValues(alpha: 0.3),
+                    color.withValues(alpha: 0.0),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,

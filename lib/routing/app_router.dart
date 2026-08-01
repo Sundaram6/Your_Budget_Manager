@@ -1,14 +1,21 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'route_names.dart';
 import '../core/security/app_lock_controller.dart';
 import '../core/security/pin_service.dart';
-import '../features/onboarding/presentation/screens/onboarding_screen.dart';
-import '../features/auth/presentation/screens/pin_setup_screen.dart';
 import '../features/auth/presentation/screens/pin_lock_screen.dart';
+import '../features/auth/presentation/screens/pin_setup_screen.dart';
+import '../features/backup/presentation/screens/backup_screen.dart';
+import '../features/budgets/presentation/screens/budget_detail_screen.dart';
+import '../features/budgets/presentation/screens/budget_overview_screen.dart';
+import '../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../features/recurring/presentation/screens/recurring_transactions_screen.dart';
+import '../features/settings/presentation/screens/settings_screen.dart';
+import '../features/transactions/presentation/screens/add_transaction_screen.dart';
+import '../features/transactions/presentation/screens/transaction_list_screen.dart';
+import 'route_names.dart';
 
 part 'app_router.g.dart';
 
@@ -19,14 +26,12 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) => Sha
 GoRouter appRouter(AppRouterRef ref) {
   final isLocked = ref.watch(appLockControllerProvider);
   
-  // We cannot read pinService properly in redirect if we want it synchronous unless we use a provider for hasPin.
-  // We'll handle pin lock inside the redirect using the PinService instance directly.
-
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) async {
       final prefs = await ref.read(sharedPreferencesProvider.future);
       final isOnboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+      final isPinSetupComplete = prefs.getBool('pin_setup_complete') ?? false;
 
       final pinService = ref.read(pinServiceProvider);
       final hasPin = await pinService.hasPin();
@@ -40,12 +45,12 @@ GoRouter appRouter(AppRouterRef ref) {
         return '/onboarding';
       }
 
-      if (!hasPin) {
+      if (!isPinSetupComplete) {
         if (isSetupPath) return null;
         return '/pin-setup';
       }
 
-      if (isLocked) {
+      if (hasPin && isLocked) {
         if (isLockPath) return null;
         return '/pin-lock';
       }
@@ -74,27 +79,54 @@ GoRouter appRouter(AppRouterRef ref) {
       ),
       ShellRoute(
         builder: (context, state, child) {
-          // Wrap with any common shell layout here if needed
           return child;
         },
         routes: [
           GoRoute(
             path: '/',
             name: RouteNames.dashboard,
-            builder: (context, state) => const DummyDashboard(),
+            builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/add-transaction',
+            name: RouteNames.addTransaction,
+            builder: (context, state) => const AddTransactionScreen(),
+          ),
+          GoRoute(
+            path: '/transactions',
+            name: RouteNames.transactionList,
+            builder: (context, state) => const TransactionListScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            name: RouteNames.settings,
+            builder: (context, state) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: '/budgets',
+            name: RouteNames.budgets,
+            builder: (context, state) => const BudgetOverviewScreen(),
+          ),
+          GoRoute(
+            path: '/budgets/:id',
+            name: RouteNames.budgetDetail,
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return BudgetDetailScreen(budgetId: id);
+            },
+          ),
+          GoRoute(
+            path: '/recurring',
+            name: RouteNames.recurring,
+            builder: (context, state) => const RecurringTransactionsScreen(),
+          ),
+          GoRoute(
+            path: '/backup',
+            name: RouteNames.backup,
+            builder: (context, state) => const BackupScreen(),
           ),
         ],
       ),
     ],
   );
-}
-
-class DummyDashboard extends StatelessWidget {
-  const DummyDashboard({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Dashboard')),
-    );
-  }
 }

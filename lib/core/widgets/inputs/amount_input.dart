@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 
 class AmountInput extends StatelessWidget {
   final TextEditingController? controller;
@@ -41,7 +42,7 @@ class AmountInput extends StatelessWidget {
             decoration: InputDecoration(
               hintText: '0.00',
               hintStyle: AppTypography.displayXL.copyWith(
-                color: AppColors.darkTextTertiary.withOpacity(0.5),
+                color: AppColors.darkTextTertiary.withValues(alpha: 0.5),
               ),
               border: InputBorder.none,
               isDense: true,

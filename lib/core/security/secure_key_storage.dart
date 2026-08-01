@@ -23,8 +23,6 @@ class SecureKeyStorage {
 
 @riverpod
 SecureKeyStorage secureKeyStorage(SecureKeyStorageRef ref) {
-  const storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  const storage = FlutterSecureStorage();
   return SecureKeyStorage(storage);
 }

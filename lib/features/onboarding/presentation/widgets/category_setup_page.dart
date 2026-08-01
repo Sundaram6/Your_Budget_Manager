@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../engines/category/category_engine_provider.dart';
 
 class CategorySetupPage extends ConsumerStatefulWidget {
@@ -59,7 +60,7 @@ class _CategorySetupPageState extends ConsumerState<CategorySetupPage> {
               Text(
                 'These are your default categories. You can edit them later.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 200.ms),
@@ -94,7 +95,7 @@ class _CategorySetupPageState extends ConsumerState<CategorySetupPage> {
                             children: [
                               const SizedBox(width: 8),
                               Icon(
-                                IconData(
+                                const IconData(
                                   0xe3a1,
                                   fontFamily: 'MaterialIcons',
                                 ),
@@ -123,7 +124,11 @@ class _CategorySetupPageState extends ConsumerState<CategorySetupPage> {
               ),
               const SizedBox(height: 16),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Custom categories coming in Phase 2')),
+                  );
+                },
                 child: const Text('Add Custom Category'),
               ).animate().fadeIn(delay: 800.ms),
               const SizedBox(height: 16),

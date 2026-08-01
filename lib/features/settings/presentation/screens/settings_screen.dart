@@ -12,8 +12,8 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          ListTile(title: const Text('Security')),
-          ListTile(title: const Text('Categories')),
+          const ListTile(title: Text('Security')),
+          const ListTile(title: Text('Categories')),
           ListTile(
             title: const Text('Recurring'),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringTransactionsScreen())),
@@ -22,8 +22,8 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Backup'),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BackupScreen())),
           ),
-          ListTile(title: const Text('Appearance')),
-          ListTile(title: const Text('About')),
+          const ListTile(title: Text('Appearance')),
+          const ListTile(title: Text('About')),
         ],
       ),
     );

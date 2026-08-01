@@ -1,7 +1,8 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../controllers/backup_controller.dart';
-import 'package:file_picker/file_picker.dart';
 
 class BackupScreen extends ConsumerWidget {
   const BackupScreen({super.key});
@@ -20,7 +21,7 @@ class BackupScreen extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                FilePickerResult? result = await FilePicker.platform.pickFiles();
+                final FilePickerResult? result = await FilePicker.platform.pickFiles();
                 if (result != null && result.files.single.path != null) {
                   ref.read(backupControllerProvider.notifier).importData(result.files.single.path!, 'password');
                 }

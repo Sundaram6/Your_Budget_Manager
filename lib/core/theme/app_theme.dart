@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'app_colors.dart';
-import 'app_typography.dart';
-import 'app_spacing.dart';
-import 'app_radius.dart';
 import 'app_custom_tokens.dart';
+import 'app_radius.dart';
+import 'app_spacing.dart';
+import 'app_typography.dart';
 
 class AppTheme {
   static ThemeData get darkTheme {

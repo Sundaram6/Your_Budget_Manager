@@ -1,7 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../../core/security/pin_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../../core/security/app_lock_controller.dart';
 import '../../../../core/security/biometric_service.dart';
+import '../../../../core/security/pin_service.dart';
 
 part 'auth_controller.g.dart';
 
@@ -15,6 +17,17 @@ class AuthController extends _$AuthController {
     state = await AsyncValue.guard(() async {
       final pinService = ref.read(pinServiceProvider);
       await pinService.setPin(pin);
+      
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pin_setup_complete', true);
+    });
+  }
+
+  Future<void> skipPinSetup() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pin_setup_complete', true);
     });
   }
 

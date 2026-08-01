@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:your_budget_manager/features/categories/domain/entities/category.dart';
 import 'package:your_budget_manager/features/transactions/presentation/screens/add_transaction_screen.dart';
 import 'package:your_budget_manager/features/transactions/presentation/widgets/category_picker.dart';
-import 'package:your_budget_manager/features/categories/domain/entities/category.dart';
 
 void main() {
   testWidgets('AddTransactionScreen renders properly', (WidgetTester tester) async {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../../lib/core/utils/validators.dart';
+import 'package:your_budget_manager/core/utils/validators.dart';
 
 void main() {
   group('Validators', () {
