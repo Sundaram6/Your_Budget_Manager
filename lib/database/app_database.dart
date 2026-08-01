@@ -15,6 +15,8 @@ import 'tables/categories_table.dart';
 import 'tables/merchants_table.dart';
 import 'tables/recurring_transactions_table.dart';
 import 'tables/transactions_table.dart';
+import 'tables/savings_goals_table.dart';
+import 'daos/savings_goal_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -26,6 +28,7 @@ part 'app_database.g.dart';
     BudgetsTable,
     RecurringTransactionsTable,
     AppSettingsTable,
+    SavingsGoalsTable,
   ],
   daos: [
     CategoryDao,
@@ -34,13 +37,14 @@ part 'app_database.g.dart';
     BudgetDao,
     RecurringTransactionDao,
     SettingsDao,
+    SavingsGoalDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -49,7 +53,9 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Handle migrations here
+        if (from < 2) {
+          await m.createTable(savingsGoalsTable);
+        }
       },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
