@@ -76,7 +76,7 @@ void main() {
       
       final lerped = tokens1.lerp(tokens2, 0.5);
       
-      expect(lerped.incomeColor, const Color(0xFF7F7F7F));
+      expect(lerped.incomeColor, Color.lerp(Colors.black, Colors.white, 0.5));
       expect(lerped.cardBorderRadius, 10.0);
       expect(lerped.gridUnit, 5.0);
     });
