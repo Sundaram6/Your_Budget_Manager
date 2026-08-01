@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/enums.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../controllers/add_transaction_controller.dart';
 import '../widgets/amount_keypad.dart';
 import '../widgets/category_picker.dart';
@@ -76,7 +77,7 @@ class AddTransactionScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  NumberFormat.currency(symbol: '\$').format(state.amount),
+                  CurrencyFormatter.format(state.amount),
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
