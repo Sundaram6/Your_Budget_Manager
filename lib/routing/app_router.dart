@@ -17,7 +17,6 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) => Sha
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
-  final prefsAsync = ref.watch(sharedPreferencesProvider);
   final isLocked = ref.watch(appLockControllerProvider);
   
   // We cannot read pinService properly in redirect if we want it synchronous unless we use a provider for hasPin.
