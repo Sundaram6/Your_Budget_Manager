@@ -51,6 +51,7 @@ dependencies:
 
   # SMS Reading (Android only, opt-in)
   flutter_sms_inbox: ^1.0.3
+  logger: ^2.7.0
 
 dev_dependencies:
   flutter_test:
