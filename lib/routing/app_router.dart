@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +16,7 @@ import '../features/recurring/presentation/screens/recurring_transactions_screen
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/transactions/presentation/screens/add_transaction_screen.dart';
 import '../features/transactions/presentation/screens/transaction_list_screen.dart';
+import '../features/sms_permissions/presentation/screens/sms_consent_screen.dart';
 import 'route_names.dart';
 
 part 'app_router.g.dart';
@@ -126,6 +128,30 @@ GoRouter appRouter(AppRouterRef ref) {
             builder: (context, state) => const BackupScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/sms-consent',
+        name: RouteNames.smsConsent,
+        builder: (context, state) => const SmsConsentScreen(),
+      ),
+      // Placeholders for Task 6, so they are registered in advance.
+      GoRoute(
+        path: '/savings',
+        name: RouteNames.savingsGoals,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Savings Goals'))),
+      ),
+      GoRoute(
+        path: '/savings/add',
+        name: RouteNames.addSavingsGoal,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Add Savings Goal'))),
+      ),
+      GoRoute(
+        path: '/savings/:id',
+        name: RouteNames.savingsGoalDetail,
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return Scaffold(body: Center(child: Text('Savings Goal Detail: $id')));
+        },
       ),
     ],
   );

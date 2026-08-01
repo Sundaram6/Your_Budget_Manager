@@ -10,4 +10,10 @@ class RouteNames {
   static const String recurring = 'recurring';
   static const String backup = 'backup';
   static const String settings = 'settings';
+  
+  // Phase 2 Routes
+  static const String smsConsent = 'sms_consent';
+  static const String savingsGoals = 'savings_goals';
+  static const String addSavingsGoal = 'add_savings_goal';
+  static const String savingsGoalDetail = 'savings_goal_detail';
 }
