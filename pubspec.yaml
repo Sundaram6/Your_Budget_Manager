@@ -49,6 +49,9 @@ dependencies:
   pointycastle: ^3.9.1
   shared_preferences: ^2.5.5
 
+  # SMS Reading (Android only, opt-in)
+  flutter_sms_inbox: ^1.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
