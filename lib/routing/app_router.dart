@@ -17,6 +17,9 @@ import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/transactions/presentation/screens/add_transaction_screen.dart';
 import '../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../features/sms_permissions/presentation/screens/sms_consent_screen.dart';
+import '../features/savings/presentation/screens/savings_goals_screen.dart';
+import '../features/savings/presentation/screens/add_savings_goal_screen.dart';
+import '../features/savings/presentation/screens/savings_goal_detail_screen.dart';
 import 'route_names.dart';
 
 part 'app_router.g.dart';
@@ -134,23 +137,22 @@ GoRouter appRouter(AppRouterRef ref) {
         name: RouteNames.smsConsent,
         builder: (context, state) => const SmsConsentScreen(),
       ),
-      // Placeholders for Task 6, so they are registered in advance.
       GoRoute(
         path: '/savings',
         name: RouteNames.savingsGoals,
-        builder: (context, state) => const Scaffold(body: Center(child: Text('Savings Goals'))),
+        builder: (context, state) => const SavingsGoalsScreen(),
       ),
       GoRoute(
         path: '/savings/add',
         name: RouteNames.addSavingsGoal,
-        builder: (context, state) => const Scaffold(body: Center(child: Text('Add Savings Goal'))),
+        builder: (context, state) => const AddSavingsGoalScreen(),
       ),
       GoRoute(
         path: '/savings/:id',
         name: RouteNames.savingsGoalDetail,
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          return Scaffold(body: Center(child: Text('Savings Goal Detail: $id')));
+          return SavingsGoalDetailScreen(id: id);
         },
       ),
     ],
