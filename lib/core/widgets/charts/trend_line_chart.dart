@@ -101,8 +101,8 @@ class TrendLineChart extends StatelessWidget {
             ),
           ],
         ),
-        swapAnimationDuration: AppAnimation.durationNormal,
-        swapAnimationCurve: AppAnimation.curveSwiftOut,
+        duration: AppAnimation.durationNormal,
+        curve: AppAnimation.curveSwiftOut,
       ),
     );
   }

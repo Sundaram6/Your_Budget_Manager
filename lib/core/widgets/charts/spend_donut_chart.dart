@@ -63,8 +63,8 @@ class SpendDonutChart extends StatelessWidget {
           sections: sections,
           pieTouchData: PieTouchData(enabled: true),
         ),
-        swapAnimationDuration: AppAnimation.durationNormal,
-        swapAnimationCurve: AppAnimation.curveSwiftOut,
+        duration: AppAnimation.durationNormal,
+        curve: AppAnimation.curveSwiftOut,
       ),
     );
   }

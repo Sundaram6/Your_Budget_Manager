@@ -1,0 +1,54 @@
+import 'dart:io';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+
+import 'tables/categories_table.dart';
+import 'tables/merchants_table.dart';
+import 'tables/transactions_table.dart';
+import 'tables/budgets_table.dart';
+import 'tables/recurring_transactions_table.dart';
+import 'tables/app_settings_table.dart';
+
+part 'app_database.g.dart';
+
+@DriftDatabase(tables: [
+  CategoriesTable,
+  MerchantsTable,
+  TransactionsTable,
+  BudgetsTable,
+  RecurringTransactionsTable,
+  AppSettingsTable,
+])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase(super.e);
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        // Handle migrations here
+      },
+      beforeOpen: (details) async {
+        await customStatement('PRAGMA foreign_keys = ON');
+      },
+    );
+  }
+
+  static AppDatabase openEncrypted(String dbPath, String encryptionKey) {
+    final file = File(dbPath);
+    return AppDatabase(
+      NativeDatabase.createInBackground(
+        file,
+        setup: (db) {
+          db.execute('PRAGMA key = "$encryptionKey";');
+        },
+      ),
+    );
+  }
+}
