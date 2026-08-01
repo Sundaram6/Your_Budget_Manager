@@ -1,0 +1,51 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
+import 'package:your_budget_manager/database/app_database.dart';
+import 'package:your_budget_manager/database/daos/budget_dao.dart';
+import 'package:your_budget_manager/database/daos/category_dao.dart';
+import 'package:drift/drift.dart';
+
+void main() {
+  late AppDatabase database;
+  late BudgetDao budgetDao;
+  late CategoryDao categoryDao;
+
+  setUp(() {
+    database = AppDatabase(NativeDatabase.memory());
+    budgetDao = database.budgetDao;
+    categoryDao = database.categoryDao;
+  });
+
+  tearDown(() async {
+    await database.close();
+  });
+
+  test('insert and retrieve budgets', () async {
+    await categoryDao.insertCategory(
+      CategoriesTableCompanion.insert(
+        id: 'cat1',
+        name: 'Food',
+        icon: 'fastfood',
+        color: 'red',
+        createdAt: 1000,
+        updatedAt: 1000,
+      ),
+    );
+
+    await budgetDao.insertBudget(
+      BudgetsTableCompanion.insert(
+        id: 'budget1',
+        categoryId: 'cat1',
+        amount: 500.0,
+        isActive: const Value(true),
+        createdAt: 1000,
+        updatedAt: 1000,
+      ),
+    );
+
+    final budgets = await budgetDao.watchAllBudgets().first;
+    expect(budgets.length, 1);
+    expect(budgets.first.id, 'budget1');
+    expect(budgets.first.amount, 500.0);
+  });
+}

@@ -9,16 +9,33 @@ import 'tables/budgets_table.dart';
 import 'tables/recurring_transactions_table.dart';
 import 'tables/app_settings_table.dart';
 
+import 'daos/category_dao.dart';
+import 'daos/merchant_dao.dart';
+import 'daos/transaction_dao.dart';
+import 'daos/budget_dao.dart';
+import 'daos/recurring_transaction_dao.dart';
+import 'daos/settings_dao.dart';
+
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [
-  CategoriesTable,
-  MerchantsTable,
-  TransactionsTable,
-  BudgetsTable,
-  RecurringTransactionsTable,
-  AppSettingsTable,
-])
+@DriftDatabase(
+  tables: [
+    CategoriesTable,
+    MerchantsTable,
+    TransactionsTable,
+    BudgetsTable,
+    RecurringTransactionsTable,
+    AppSettingsTable,
+  ],
+  daos: [
+    CategoryDao,
+    MerchantDao,
+    TransactionDao,
+    BudgetDao,
+    RecurringTransactionDao,
+    SettingsDao,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
