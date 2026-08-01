@@ -14,6 +14,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
       name: entity.name,
       color: int.parse(entity.color),
       icon: entity.icon,
+      isDefault: entity.isDefault,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(entity.createdAt),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(entity.updatedAt),
     );
   }
 
@@ -23,10 +26,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
       name: entity.name,
       icon: entity.icon,
       color: entity.color.toString(),
-      isDefault: false,
+      isDefault: entity.isDefault,
       sortOrder: 0,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      updatedAt: DateTime.now().millisecondsSinceEpoch,
+      createdAt: entity.createdAt?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt: entity.updatedAt?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
 

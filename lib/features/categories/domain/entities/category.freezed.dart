@@ -25,6 +25,9 @@ mixin _$Category {
   String get name => throw _privateConstructorUsedError;
   int get color => throw _privateConstructorUsedError;
   String get icon => throw _privateConstructorUsedError;
+  bool get isDefault => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Category to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,7 +44,15 @@ abstract class $CategoryCopyWith<$Res> {
   factory $CategoryCopyWith(Category value, $Res Function(Category) then) =
       _$CategoryCopyWithImpl<$Res, Category>;
   @useResult
-  $Res call({String id, String name, int color, String icon});
+  $Res call({
+    String id,
+    String name,
+    int color,
+    String icon,
+    bool isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  });
 }
 
 /// @nodoc
@@ -63,6 +74,9 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
     Object? name = null,
     Object? color = null,
     Object? icon = null,
+    Object? isDefault = null,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -82,6 +96,18 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
                 ? _value.icon
                 : icon // ignore: cast_nullable_to_non_nullable
                       as String,
+            isDefault: null == isDefault
+                ? _value.isDefault
+                : isDefault // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            createdAt: freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            updatedAt: freezed == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -97,7 +123,15 @@ abstract class _$$CategoryImplCopyWith<$Res>
   ) = __$$CategoryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String name, int color, String icon});
+  $Res call({
+    String id,
+    String name,
+    int color,
+    String icon,
+    bool isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  });
 }
 
 /// @nodoc
@@ -118,6 +152,9 @@ class __$$CategoryImplCopyWithImpl<$Res>
     Object? name = null,
     Object? color = null,
     Object? icon = null,
+    Object? isDefault = null,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(
       _$CategoryImpl(
@@ -137,6 +174,18 @@ class __$$CategoryImplCopyWithImpl<$Res>
             ? _value.icon
             : icon // ignore: cast_nullable_to_non_nullable
                   as String,
+        isDefault: null == isDefault
+            ? _value.isDefault
+            : isDefault // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        createdAt: freezed == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        updatedAt: freezed == updatedAt
+            ? _value.updatedAt
+            : updatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -150,6 +199,9 @@ class _$CategoryImpl implements _Category {
     required this.name,
     required this.color,
     required this.icon,
+    this.isDefault = false,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
@@ -163,10 +215,17 @@ class _$CategoryImpl implements _Category {
   final int color;
   @override
   final String icon;
+  @override
+  @JsonKey()
+  final bool isDefault;
+  @override
+  final DateTime? createdAt;
+  @override
+  final DateTime? updatedAt;
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, color: $color, icon: $icon)';
+    return 'Category(id: $id, name: $name, color: $color, icon: $icon, isDefault: $isDefault, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -177,12 +236,27 @@ class _$CategoryImpl implements _Category {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.color, color) || other.color == color) &&
-            (identical(other.icon, icon) || other.icon == icon));
+            (identical(other.icon, icon) || other.icon == icon) &&
+            (identical(other.isDefault, isDefault) ||
+                other.isDefault == isDefault) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, color, icon);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    name,
+    color,
+    icon,
+    isDefault,
+    createdAt,
+    updatedAt,
+  );
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -204,6 +278,9 @@ abstract class _Category implements Category {
     required final String name,
     required final int color,
     required final String icon,
+    final bool isDefault,
+    final DateTime? createdAt,
+    final DateTime? updatedAt,
   }) = _$CategoryImpl;
 
   factory _Category.fromJson(Map<String, dynamic> json) =
@@ -217,6 +294,12 @@ abstract class _Category implements Category {
   int get color;
   @override
   String get icon;
+  @override
+  bool get isDefault;
+  @override
+  DateTime? get createdAt;
+  @override
+  DateTime? get updatedAt;
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.

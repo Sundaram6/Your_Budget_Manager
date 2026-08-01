@@ -10,6 +10,9 @@ class Category with _$Category {
     required String name,
     required int color,
     required String icon,
+    @Default(false) bool isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) = _Category;
 
   factory Category.fromJson(Map<String, dynamic> json) =>
