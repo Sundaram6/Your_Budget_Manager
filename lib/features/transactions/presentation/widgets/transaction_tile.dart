@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/enums.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/transaction.dart';
 import 'category_picker.dart'; // To get categoriesStreamProvider
 
@@ -30,7 +30,6 @@ class TransactionTile extends ConsumerWidget {
         final isExpense = transaction.type == TransactionType.expense;
         final amountColor = isExpense ? Colors.red : Colors.green;
         final amountPrefix = isExpense ? '-' : '+';
-        final formatter = NumberFormat.currency(symbol: '\$');
 
         return ListTile(
           onTap: onTap,
@@ -47,7 +46,7 @@ class TransactionTile extends ConsumerWidget {
               ? Text(transaction.note!, maxLines: 1, overflow: TextOverflow.ellipsis)
               : null,
           trailing: Text(
-            '$amountPrefix${formatter.format(transaction.amount.value)}',
+            '$amountPrefix${CurrencyFormatter.format(transaction.amount.value)}',
             style: TextStyle(
               color: amountColor,
               fontWeight: FontWeight.bold,
