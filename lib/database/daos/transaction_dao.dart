@@ -14,6 +14,13 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
     return (select(transactionsTable)..where((t) => t.date.isBetweenValues(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch))).watch();
   }
 
+  Future<List<Transaction>> getTransactionsByDateRange(DateTime start, DateTime end) {
+    return (select(transactionsTable)
+          ..where((t) => t.date.isBetweenValues(
+              start.millisecondsSinceEpoch, end.millisecondsSinceEpoch)))
+        .get();
+  }
+
   Stream<List<Transaction>> watchTransactionsByCategory(String categoryId) {
     return (select(transactionsTable)..where((t) => t.categoryId.equals(categoryId))).watch();
   }

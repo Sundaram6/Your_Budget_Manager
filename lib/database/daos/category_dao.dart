@@ -12,6 +12,11 @@ class CategoryDao extends DatabaseAccessor<AppDatabase> with _$CategoryDaoMixin 
 
   Future<List<Category>> getCategories() => select(categoriesTable).get();
 
+  Future<Category?> getCategoryById(String id) {
+    return (select(categoriesTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+  }
+
+
   Future<List<Category>> getDefaultCategories() {
     return (select(categoriesTable)..where((t) => t.isDefault.equals(true))).get();
   }
