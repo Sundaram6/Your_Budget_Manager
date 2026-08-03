@@ -276,8 +276,8 @@ class IntelligenceEngine {
     if (insights.isEmpty) {
       insights.add(AiInsight(
         id: 'default_tip',
-        title: 'Track Expenses Daily',
-        description: 'Log your daily expenses to receive personalized AI financial insights.',
+        title: 'Welcome to Your Budget Manager',
+        description: 'Start tracking expenses to see personalized insights.',
         type: InsightType.tip,
         generatedAt: now,
         priority: 5,

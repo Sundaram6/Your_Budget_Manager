@@ -18,7 +18,16 @@ class AiInsightsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = topInsight != null ? _getInsightColor(topInsight!.type) : AppColors.darkGoldPrimary;
+    final activeInsight = topInsight ?? AiInsight(
+      id: 'default_tip',
+      title: 'Welcome to Your Budget Manager',
+      description: 'Start tracking expenses to see personalized insights.',
+      type: InsightType.tip,
+      generatedAt: DateTime.now(),
+      priority: 5,
+    );
+
+    final borderColor = _getInsightColor(activeInsight.type);
 
     return Container(
       width: double.infinity,
@@ -94,33 +103,30 @@ class AiInsightsCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.space3),
 
-          if (topInsight != null) ...[
-            Row(
-              children: [
-                Icon(_getInsightIcon(topInsight!.type), color: borderColor, size: 18),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    topInsight!.title,
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.darkTextPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+          Row(
+            children: [
+              Icon(_getInsightIcon(activeInsight.type), color: borderColor, size: 18),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  activeInsight.title.isNotEmpty ? activeInsight.title : 'Welcome to Your Budget Manager',
+                  style: const TextStyle(
+                    color: AppColors.darkTextPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            activeInsight.description.isNotEmpty ? activeInsight.description : 'Start tracking expenses to see personalized insights.',
+            style: const TextStyle(
+              color: AppColors.darkTextSecondary,
+              fontSize: 13,
             ),
-            const SizedBox(height: 4),
-            Text(
-              topInsight!.description,
-              style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
-            ),
-          ] else ...[
-            Text(
-              'Log transactions to receive personalized AI financial insights.',
-              style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
-            ),
-          ],
+          ),
         ],
       ),
     );

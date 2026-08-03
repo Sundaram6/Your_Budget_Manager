@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../engines/intelligence/intelligence_engine_provider.dart';
 import '../../../../engines/intelligence/models/ai_insight.dart';
 
@@ -43,8 +42,11 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.darkCanvas,
       appBar: AppBar(
-        title: const Text('AI Financial Insights'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('AI Financial Insights', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -70,7 +72,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                               width: 60,
                               height: 60,
                               child: CircularProgressIndicator(
-                                value: _healthScore / 100,
+                                value: (_healthScore / 100).clamp(0.0, 1.0),
                                 backgroundColor: AppColors.darkSurface3,
                                 valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(_healthScore)),
                                 strokeWidth: 6,
@@ -78,8 +80,9 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                             ),
                             Text(
                               '$_healthScore',
-                              style: AppTypography.heading3.copyWith(
+                              style: TextStyle(
                                 color: _getScoreColor(_healthScore),
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -90,14 +93,14 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Budget Health Score',
-                                style: AppTypography.heading3.copyWith(color: AppColors.darkTextPrimary),
+                                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
                               Text(
                                 _getScoreLabel(_healthScore),
-                                style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
+                                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                               ),
                             ],
                           ),
@@ -108,23 +111,23 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
 
                   const SizedBox(height: AppSpacing.space6),
 
-                  Text(
+                  const Text(
                     'Active Insights',
-                    style: AppTypography.heading3.copyWith(color: AppColors.darkTextPrimary),
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: AppSpacing.space3),
 
                   if (_insights.isEmpty)
-                    Center(
+                    const Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.space6),
+                        padding: EdgeInsets.all(AppSpacing.space6),
                         child: Column(
                           children: [
-                            const Icon(Icons.auto_awesome_outlined, size: 64, color: AppColors.darkTextSecondary),
-                            const SizedBox(height: AppSpacing.space3),
+                            Icon(Icons.auto_awesome_outlined, size: 64, color: Color(0xFF94A3B8)),
+                            SizedBox(height: AppSpacing.space3),
                             Text(
                               'No insights yet. Start tracking expenses!',
-                              style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
+                              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                             ),
                           ],
                         ),
@@ -133,6 +136,9 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                   else
                     ..._insights.map((insight) {
                       final borderBorderColor = _getInsightColor(insight.type);
+                      final titleText = insight.title.isNotEmpty ? insight.title : 'Financial Insight';
+                      final descText = insight.description.isNotEmpty ? insight.description : 'Keep tracking expenses for recommendations.';
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: AppSpacing.space3),
                         padding: const EdgeInsets.all(AppSpacing.space4),
@@ -155,10 +161,11 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    insight.title,
-                                    style: AppTypography.heading3.copyWith(
-                                      color: AppColors.darkTextPrimary,
+                                    titleText,
+                                    style: const TextStyle(
+                                      color: Colors.white,
                                       fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
@@ -166,14 +173,17 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              insight.description,
-                              style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
+                              descText,
+                              style: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 14,
+                              ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             Text(
                               DateFormat('dd MMM yyyy, hh:mm a').format(insight.generatedAt),
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.darkTextSecondary.withValues(alpha: 0.6),
+                              style: TextStyle(
+                                color: const Color(0xFF94A3B8).withValues(alpha: 0.6),
                                 fontSize: 11,
                               ),
                             ),
