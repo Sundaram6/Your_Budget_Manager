@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../budgets/domain/entities/budget.dart';
+import '../../../../database/app_database.dart';
 import '../screens/budget_detail_screen.dart';
 import 'budget_progress_ring.dart';
 
@@ -10,10 +10,12 @@ class BudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final amountRupees = budget.amount / 100;
+
     return Card(
       child: ListTile(
-        title: const Text('Budget: \${budget.categoryId}'),
-        subtitle: const Text('Limit: \${budget.limit.value}'),
+        title: Text(budget.categoryId != null ? 'Category Budget' : 'Overall Monthly Budget'),
+        subtitle: Text('Limit: ₹${amountRupees.toStringAsFixed(0)}'),
         trailing: const BudgetProgressRing(progress: 0.5),
         onTap: () {
           Navigator.push(context, MaterialPageRoute(builder: (_) => BudgetDetailScreen(budgetId: budget.id)));

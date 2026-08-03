@@ -10,13 +10,12 @@ part 'budget_engine_provider.g.dart';
 BudgetEngine budgetEngine(BudgetEngineRef ref) {
   final budgetRepo = ref.watch(budgetRepositoryProvider);
   final expenseEng = ref.watch(expenseEngineProvider);
-  final recurringRepo = ref.watch(recurringRepositoryProvider);
 
-  return BudgetEngine(budgetRepo, expenseEng, recurringRepo);
+  return BudgetEngine(budgetRepo, expenseEng);
 }
 
 @Riverpod(keepAlive: true)
-Future<DailyAllowance> dailyAllowance(DailyAllowanceRef ref) {
+Future<DailyAllowance?> dailyAllowance(DailyAllowanceRef ref) {
   final engine = ref.watch(budgetEngineProvider);
   return engine.calculateDailyAllowance();
 }

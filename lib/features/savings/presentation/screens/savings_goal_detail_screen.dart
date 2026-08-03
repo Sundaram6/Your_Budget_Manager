@@ -1,160 +1,319 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/extensions/context_extensions.dart';
-import '../../../../core/extensions/number_extensions.dart';
-import '../../../../core/widgets/buttons/primary_button.dart';
+import 'package:intl/intl.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../database/app_database.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
-import '../controllers/savings_controller.dart';
-import '../widgets/savings_progress_ring.dart';
 
-class SavingsGoalDetailScreen extends ConsumerWidget {
-  const SavingsGoalDetailScreen({super.key, required this.id});
-
+class SavingsGoalDetailScreen extends ConsumerStatefulWidget {
   final String id;
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final goalAsync = ref.watch(savingsGoalStreamProvider(id));
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Goal Details'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: () {
-              ref.read(savingsEngineProvider).deleteGoal(id).then((_) {
-                if (context.mounted) context.pop();
-              });
-            },
-          ),
-        ],
-      ),
-      body: goalAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
-        data: (goal) {
-          if (goal == null) return const Center(child: Text('Goal not found'));
-          
-          final color = Color(int.parse('FF${goal.colorHex.replaceAll('#', '')}', radix: 16));
-
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SavingsProgressRing(
-                  progress: goal.progress,
-                  color: color,
-                  size: 160,
-                  strokeWidth: 12,
-                  child: Text(
-                    '${(goal.progress * 100).toStringAsFixed(0)}%',
-                    style: context.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Text(goal.name, style: context.textTheme.headlineMedium),
-                const SizedBox(height: 8),
-                Text(
-                  '${goal.currentAmount.toCurrency()} / ${goal.targetAmount.toCurrency()}',
-                  style: context.textTheme.titleLarge?.copyWith(color: context.colorScheme.primary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${goal.remaining.toCurrency()} remaining',
-                  style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurfaceVariant),
-                ),
-                const Spacer(),
-                PrimaryButton(
-                  label: 'Add Deposit',
-                  onPressed: () => _showDepositSheet(context, ref, goal.id),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showDepositSheet(BuildContext context, WidgetRef ref, String goalId) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 24,
-        ),
-        child: _DepositSheetContent(goalId: goalId),
-      ),
-    );
-  }
-}
-
-class _DepositSheetContent extends ConsumerStatefulWidget {
-  const _DepositSheetContent({required this.goalId});
-  final String goalId;
+  const SavingsGoalDetailScreen({super.key, required this.id});
 
   @override
-  ConsumerState<_DepositSheetContent> createState() => _DepositSheetContentState();
+  ConsumerState<SavingsGoalDetailScreen> createState() => _SavingsGoalDetailScreenState();
 }
 
-class _DepositSheetContentState extends ConsumerState<_DepositSheetContent> {
-  final _controller = TextEditingController();
+class _SavingsGoalDetailScreenState extends ConsumerState<SavingsGoalDetailScreen> {
+  final _depositController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _depositController.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    final text = _controller.text.replaceAll(',', '');
-    final amount = double.tryParse(text);
-    if (amount != null && amount > 0) {
-      ref.read(savingsControllerProvider.notifier).addDeposit(widget.goalId, amount).then((_) {
-        if (mounted) Navigator.pop(context);
-      });
+  Future<void> _contributeAmount(int amountPaise) async {
+    if (amountPaise <= 0) return;
+    setState(() => _isLoading = true);
+    final engine = ref.read(savingsEngineProvider);
+
+    try {
+      await engine.contributeToGoal(widget.id, amountPaise);
+      _depositController.clear();
+      if (mounted) {
+        final rupees = amountPaise / 100;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added ₹${rupees.toStringAsFixed(0)} to goal!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to contribute: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteGoal(SavingsGoal goal) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Savings Goal?'),
+        content: Text('Are you sure you want to delete "${goal.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.darkExpense),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    final engine = ref.read(savingsEngineProvider);
+    try {
+      await engine.deleteGoal(goal.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Goal "${goal.name}" deleted.')),
+        );
+        context.pop();
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(savingsControllerProvider);
-    
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('Add Deposit', style: context.textTheme.titleLarge, textAlign: TextAlign.center),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Amount (₹)', // Using ₹
-            prefixText: '₹ ',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: state.isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          child: state.isLoading 
-              ? const CircularProgressIndicator() 
-              : const Text('Confirm Deposit'),
-        ),
-        const SizedBox(height: 24),
-      ],
+    final goalAsync = ref.watch(savingsGoalStreamProvider(widget.id));
+
+    final currencyFormat = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Goal Details'),
+      ),
+      body: goalAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text('Error loading goal: $e')),
+        data: (goal) {
+          if (goal == null) {
+            return const Center(child: Text('Goal not found'));
+          }
+
+          final currentRupees = goal.currentAmount / 100;
+          final targetRupees = goal.targetAmount / 100;
+          final remainingRupees = (targetRupees - currentRupees).clamp(0.0, double.infinity);
+          final ratio = targetRupees > 0 ? (currentRupees / targetRupees).clamp(0.0, 1.0) : 0.0;
+          final pct = (ratio * 100).round();
+
+          int? daysLeft;
+          if (goal.deadline != null) {
+            final now = DateTime.now();
+            final deadlineDate = DateTime.fromMillisecondsSinceEpoch(goal.deadline!);
+            daysLeft = deadlineDate.difference(now).inDays;
+          }
+
+          return _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                  padding: const EdgeInsets.all(AppSpacing.space4),
+                  children: [
+                    // Large Progress Card
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.space6),
+                      decoration: BoxDecoration(
+                        color: AppColors.darkSurface2,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.darkGoldPrimary.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: 140,
+                                height: 140,
+                                child: CircularProgressIndicator(
+                                  value: ratio,
+                                  backgroundColor: AppColors.darkSurface3,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    goal.status == 'completed' ? Colors.green : AppColors.darkGoldPrimary,
+                                  ),
+                                  strokeWidth: 12,
+                                ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '$pct%',
+                                    style: AppTypography.heading1.copyWith(
+                                      color: AppColors.darkGoldPrimary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    goal.status.toUpperCase(),
+                                    style: AppTypography.caption.copyWith(
+                                      color: goal.status == 'completed' ? Colors.green : AppColors.darkTextSecondary,
+                                      fontSize: 10,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.space4),
+                          Text(
+                            goal.name,
+                            style: AppTypography.heading2.copyWith(color: AppColors.darkTextPrimary),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.space2),
+                          Text(
+                            '${currencyFormat.format(currentRupees)} saved of ${currencyFormat.format(targetRupees)}',
+                            style: AppTypography.heading3.copyWith(color: AppColors.darkGoldPrimary),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.space1),
+                          Text(
+                            'Remaining: ${currencyFormat.format(remainingRupees)}',
+                            style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
+                          ),
+                          if (daysLeft != null) ...[
+                            const SizedBox(height: AppSpacing.space3),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: (daysLeft < 7 ? AppColors.darkExpense : AppColors.darkIncome).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                daysLeft >= 0 ? '$daysLeft days left' : 'Deadline passed',
+                                style: AppTypography.caption.copyWith(
+                                  color: daysLeft < 7 ? AppColors.darkExpense : AppColors.darkIncome,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.space6),
+
+                    // Quick Deposit Chips
+                    Text(
+                      'Quick Deposit',
+                      style: AppTypography.heading3.copyWith(color: AppColors.darkTextPrimary),
+                    ),
+                    const SizedBox(height: AppSpacing.space2),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ActionChip(
+                            backgroundColor: AppColors.darkSurface2,
+                            side: const BorderSide(color: AppColors.darkGoldPrimary),
+                            label: const Text('+₹500', style: TextStyle(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
+                            onPressed: () => _contributeAmount(50000),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ActionChip(
+                            backgroundColor: AppColors.darkSurface2,
+                            side: const BorderSide(color: AppColors.darkGoldPrimary),
+                            label: const Text('+₹1,000', style: TextStyle(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
+                            onPressed: () => _contributeAmount(100000),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ActionChip(
+                            backgroundColor: AppColors.darkSurface2,
+                            side: const BorderSide(color: AppColors.darkGoldPrimary),
+                            label: const Text('+₹5,000', style: TextStyle(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
+                            onPressed: () => _contributeAmount(500000),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: AppSpacing.space6),
+
+                    // Custom Contribution Form
+                    Text(
+                      'Custom Contribution',
+                      style: AppTypography.heading3.copyWith(color: AppColors.darkTextPrimary),
+                    ),
+                    const SizedBox(height: AppSpacing.space2),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _depositController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: AppColors.darkTextPrimary),
+                            decoration: InputDecoration(
+                              labelText: 'Deposit Amount (₹)',
+                              prefixText: '₹ ',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.darkGoldPrimary,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            final rupees = double.tryParse(_depositController.text.trim()) ?? 0.0;
+                            if (rupees > 0) {
+                              _contributeAmount((rupees * 100).round());
+                            }
+                          },
+                          icon: const Icon(Icons.add_circle_outline),
+                          label: const Text('Contribute', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: AppSpacing.space6),
+
+                    // Delete Button
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.darkExpense,
+                        side: const BorderSide(color: AppColors.darkExpense),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () => _deleteGoal(goal),
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Delete Goal', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                );
+        },
+      ),
     );
   }
 }

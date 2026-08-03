@@ -35,17 +35,19 @@ void main() {
     await budgetDao.insertBudget(
       BudgetsTableCompanion.insert(
         id: 'budget1',
-        categoryId: 'cat1',
-        amount: 500.0,
-        isActive: const Value(true),
+        categoryId: const Value('cat1'),
+        amount: 50000, // ₹500 in paise
+        month: 8,
+        year: 2026,
         createdAt: 1000,
-        updatedAt: 1000,
       ),
     );
 
     final budgets = await budgetDao.watchAllBudgets().first;
     expect(budgets.length, 1);
     expect(budgets.first.id, 'budget1');
-    expect(budgets.first.amount, 500.0);
+    expect(budgets.first.amount, 50000);
+    expect(budgets.first.month, 8);
+    expect(budgets.first.year, 2026);
   });
 }

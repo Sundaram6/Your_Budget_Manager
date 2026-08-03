@@ -6,7 +6,7 @@ part of 'savings_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$savingsEngineHash() => r'759486b2a7f8bc3f90ec88bb06718d63d2b4bf91';
+String _$savingsEngineHash() => r'ee8201713387bdaf56008f14bc832fa229b0a68a';
 
 /// See also [savingsEngine].
 @ProviderFor(savingsEngine)
@@ -23,13 +23,31 @@ final savingsEngineProvider = AutoDisposeProvider<SavingsEngine>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SavingsEngineRef = AutoDisposeProviderRef<SavingsEngine>;
+String _$savingsGoalsEngineHash() =>
+    r'b76d2e935492f7ba1cdd1cb84ecb6a34a25ca973';
+
+/// See also [savingsGoalsEngine].
+@ProviderFor(savingsGoalsEngine)
+final savingsGoalsEngineProvider = AutoDisposeProvider<SavingsEngine>.internal(
+  savingsGoalsEngine,
+  name: r'savingsGoalsEngineProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$savingsGoalsEngineHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SavingsGoalsEngineRef = AutoDisposeProviderRef<SavingsEngine>;
 String _$savingsGoalsStreamHash() =>
-    r'698ee98a1decfe866913c1e8b12efd0ba65c9171';
+    r'0dad1668bf145426e32f9c65f54e04a375e02ec6';
 
 /// See also [savingsGoalsStream].
 @ProviderFor(savingsGoalsStream)
 final savingsGoalsStreamProvider =
-    AutoDisposeStreamProvider<List<SavingsGoalModel>>.internal(
+    AutoDisposeStreamProvider<List<SavingsGoal>>.internal(
       savingsGoalsStream,
       name: r'savingsGoalsStreamProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -41,9 +59,8 @@ final savingsGoalsStreamProvider =
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SavingsGoalsStreamRef =
-    AutoDisposeStreamProviderRef<List<SavingsGoalModel>>;
-String _$savingsGoalStreamHash() => r'826e739af2776cebcb5cf15b2554e35d04ec1f64';
+typedef SavingsGoalsStreamRef = AutoDisposeStreamProviderRef<List<SavingsGoal>>;
+String _$savingsGoalStreamHash() => r'3ff8ed5a92839bdce2ac22b2b570a59b4f1d63c7';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -71,7 +88,7 @@ class _SystemHash {
 const savingsGoalStreamProvider = SavingsGoalStreamFamily();
 
 /// See also [savingsGoalStream].
-class SavingsGoalStreamFamily extends Family<AsyncValue<SavingsGoalModel?>> {
+class SavingsGoalStreamFamily extends Family<AsyncValue<SavingsGoal?>> {
   /// See also [savingsGoalStream].
   const SavingsGoalStreamFamily();
 
@@ -104,7 +121,7 @@ class SavingsGoalStreamFamily extends Family<AsyncValue<SavingsGoalModel?>> {
 
 /// See also [savingsGoalStream].
 class SavingsGoalStreamProvider
-    extends AutoDisposeStreamProvider<SavingsGoalModel?> {
+    extends AutoDisposeStreamProvider<SavingsGoal?> {
   /// See also [savingsGoalStream].
   SavingsGoalStreamProvider(String id)
     : this._internal(
@@ -134,7 +151,7 @@ class SavingsGoalStreamProvider
 
   @override
   Override overrideWith(
-    Stream<SavingsGoalModel?> Function(SavingsGoalStreamRef provider) create,
+    Stream<SavingsGoal?> Function(SavingsGoalStreamRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -151,7 +168,7 @@ class SavingsGoalStreamProvider
   }
 
   @override
-  AutoDisposeStreamProviderElement<SavingsGoalModel?> createElement() {
+  AutoDisposeStreamProviderElement<SavingsGoal?> createElement() {
     return _SavingsGoalStreamProviderElement(this);
   }
 
@@ -171,13 +188,13 @@ class SavingsGoalStreamProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin SavingsGoalStreamRef on AutoDisposeStreamProviderRef<SavingsGoalModel?> {
+mixin SavingsGoalStreamRef on AutoDisposeStreamProviderRef<SavingsGoal?> {
   /// The parameter `id` of this provider.
   String get id;
 }
 
 class _SavingsGoalStreamProviderElement
-    extends AutoDisposeStreamProviderElement<SavingsGoalModel?>
+    extends AutoDisposeStreamProviderElement<SavingsGoal?>
     with SavingsGoalStreamRef {
   _SavingsGoalStreamProviderElement(super.provider);
 

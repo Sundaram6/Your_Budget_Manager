@@ -10,8 +10,22 @@ class BudgetDao extends DatabaseAccessor<AppDatabase> with _$BudgetDaoMixin {
 
   Stream<List<Budget>> watchAllBudgets() => select(budgetsTable).watch();
 
-  Stream<List<Budget>> watchActiveBudgets() {
-    return (select(budgetsTable)..where((t) => t.isActive.equals(true))).watch();
+  Future<List<Budget>> getBudgetsForMonth(int month, int year) {
+    return (select(budgetsTable)
+          ..where((t) => t.month.equals(month) & t.year.equals(year)))
+        .get();
+  }
+
+  Future<Budget?> getOverallBudget(int month, int year) {
+    return (select(budgetsTable)
+          ..where((t) => t.month.equals(month) & t.year.equals(year) & t.categoryId.isNull()))
+        .getSingleOrNull();
+  }
+
+  Future<Budget?> getCategoryBudget(String categoryId, int month, int year) {
+    return (select(budgetsTable)
+          ..where((t) => t.month.equals(month) & t.year.equals(year) & t.categoryId.equals(categoryId)))
+        .getSingleOrNull();
   }
 
   Future<int> insertBudget(Insertable<Budget> budget) => into(budgetsTable).insert(budget);

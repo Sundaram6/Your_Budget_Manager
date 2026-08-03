@@ -2,7 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/engines/savings/savings_engine.dart';
-import 'package:your_budget_manager/engines/savings/models/savings_goal.dart';
+import 'package:your_budget_manager/features/savings/data/repositories/savings_goal_repository_impl.dart';
 
 void main() {
   late AppDatabase db;
@@ -10,106 +10,73 @@ void main() {
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
-    engine = SavingsEngine(db.savingsGoalDao);
+    final repo = SavingsGoalRepositoryImpl(db.savingsGoalDao);
+    engine = SavingsEngine(db.savingsGoalDao, repo);
   });
 
   tearDown(() => db.close());
 
   group('SavingsEngine.createGoal', () {
     test('creates a goal with correct initial values', () async {
-      await engine.createGoal(name: 'Emergency Fund', targetAmount: 100000);
+      await engine.createGoal(name: 'Emergency Fund', targetAmountPaise: 10000000);
 
       final goals = await db.savingsGoalDao.getAll();
       expect(goals.length, 1);
       expect(goals.first.name, 'Emergency Fund');
-      expect(goals.first.targetAmount, 100000.0);
-      expect(goals.first.currentAmount, 0.0);
+      expect(goals.first.targetAmount, 10000000);
+      expect(goals.first.currentAmount, 0);
       expect(goals.first.status, 'active');
     });
 
     test('throws on empty name', () {
       expect(
-        () => engine.createGoal(name: '', targetAmount: 1000),
+        () => engine.createGoal(name: '', targetAmountPaise: 100000),
         throwsA(isA<AssertionError>()),
       );
     });
 
     test('throws on zero target amount', () {
       expect(
-        () => engine.createGoal(name: 'Goal', targetAmount: 0),
+        () => engine.createGoal(name: 'Goal', targetAmountPaise: 0),
         throwsA(isA<AssertionError>()),
       );
     });
   });
 
-  group('SavingsEngine.deposit', () {
+  group('SavingsEngine.contributeToGoal', () {
     test('increases currentAmount', () async {
-      await engine.createGoal(name: 'iPhone', targetAmount: 80000);
+      await engine.createGoal(name: 'iPhone', targetAmountPaise: 8000000);
       final goals = await db.savingsGoalDao.getAll();
       final id = goals.first.id;
 
-      await engine.deposit(id, 10000);
+      await engine.contributeToGoal(id, 1000000);
 
       final updated = await db.savingsGoalDao.getAll();
-      expect(updated.first.currentAmount, 10000.0);
+      expect(updated.first.currentAmount, 1000000);
     });
 
     test('marks goal as completed when fully funded', () async {
-      await engine.createGoal(name: 'Small Goal', targetAmount: 500);
+      await engine.createGoal(name: 'Small Goal', targetAmountPaise: 50000);
       final goals = await db.savingsGoalDao.getAll();
       final id = goals.first.id;
 
-      await engine.deposit(id, 500);
+      await engine.contributeToGoal(id, 50000);
 
       final updated = await db.savingsGoalDao.getAll();
       expect(updated.first.status, 'completed');
     });
   });
 
-  group('SavingsGoalModel.progress', () {
-    test('returns 0.5 at half funded', () {
-      final model = SavingsGoalModel(
-        id: '1',
-        name: 'Test',
-        targetAmount: 1000,
-        currentAmount: 500,
-        startDate: DateTime.now(),
-        status: SavingsGoalStatus.active,
-        iconName: 'savings',
-        colorHex: '#FFD700',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      expect(model.progress, 0.5);
-    });
-
-    test('clamps to 1.0 when over-funded', () {
-      final model = SavingsGoalModel(
-        id: '1',
-        name: 'Test',
-        targetAmount: 1000,
-        currentAmount: 1500,
-        startDate: DateTime.now(),
-        status: SavingsGoalStatus.completed,
-        iconName: 'savings',
-        colorHex: '#FFD700',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      expect(model.progress, 1.0);
-    });
-  });
-
-  group('SavingsEngine.totalSaved', () {
+  group('SavingsEngine.getTotalSavings', () {
     test('sums currentAmount across all goals', () async {
-      await engine.createGoal(name: 'G1', targetAmount: 10000);
-      await engine.createGoal(name: 'G2', targetAmount: 20000);
+      await engine.createGoal(name: 'G1', targetAmountPaise: 1000000);
+      await engine.createGoal(name: 'G2', targetAmountPaise: 2000000);
       final goals = await db.savingsGoalDao.getAll();
-      await engine.deposit(goals[0].id, 1000);
-      await engine.deposit(goals[1].id, 2000);
+      await engine.contributeToGoal(goals[0].id, 100000);
+      await engine.contributeToGoal(goals[1].id, 200000);
 
-      final total = await engine.totalSaved();
-      expect(total, 3000.0);
+      final total = await engine.getTotalSavings();
+      expect(total, 300000);
     });
   });
 }

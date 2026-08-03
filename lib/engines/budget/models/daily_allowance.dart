@@ -5,9 +5,10 @@ part 'daily_allowance.freezed.dart';
 @freezed
 class DailyAllowance with _$DailyAllowance {
   const factory DailyAllowance({
-    required double amount,
-    required double remaining,
+    required int amount, // Integer daily allowance amount (in paise: e.g. 50000 = ₹500)
+    required String message,
+    required bool isOverBudget,
+    required int remaining, // Integer remaining amount in paise
     required int daysLeft,
-    required bool isHealthy,
   }) = _DailyAllowance;
 }

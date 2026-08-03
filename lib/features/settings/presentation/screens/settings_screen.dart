@@ -45,6 +45,14 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.account_balance_wallet, color: AppColors.darkGoldPrimary),
+                  title: const Text('Monthly Budget', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Set and manage your spending limit', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
+                  onTap: () => context.pushNamed(RouteNames.budgets),
+                ),
+                const Divider(height: 1, color: AppColors.darkBorderGlass),
+                ListTile(
                   leading: const Icon(Icons.savings, color: Colors.green),
                   title: const Text('Savings Goals', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('Track and manage your savings', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
@@ -62,6 +70,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+
           const SizedBox(height: 24),
           const Text(
             'PREFERENCES & SECURITY',

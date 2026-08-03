@@ -1,68 +1,156 @@
 import 'package:flutter/material.dart';
-import '../../../../core/extensions/context_extensions.dart';
-import '../../../../core/extensions/number_extensions.dart';
-import '../../../../core/widgets/cards/glass_card.dart';
-import '../../../../engines/savings/models/savings_goal.dart';
-import 'savings_progress_ring.dart';
+import 'package:intl/intl.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../database/app_database.dart';
 
 class SavingsGoalCard extends StatelessWidget {
+  final SavingsGoal goal;
+  final VoidCallback onTap;
+
   const SavingsGoalCard({
     super.key,
     required this.goal,
     required this.onTap,
   });
 
-  final SavingsGoalModel goal;
-  final VoidCallback onTap;
-
-  Color _parseColor(String hex) {
-    final hexCode = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hexCode', radix: 16));
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = _parseColor(goal.colorHex);
-    
-    return GlassCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          SavingsProgressRing(
-            progress: goal.progress,
-            color: color,
-            child: Icon(Icons.savings, color: color), // Placeholder for dynamic icon
-          ),
-          const SizedBox(width: 16),
-          Expanded(
+    final currencyFormat = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
+    final currentRupees = goal.currentAmount / 100;
+    final targetRupees = goal.targetAmount / 100;
+    final ratio = targetRupees > 0 ? (currentRupees / targetRupees).clamp(0.0, 1.0) : 0.0;
+    final pct = (ratio * 100).round();
+
+    int? daysLeft;
+    if (goal.deadline != null) {
+      final now = DateTime.now();
+      final deadlineDate = DateTime.fromMillisecondsSinceEpoch(goal.deadline!);
+      daysLeft = deadlineDate.difference(now).inDays;
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.darkSurface2,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.darkSurface3),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.space4),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(goal.name, style: context.textTheme.titleMedium),
-                const SizedBox(height: 4),
-                Text(
-                  '${goal.currentAmount.toCurrency()} / ${goal.targetAmount.toCurrencyCompact()}',
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: context.colorScheme.onSurfaceVariant,
-                  ),
+                Row(
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: CircularProgressIndicator(
+                            value: ratio,
+                            backgroundColor: AppColors.darkSurface3,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              goal.status == 'completed' ? Colors.green : AppColors.darkGoldPrimary,
+                            ),
+                            strokeWidth: 5,
+                          ),
+                        ),
+                        Icon(
+                          _getGoalIcon(goal.iconName),
+                          size: 22,
+                          color: AppColors.darkGoldPrimary,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: AppSpacing.space3),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                goal.name,
+                                style: AppTypography.heading3.copyWith(color: AppColors.darkTextPrimary),
+                              ),
+                              Text(
+                                '$pct%',
+                                style: AppTypography.caption.copyWith(
+                                  color: AppColors.darkGoldPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${currencyFormat.format(currentRupees)} / ${currencyFormat.format(targetRupees)}',
+                            style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
+                          ),
+                          if (daysLeft != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              daysLeft >= 0 ? '$daysLeft days left' : 'Deadline passed',
+                              style: AppTypography.caption.copyWith(
+                                color: daysLeft < 7 ? AppColors.darkExpense : AppColors.darkIncome,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                if (goal.daysRemaining != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    '${goal.daysRemaining} days left',
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: goal.daysRemaining! < 7 ? context.colorScheme.error : context.colorScheme.primary,
+                if (goal.autoDeduct && goal.autoDeductAmount != null) ...[
+                  const SizedBox(height: AppSpacing.space2),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Auto-deduct: ${currencyFormat.format(goal.autoDeductAmount! / 100)}/month',
+                      style: AppTypography.caption.copyWith(color: AppColors.darkIncome, fontSize: 11),
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
-          if (goal.isCompleted)
-            Icon(Icons.check_circle, color: context.colorScheme.primary),
-        ],
+        ),
       ),
     );
+  }
+
+  IconData _getGoalIcon(String iconName) {
+    switch (iconName) {
+      case 'emergency':
+        return Icons.healing;
+      case 'phone':
+        return Icons.phone_iphone;
+      case 'car':
+        return Icons.directions_car;
+      case 'home':
+        return Icons.home;
+      case 'flight':
+        return Icons.flight_takeoff;
+      case 'school':
+        return Icons.school;
+      default:
+        return Icons.savings;
+    }
   }
 }

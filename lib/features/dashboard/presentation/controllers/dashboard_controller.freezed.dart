@@ -18,7 +18,8 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$DashboardState {
   double get monthlyTotal => throw _privateConstructorUsedError;
-  DailyAllowance get dailyAllowance => throw _privateConstructorUsedError;
+  DailyAllowance? get dailyAllowance => throw _privateConstructorUsedError;
+  Budget? get overallMonthlyBudget => throw _privateConstructorUsedError;
   List<CategoryBreakdown> get categoryBreakdown =>
       throw _privateConstructorUsedError;
   List<BudgetProgress> get budgetProgress => throw _privateConstructorUsedError;
@@ -41,13 +42,14 @@ abstract class $DashboardStateCopyWith<$Res> {
   @useResult
   $Res call({
     double monthlyTotal,
-    DailyAllowance dailyAllowance,
+    DailyAllowance? dailyAllowance,
+    Budget? overallMonthlyBudget,
     List<CategoryBreakdown> categoryBreakdown,
     List<BudgetProgress> budgetProgress,
     List<Transaction> recentTransactions,
   });
 
-  $DailyAllowanceCopyWith<$Res> get dailyAllowance;
+  $DailyAllowanceCopyWith<$Res>? get dailyAllowance;
 }
 
 /// @nodoc
@@ -66,7 +68,8 @@ class _$DashboardStateCopyWithImpl<$Res, $Val extends DashboardState>
   @override
   $Res call({
     Object? monthlyTotal = null,
-    Object? dailyAllowance = null,
+    Object? dailyAllowance = freezed,
+    Object? overallMonthlyBudget = freezed,
     Object? categoryBreakdown = null,
     Object? budgetProgress = null,
     Object? recentTransactions = null,
@@ -77,10 +80,14 @@ class _$DashboardStateCopyWithImpl<$Res, $Val extends DashboardState>
                 ? _value.monthlyTotal
                 : monthlyTotal // ignore: cast_nullable_to_non_nullable
                       as double,
-            dailyAllowance: null == dailyAllowance
+            dailyAllowance: freezed == dailyAllowance
                 ? _value.dailyAllowance
                 : dailyAllowance // ignore: cast_nullable_to_non_nullable
-                      as DailyAllowance,
+                      as DailyAllowance?,
+            overallMonthlyBudget: freezed == overallMonthlyBudget
+                ? _value.overallMonthlyBudget
+                : overallMonthlyBudget // ignore: cast_nullable_to_non_nullable
+                      as Budget?,
             categoryBreakdown: null == categoryBreakdown
                 ? _value.categoryBreakdown
                 : categoryBreakdown // ignore: cast_nullable_to_non_nullable
@@ -102,8 +109,12 @@ class _$DashboardStateCopyWithImpl<$Res, $Val extends DashboardState>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $DailyAllowanceCopyWith<$Res> get dailyAllowance {
-    return $DailyAllowanceCopyWith<$Res>(_value.dailyAllowance, (value) {
+  $DailyAllowanceCopyWith<$Res>? get dailyAllowance {
+    if (_value.dailyAllowance == null) {
+      return null;
+    }
+
+    return $DailyAllowanceCopyWith<$Res>(_value.dailyAllowance!, (value) {
       return _then(_value.copyWith(dailyAllowance: value) as $Val);
     });
   }
@@ -120,14 +131,15 @@ abstract class _$$DashboardStateImplCopyWith<$Res>
   @useResult
   $Res call({
     double monthlyTotal,
-    DailyAllowance dailyAllowance,
+    DailyAllowance? dailyAllowance,
+    Budget? overallMonthlyBudget,
     List<CategoryBreakdown> categoryBreakdown,
     List<BudgetProgress> budgetProgress,
     List<Transaction> recentTransactions,
   });
 
   @override
-  $DailyAllowanceCopyWith<$Res> get dailyAllowance;
+  $DailyAllowanceCopyWith<$Res>? get dailyAllowance;
 }
 
 /// @nodoc
@@ -145,7 +157,8 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? monthlyTotal = null,
-    Object? dailyAllowance = null,
+    Object? dailyAllowance = freezed,
+    Object? overallMonthlyBudget = freezed,
     Object? categoryBreakdown = null,
     Object? budgetProgress = null,
     Object? recentTransactions = null,
@@ -156,10 +169,14 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
             ? _value.monthlyTotal
             : monthlyTotal // ignore: cast_nullable_to_non_nullable
                   as double,
-        dailyAllowance: null == dailyAllowance
+        dailyAllowance: freezed == dailyAllowance
             ? _value.dailyAllowance
             : dailyAllowance // ignore: cast_nullable_to_non_nullable
-                  as DailyAllowance,
+                  as DailyAllowance?,
+        overallMonthlyBudget: freezed == overallMonthlyBudget
+            ? _value.overallMonthlyBudget
+            : overallMonthlyBudget // ignore: cast_nullable_to_non_nullable
+                  as Budget?,
         categoryBreakdown: null == categoryBreakdown
             ? _value._categoryBreakdown
             : categoryBreakdown // ignore: cast_nullable_to_non_nullable
@@ -182,7 +199,8 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
 class _$DashboardStateImpl implements _DashboardState {
   const _$DashboardStateImpl({
     required this.monthlyTotal,
-    required this.dailyAllowance,
+    this.dailyAllowance,
+    this.overallMonthlyBudget,
     required final List<CategoryBreakdown> categoryBreakdown,
     required final List<BudgetProgress> budgetProgress,
     required final List<Transaction> recentTransactions,
@@ -193,7 +211,9 @@ class _$DashboardStateImpl implements _DashboardState {
   @override
   final double monthlyTotal;
   @override
-  final DailyAllowance dailyAllowance;
+  final DailyAllowance? dailyAllowance;
+  @override
+  final Budget? overallMonthlyBudget;
   final List<CategoryBreakdown> _categoryBreakdown;
   @override
   List<CategoryBreakdown> get categoryBreakdown {
@@ -222,7 +242,7 @@ class _$DashboardStateImpl implements _DashboardState {
 
   @override
   String toString() {
-    return 'DashboardState(monthlyTotal: $monthlyTotal, dailyAllowance: $dailyAllowance, categoryBreakdown: $categoryBreakdown, budgetProgress: $budgetProgress, recentTransactions: $recentTransactions)';
+    return 'DashboardState(monthlyTotal: $monthlyTotal, dailyAllowance: $dailyAllowance, overallMonthlyBudget: $overallMonthlyBudget, categoryBreakdown: $categoryBreakdown, budgetProgress: $budgetProgress, recentTransactions: $recentTransactions)';
   }
 
   @override
@@ -234,6 +254,10 @@ class _$DashboardStateImpl implements _DashboardState {
                 other.monthlyTotal == monthlyTotal) &&
             (identical(other.dailyAllowance, dailyAllowance) ||
                 other.dailyAllowance == dailyAllowance) &&
+            const DeepCollectionEquality().equals(
+              other.overallMonthlyBudget,
+              overallMonthlyBudget,
+            ) &&
             const DeepCollectionEquality().equals(
               other._categoryBreakdown,
               _categoryBreakdown,
@@ -253,6 +277,7 @@ class _$DashboardStateImpl implements _DashboardState {
     runtimeType,
     monthlyTotal,
     dailyAllowance,
+    const DeepCollectionEquality().hash(overallMonthlyBudget),
     const DeepCollectionEquality().hash(_categoryBreakdown),
     const DeepCollectionEquality().hash(_budgetProgress),
     const DeepCollectionEquality().hash(_recentTransactions),
@@ -273,7 +298,8 @@ class _$DashboardStateImpl implements _DashboardState {
 abstract class _DashboardState implements DashboardState {
   const factory _DashboardState({
     required final double monthlyTotal,
-    required final DailyAllowance dailyAllowance,
+    final DailyAllowance? dailyAllowance,
+    final Budget? overallMonthlyBudget,
     required final List<CategoryBreakdown> categoryBreakdown,
     required final List<BudgetProgress> budgetProgress,
     required final List<Transaction> recentTransactions,
@@ -282,7 +308,9 @@ abstract class _DashboardState implements DashboardState {
   @override
   double get monthlyTotal;
   @override
-  DailyAllowance get dailyAllowance;
+  DailyAllowance? get dailyAllowance;
+  @override
+  Budget? get overallMonthlyBudget;
   @override
   List<CategoryBreakdown> get categoryBreakdown;
   @override

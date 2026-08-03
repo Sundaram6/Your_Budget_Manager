@@ -12,10 +12,11 @@ void main() {
         home: const Scaffold(
           body: DailyAllowanceCard(
             allowance: DailyAllowance(
-              amount: 50.0,
-              remaining: 500.0,
+              amount: 50000,
+              message: 'You can spend ₹500.00 per day to stay in budget.',
+              isOverBudget: false,
+              remaining: 500000,
               daysLeft: 10,
-              isHealthy: true,
             ),
           ),
         ),
@@ -23,6 +24,6 @@ void main() {
     );
 
     expect(find.byType(DailyAllowanceCard), findsOneWidget);
-    expect(find.textContaining('comfortably spend'), findsOneWidget);
+    expect(find.textContaining('You can spend ₹500.00 per day to stay in budget.'), findsOneWidget);
   });
 }

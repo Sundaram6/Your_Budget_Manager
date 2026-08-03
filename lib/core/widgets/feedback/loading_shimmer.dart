@@ -38,9 +38,11 @@ class _LoadingShimmerState extends State<LoadingShimmer> with SingleTickerProvid
 
   @override
   void dispose() {
+    _controller.stop();
     _controller.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {

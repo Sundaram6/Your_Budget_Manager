@@ -64,4 +64,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<int> deleteCategory(domain.Category category) {
     return _dao.deleteCategory(_mapToDrift(category));
   }
+
+  @override
+  Future<void> migrateLegacyCategories(Map<String, String> nameToFixedIdMap) {
+    return _dao.migrateLegacyCategories(nameToFixedIdMap);
+  }
 }
+

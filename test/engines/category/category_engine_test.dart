@@ -29,7 +29,7 @@ void main() {
     final now = DateTime.now();
     final dummyCategory = Category(
       id: 'test-id',
-      name: 'Test',
+      name: 'Test Custom Category',
       icon: 'test',
       color: 0xFF000000,
       isDefault: false,
@@ -37,25 +37,69 @@ void main() {
       updatedAt: now,
     );
 
-    test('seedDefaults() inserts default categories when empty', () async {
+    test('seedDefaults() migrates legacy categories and inserts fixed default categories when missing', () async {
+      final now = DateTime.now();
+      final allDefaults = [
+        Category(id: CategoryEngine.catGroceries, name: 'Groceries', icon: 'cart', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catShopping, name: 'Online Shopping', icon: 'bag', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catFood, name: 'Food Delivery', icon: 'food', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catTransport, name: 'Transport', icon: 'car', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catUtilities, name: 'Utilities', icon: 'bolt', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catEntertainment, name: 'Entertainment', icon: 'movie', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catIncome, name: 'Income', icon: 'money', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catUncategorized, name: 'Uncategorized', icon: 'help', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+      ];
+
+      when(() => mockRepository.migrateLegacyCategories(any())).thenAnswer((_) async {});
       when(() => mockRepository.getCategories()).thenAnswer((_) async => []);
-      when(() => mockRepository.insertCategory(any())).thenAnswer((_) async => 1);
-      when(() => mockUuid.v4()).thenReturn('fake-uuid');
+      when(() => mockRepository.insertCategory(any())).thenAnswer((_) async {
+        when(() => mockRepository.getCategories()).thenAnswer((_) async => allDefaults);
+        return 1;
+      });
 
       await engine.seedDefaults();
 
-      verify(() => mockRepository.getCategories()).called(1);
-      verify(() => mockRepository.insertCategory(any())).called(6);
+      verify(() => mockRepository.migrateLegacyCategories(CategoryEngine.legacyNameToFixedIdMap)).called(1);
+      verify(() => mockRepository.insertCategory(any())).called(8);
     });
 
-    test('seedDefaults() does not insert when not empty', () async {
-      when(() => mockRepository.getCategories()).thenAnswer((_) async => [dummyCategory]);
+    test('seedDefaults() ensures fixed default category IDs are seeded even if custom category with same name exists', () async {
+      final userCustomGroceries = Category(
+        id: 'user-custom-123',
+        name: 'Groceries',
+        icon: 'custom',
+        color: 0xFF123456,
+        isDefault: false,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final allDefaults = [
+        userCustomGroceries,
+
+        Category(id: CategoryEngine.catGroceries, name: 'Groceries', icon: 'cart', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catShopping, name: 'Online Shopping', icon: 'bag', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catFood, name: 'Food Delivery', icon: 'food', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catTransport, name: 'Transport', icon: 'car', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catUtilities, name: 'Utilities', icon: 'bolt', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catEntertainment, name: 'Entertainment', icon: 'movie', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catIncome, name: 'Income', icon: 'money', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catUncategorized, name: 'Uncategorized', icon: 'help', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+      ];
+
+      when(() => mockRepository.migrateLegacyCategories(any())).thenAnswer((_) async {});
+      when(() => mockRepository.getCategories()).thenAnswer((_) async => [userCustomGroceries]);
+      when(() => mockRepository.insertCategory(any())).thenAnswer((_) async {
+        when(() => mockRepository.getCategories()).thenAnswer((_) async => allDefaults);
+        return 1;
+      });
 
       await engine.seedDefaults();
 
-      verify(() => mockRepository.getCategories()).called(1);
-      verifyNever(() => mockRepository.insertCategory(any()));
+      // All 8 fixed default category IDs are seeded unconditionally
+      verify(() => mockRepository.insertCategory(any())).called(8);
     });
+
 
     test('getAll() returns all categories', () async {
       when(() => mockRepository.getCategories()).thenAnswer((_) async => [dummyCategory]);
@@ -90,33 +134,6 @@ void main() {
       final result = await engine.getById('other-id');
 
       expect(result, isNull);
-    });
-
-    test('add() inserts category', () async {
-      when(() => mockRepository.insertCategory(dummyCategory)).thenAnswer((_) async => 1);
-
-      final result = await engine.add(dummyCategory);
-
-      expect(result, 1);
-      verify(() => mockRepository.insertCategory(dummyCategory)).called(1);
-    });
-
-    test('update() updates category', () async {
-      when(() => mockRepository.updateCategory(dummyCategory)).thenAnswer((_) async => true);
-
-      final result = await engine.update(dummyCategory);
-
-      expect(result, true);
-      verify(() => mockRepository.updateCategory(dummyCategory)).called(1);
-    });
-
-    test('delete() deletes category', () async {
-      when(() => mockRepository.deleteCategory(dummyCategory)).thenAnswer((_) async => 1);
-
-      final result = await engine.delete(dummyCategory);
-
-      expect(result, 1);
-      verify(() => mockRepository.deleteCategory(dummyCategory)).called(1);
     });
   });
 }

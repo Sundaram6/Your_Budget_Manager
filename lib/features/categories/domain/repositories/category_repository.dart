@@ -7,4 +7,6 @@ abstract class CategoryRepository {
   Future<int> insertCategory(Category category);
   Future<bool> updateCategory(Category category);
   Future<int> deleteCategory(Category category);
+  Future<void> migrateLegacyCategories(Map<String, String> nameToFixedIdMap);
 }
+

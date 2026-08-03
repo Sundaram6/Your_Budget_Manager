@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/extensions/number_extensions.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../engines/budget/models/daily_allowance.dart';
@@ -13,7 +13,7 @@ class DailyAllowanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<AppCustomTokens>()!;
-    final color = _getColor(tokens);
+    final color = allowance.isOverBudget ? AppColors.darkExpense : AppColors.darkIncome;
 
     return Container(
       width: double.infinity,
@@ -26,24 +26,24 @@ class DailyAllowanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
-      child: Text(
-        'You can comfortably spend ${allowance.amount.toCurrency()} today.',
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        children: [
+          Icon(
+            allowance.isOverBudget ? Icons.warning_amber_rounded : Icons.account_balance_wallet_outlined,
+            color: color,
+          ),
+          const SizedBox(width: AppSpacing.space3),
+          Expanded(
+            child: Text(
+              allowance.message,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  Color _getColor(AppCustomTokens tokens) {
-    if (allowance.amount <= 0) return tokens.expenseColor;
-    
-    // Assuming tight is < 20% of some average, here we use < 20% of remaining vs days left logic,
-    // but the prompt says: amber when tight (< 20% of average allowance over the month).
-    // Let's approximate tight for now:
-    if (allowance.amount < 100) return Colors.orange; // Fallback hardcode or a warning color
-    
-    return tokens.incomeColor;
   }
 }

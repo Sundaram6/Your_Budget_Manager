@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/extensions/number_extensions.dart';
 import '../../domain/entities/recurring_transaction.dart';
 
 class RecurringTile extends StatelessWidget {
@@ -7,9 +8,9 @@ class RecurringTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ListTile(
-      title: Text('Amount: \${transaction.amount.value}'),
-      subtitle: Text('Frequency: \${transaction.frequency.name}'),
+    return ListTile(
+      title: Text('Amount: ${transaction.amount.value.toCurrency()}'),
+      subtitle: Text('Frequency: ${transaction.frequency.name}'),
     );
   }
 }

@@ -1,9 +1,11 @@
-import '../entities/budget.dart';
+import '../../../../database/app_database.dart';
 
 abstract class BudgetRepository {
   Stream<List<Budget>> watchAllBudgets();
-  Stream<List<Budget>> watchActiveBudgets();
-  Future<int> insertBudget(Budget budget);
-  Future<bool> updateBudget(Budget budget);
+  Future<List<Budget>> getBudgetsForMonth(int month, int year);
+  Future<Budget?> getOverallBudget(int month, int year);
+  Future<Budget?> getCategoryBudget(String categoryId, int month, int year);
+  Future<void> insertBudget(Budget budget);
+  Future<void> updateBudget(Budget budget);
   Future<int> deleteBudget(Budget budget);
 }

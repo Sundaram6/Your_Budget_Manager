@@ -1,112 +1,140 @@
+import 'package:drift/drift.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../database/app_database.dart';
 import '../../database/daos/savings_goal_dao.dart';
-import 'models/savings_goal.dart';
-import 'package:drift/drift.dart';
+import '../../features/savings/domain/repositories/savings_goal_repository.dart';
 
 class SavingsEngine {
-  SavingsEngine(this._dao);
-
   final SavingsGoalDao _dao;
+  final SavingsGoalRepository? _repo;
+
+  SavingsEngine(this._dao, [this._repo]);
+
   static const _uuid = Uuid();
 
   /// Watch all savings goals as a reactive stream.
-  Stream<List<SavingsGoalModel>> watchGoals() =>
-      _dao.watchAll().map((goals) => goals.map(_toModel).toList());
+  Stream<List<SavingsGoal>> watchGoals() => _dao.watchAll();
 
-  /// Watch a single goal.
-  Stream<SavingsGoalModel?> watchGoal(String id) =>
-      _dao.watchById(id).map((g) => g != null ? _toModel(g) : null);
+  /// Watch a single goal by ID.
+  Stream<SavingsGoal?> watchGoal(String id) => _dao.watchById(id);
 
-  /// Create a new savings goal.
+  /// Watch goals linked to a specific budget.
+  Stream<List<SavingsGoal>> watchGoalsForBudget(String budgetId) =>
+      _dao.watchGoalsForBudget(budgetId);
+
+  /// Create a new savings goal (targetAmount in paise).
   Future<void> createGoal({
     required String name,
-    required double targetAmount,
+    required int targetAmountPaise,
+    DateTime? deadline,
+    String? linkedBudgetId,
+    bool autoDeduct = false,
+    int? autoDeductAmountPaise,
     String? categoryId,
-    DateTime? targetDate,
     String iconName = 'savings',
     String colorHex = '#FFD700',
     String? note,
   }) async {
     assert(name.isNotEmpty, 'Goal name must not be empty');
-    assert(targetAmount > 0, 'Target amount must be positive');
+    assert(targetAmountPaise > 0, 'Target amount must be positive');
 
     final now = DateTime.now();
     final id = _uuid.v4();
 
-    await _dao.insertGoal(SavingsGoalsTableCompanion.insert(
+    final companion = SavingsGoalsTableCompanion.insert(
       id: id,
       name: name,
-      targetAmount: targetAmount,
+      targetAmount: targetAmountPaise,
+      currentAmount: const Value(0),
+      deadline: Value(deadline?.millisecondsSinceEpoch),
+      budgetId: Value(linkedBudgetId),
+      autoDeduct: Value(autoDeduct),
+      autoDeductAmount: Value(autoDeductAmountPaise),
       categoryId: Value(categoryId),
-      targetDate: Value(targetDate?.millisecondsSinceEpoch),
+      targetDate: Value(deadline?.millisecondsSinceEpoch),
       startDate: now.millisecondsSinceEpoch,
       iconName: Value(iconName),
       colorHex: Value(colorHex),
       note: Value(note),
       createdAt: now.millisecondsSinceEpoch,
       updatedAt: now.millisecondsSinceEpoch,
-    ));
+    );
+
+    if (_repo != null) {
+      await _repo.createGoal(companion);
+    } else {
+      await _dao.insertGoal(companion);
+    }
   }
 
-  /// Add a deposit to an existing goal.
-  Future<void> deposit(String goalId, double amount) async {
-    assert(amount > 0, 'Deposit amount must be positive');
-    await _dao.addDeposit(goalId, amount);
+  /// Contribute/deposit an amount in paise to a goal.
+  Future<void> contributeToGoal(String goalId, int amountPaise) async {
+    assert(amountPaise > 0, 'Contribution amount must be positive');
+    if (_repo != null) {
+      await _repo.addDepositPaise(goalId, amountPaise);
+    } else {
+      await _dao.addDepositPaise(goalId, amountPaise);
+    }
   }
 
-  /// Pause a goal.
-  Future<void> pauseGoal(String goalId) async {
+  /// Get goals linked to a specific budget ID.
+  Future<List<SavingsGoal>> getGoalsForBudget(String budgetId) async {
+    if (_repo != null) {
+      return _repo.getGoalsForBudget(budgetId);
+    }
+    return _dao.getGoalsForBudget(budgetId);
+  }
+
+  /// Get total savings across all active goals in paise.
+  Future<int> getTotalSavings() async {
+    final goals = _repo != null ? await _repo.getAllGoals() : await _dao.getAll();
+    return goals.fold<int>(0, (sum, g) => sum + g.currentAmount);
+  }
+
+  /// Calculate recommended monthly savings based on the 50/30/20 rule.
+  /// Inputs & outputs are in integer paise.
+  ({int needs, int wants, int savings}) calculate50_30_20(int monthlyIncomePaise) {
+    if (monthlyIncomePaise <= 0) {
+      return (needs: 0, wants: 0, savings: 0);
+    }
+    final needs = (monthlyIncomePaise * 0.5).round();
+    final wants = (monthlyIncomePaise * 0.3).round();
+    final savings = (monthlyIncomePaise * 0.2).round();
+    return (needs: needs, wants: wants, savings: savings);
+  }
+
+  /// Execute auto-deduction for all goals linked to a budget where autoDeduct == true.
+  /// Strictly guarded by month key (e.g., '2026-08') so auto-deduction occurs ONLY ONCE per month.
+  Future<void> executeAutoDeductions(String budgetId) async {
     final now = DateTime.now();
-    await _dao.updateGoal(SavingsGoalsTableCompanion(
-      id: Value(goalId),
-      status: const Value('paused'),
-      updatedAt: Value(now.millisecondsSinceEpoch),
-    ));
+    final monthKey = DateFormat('yyyy-MM').format(now);
+
+    final goals = _repo != null
+        ? await _repo.getActiveAutoDeductGoalsForBudget(budgetId)
+        : await _dao.getActiveAutoDeductGoalsForBudget(budgetId);
+
+    for (final goal in goals) {
+      if (goal.autoDeductAmount == null || goal.autoDeductAmount! <= 0) continue;
+
+      // Skip if auto-deduction already executed this month
+      if (goal.lastAutoDeductedMonth == monthKey) continue;
+
+      if (_repo != null) {
+        await _repo.recordAutoDeduction(goal.id, monthKey, goal.autoDeductAmount!);
+      } else {
+        await _dao.recordAutoDeduction(goal.id, monthKey, goal.autoDeductAmount!);
+      }
+    }
   }
 
-  /// Resume a paused goal.
-  Future<void> resumeGoal(String goalId) async {
-    final now = DateTime.now();
-    await _dao.updateGoal(SavingsGoalsTableCompanion(
-      id: Value(goalId),
-      status: const Value('active'),
-      updatedAt: Value(now.millisecondsSinceEpoch),
-    ));
+  /// Delete a goal.
+  Future<void> deleteGoal(String goalId) async {
+    if (_repo != null) {
+      await _repo.deleteGoal(goalId);
+    } else {
+      await _dao.deleteGoal(goalId);
+    }
   }
-
-  /// Delete a goal permanently.
-  Future<void> deleteGoal(String goalId) => _dao.deleteGoal(goalId);
-
-  /// Get total amount saved across all active goals.
-  Future<double> totalSaved() async {
-    final goals = await _dao.getAll();
-    return goals.fold<double>(0.0, (sum, g) => sum + g.currentAmount);
-  }
-
-  // ── private helpers ────────────────────────────────────────────────────────
-
-  SavingsGoalModel _toModel(SavingsGoal g) => SavingsGoalModel(
-        id: g.id,
-        name: g.name,
-        targetAmount: g.targetAmount,
-        currentAmount: g.currentAmount,
-        categoryId: g.categoryId,
-        targetDate: g.targetDate != null
-            ? DateTime.fromMillisecondsSinceEpoch(g.targetDate!)
-            : null,
-        startDate: DateTime.fromMillisecondsSinceEpoch(g.startDate),
-        status: _parseStatus(g.status),
-        iconName: g.iconName,
-        colorHex: g.colorHex,
-        note: g.note,
-        createdAt: DateTime.fromMillisecondsSinceEpoch(g.createdAt),
-        updatedAt: DateTime.fromMillisecondsSinceEpoch(g.updatedAt),
-      );
-
-  SavingsGoalStatus _parseStatus(String s) => switch (s) {
-        'completed' => SavingsGoalStatus.completed,
-        'paused' => SavingsGoalStatus.paused,
-        _ => SavingsGoalStatus.active,
-      };
 }

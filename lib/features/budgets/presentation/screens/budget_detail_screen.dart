@@ -10,13 +10,13 @@ class BudgetDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Budget Detail')),
-      body: const Padding(
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('Limit: \${budgetId}'),
+            Text('Limit: $budgetId'),
             // Trend chart placeholder
-            Expanded(child: Center(child: Text('Trend Chart Placeholder'))),
+            const Expanded(child: Center(child: Text('Trend Chart Placeholder'))),
           ],
         ),
       ),

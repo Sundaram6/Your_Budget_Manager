@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../../engines/budget/budget_engine_provider.dart';
-import '../../domain/entities/budget.dart';
+
+import '../../../../core/providers/database_providers.dart';
+import '../../../../database/app_database.dart';
 
 part 'budget_controller.g.dart';
 
@@ -8,6 +9,7 @@ part 'budget_controller.g.dart';
 class BudgetController extends _$BudgetController {
   @override
   FutureOr<List<Budget>> build() async {
-    return ref.watch(budgetEngineProvider).watchActiveBudgets().first;
+    final now = DateTime.now();
+    return ref.watch(budgetRepositoryProvider).getBudgetsForMonth(now.month, now.year);
   }
 }

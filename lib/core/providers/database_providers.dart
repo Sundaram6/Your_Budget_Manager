@@ -6,12 +6,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../database/app_database.dart';
+import '../../database/daos/savings_goal_dao.dart';
 import '../../features/budgets/data/repositories/budget_repository_impl.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
 import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/recurring/data/repositories/recurring_repository_impl.dart';
 import '../../features/recurring/domain/repositories/recurring_repository.dart';
+import '../../features/savings/data/repositories/savings_goal_repository_impl.dart';
+import '../../features/savings/domain/repositories/savings_goal_repository.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 
@@ -50,4 +53,16 @@ BudgetRepository budgetRepository(BudgetRepositoryRef ref) {
 RecurringRepository recurringRepository(RecurringRepositoryRef ref) {
   final db = ref.watch(appDatabaseProvider);
   return RecurringRepositoryImpl(db.recurringTransactionDao);
+}
+
+@Riverpod(keepAlive: true)
+SavingsGoalDao savingsGoalDao(SavingsGoalDaoRef ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.savingsGoalDao;
+}
+
+@Riverpod(keepAlive: true)
+SavingsGoalRepository savingsGoalRepository(SavingsGoalRepositoryRef ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return SavingsGoalRepositoryImpl(db.savingsGoalDao);
 }

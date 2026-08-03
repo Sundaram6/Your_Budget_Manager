@@ -8,18 +8,18 @@ import '../features/auth/presentation/screens/pin_lock_screen.dart';
 import '../features/auth/presentation/screens/pin_setup_screen.dart';
 import '../features/backup/presentation/screens/backup_screen.dart';
 import '../features/budgets/presentation/screens/budget_detail_screen.dart';
-import '../features/budgets/presentation/screens/budget_overview_screen.dart';
+import '../features/budgets/presentation/screens/budget_settings_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../features/merchant_detection/presentation/screens/pending_transactions_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/recurring/presentation/screens/recurring_transactions_screen.dart';
-import '../features/settings/presentation/screens/settings_screen.dart';
-import '../features/transactions/presentation/screens/add_transaction_screen.dart';
-import '../features/transactions/presentation/screens/transaction_list_screen.dart';
-import '../features/sms_permissions/presentation/screens/sms_consent_screen.dart';
-import '../features/savings/presentation/screens/savings_goals_screen.dart';
 import '../features/savings/presentation/screens/add_savings_goal_screen.dart';
 import '../features/savings/presentation/screens/savings_goal_detail_screen.dart';
+import '../features/savings/presentation/screens/savings_goals_screen.dart';
+import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/settings/presentation/screens/sms_settings_screen.dart';
+import '../features/transactions/presentation/screens/add_transaction_screen.dart';
+import '../features/transactions/presentation/screens/transaction_list_screen.dart';
 import 'route_names.dart';
 
 part 'app_router.g.dart';
@@ -110,8 +110,9 @@ GoRouter appRouter(AppRouterRef ref) {
           GoRoute(
             path: '/budgets',
             name: RouteNames.budgets,
-            builder: (context, state) => const BudgetOverviewScreen(),
+            builder: (context, state) => const BudgetSettingsScreen(),
           ),
+
           GoRoute(
             path: '/budgets/:id',
             name: RouteNames.budgetDetail,
@@ -135,8 +136,9 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
         path: '/sms-consent',
         name: RouteNames.smsConsent,
-        builder: (context, state) => const SmsConsentScreen(),
+        builder: (context, state) => const PendingTransactionsScreen(),
       ),
+
       GoRoute(
         path: '/sms-settings',
         name: RouteNames.smsSettings,
@@ -148,13 +150,28 @@ GoRouter appRouter(AppRouterRef ref) {
         builder: (context, state) => const SavingsGoalsScreen(),
       ),
       GoRoute(
+        path: '/savings-goals',
+        builder: (context, state) => const SavingsGoalsScreen(),
+      ),
+      GoRoute(
         path: '/savings/add',
         name: RouteNames.addSavingsGoal,
         builder: (context, state) => const AddSavingsGoalScreen(),
       ),
       GoRoute(
+        path: '/savings-goals/add',
+        builder: (context, state) => const AddSavingsGoalScreen(),
+      ),
+      GoRoute(
         path: '/savings/:id',
         name: RouteNames.savingsGoalDetail,
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return SavingsGoalDetailScreen(id: id);
+        },
+      ),
+      GoRoute(
+        path: '/savings-goals/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return SavingsGoalDetailScreen(id: id);

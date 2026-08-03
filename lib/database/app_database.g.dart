@@ -2490,6 +2490,16 @@ class $BudgetsTableTable extends BudgetsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Monthly Budget'),
+  );
   static const VerificationMeta _categoryIdMeta = const VerificationMeta(
     'categoryId',
   );
@@ -2497,48 +2507,36 @@ class $BudgetsTableTable extends BudgetsTable
   late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
     'category_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES categories (id)',
-    ),
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
     'amount',
     aliasedName,
     false,
-    type: DriftSqlType.double,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _periodTypeMeta = const VerificationMeta(
-    'periodType',
-  );
+  static const VerificationMeta _monthMeta = const VerificationMeta('month');
   @override
-  late final GeneratedColumn<String> periodType = GeneratedColumn<String>(
-    'period_type',
+  late final GeneratedColumn<int> month = GeneratedColumn<int>(
+    'month',
     aliasedName,
     false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('monthly'),
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
   );
-  static const VerificationMeta _isActiveMeta = const VerificationMeta(
-    'isActive',
-  );
+  static const VerificationMeta _yearMeta = const VerificationMeta('year');
   @override
-  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
-    'is_active',
+  late final GeneratedColumn<int> year = GeneratedColumn<int>(
+    'year',
     aliasedName,
     false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_active" IN (0, 1))',
-    ),
-    defaultValue: const Constant(true),
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -2551,26 +2549,26 @@ class $BudgetsTableTable extends BudgetsTable
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
-  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
-    'updated_at',
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
     aliasedName,
     false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('monthly'),
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    name,
     categoryId,
     amount,
-    periodType,
-    isActive,
+    month,
+    year,
     createdAt,
-    updatedAt,
+    type,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2589,13 +2587,17 @@ class $BudgetsTableTable extends BudgetsTable
     } else if (isInserting) {
       context.missing(_idMeta);
     }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    }
     if (data.containsKey('category_id')) {
       context.handle(
         _categoryIdMeta,
         categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_categoryIdMeta);
     }
     if (data.containsKey('amount')) {
       context.handle(
@@ -2605,17 +2607,21 @@ class $BudgetsTableTable extends BudgetsTable
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
-    if (data.containsKey('period_type')) {
+    if (data.containsKey('month')) {
       context.handle(
-        _periodTypeMeta,
-        periodType.isAcceptableOrUnknown(data['period_type']!, _periodTypeMeta),
+        _monthMeta,
+        month.isAcceptableOrUnknown(data['month']!, _monthMeta),
       );
+    } else if (isInserting) {
+      context.missing(_monthMeta);
     }
-    if (data.containsKey('is_active')) {
+    if (data.containsKey('year')) {
       context.handle(
-        _isActiveMeta,
-        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+        _yearMeta,
+        year.isAcceptableOrUnknown(data['year']!, _yearMeta),
       );
+    } else if (isInserting) {
+      context.missing(_yearMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -2625,13 +2631,11 @@ class $BudgetsTableTable extends BudgetsTable
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
-    if (data.containsKey('updated_at')) {
+    if (data.containsKey('type')) {
       context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
       );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
     }
     return context;
   }
@@ -2646,29 +2650,33 @@ class $BudgetsTableTable extends BudgetsTable
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
       categoryId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
-      )!,
+      ),
       amount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        DriftSqlType.int,
         data['${effectivePrefix}amount'],
       )!,
-      periodType: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}period_type'],
+      month: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}month'],
       )!,
-      isActive: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_active'],
+      year: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}year'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
       )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}updated_at'],
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
       )!,
     );
   }
@@ -2681,43 +2689,51 @@ class $BudgetsTableTable extends BudgetsTable
 
 class Budget extends DataClass implements Insertable<Budget> {
   final String id;
-  final String categoryId;
-  final double amount;
-  final String periodType;
-  final bool isActive;
+  final String name;
+  final String? categoryId;
+  final int amount;
+  final int month;
+  final int year;
   final int createdAt;
-  final int updatedAt;
+  final String type;
   const Budget({
     required this.id,
-    required this.categoryId,
+    required this.name,
+    this.categoryId,
     required this.amount,
-    required this.periodType,
-    required this.isActive,
+    required this.month,
+    required this.year,
     required this.createdAt,
-    required this.updatedAt,
+    required this.type,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['category_id'] = Variable<String>(categoryId);
-    map['amount'] = Variable<double>(amount);
-    map['period_type'] = Variable<String>(periodType);
-    map['is_active'] = Variable<bool>(isActive);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    map['amount'] = Variable<int>(amount);
+    map['month'] = Variable<int>(month);
+    map['year'] = Variable<int>(year);
     map['created_at'] = Variable<int>(createdAt);
-    map['updated_at'] = Variable<int>(updatedAt);
+    map['type'] = Variable<String>(type);
     return map;
   }
 
   BudgetsTableCompanion toCompanion(bool nullToAbsent) {
     return BudgetsTableCompanion(
       id: Value(id),
-      categoryId: Value(categoryId),
+      name: Value(name),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
       amount: Value(amount),
-      periodType: Value(periodType),
-      isActive: Value(isActive),
+      month: Value(month),
+      year: Value(year),
       createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
+      type: Value(type),
     );
   }
 
@@ -2728,12 +2744,13 @@ class Budget extends DataClass implements Insertable<Budget> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Budget(
       id: serializer.fromJson<String>(json['id']),
-      categoryId: serializer.fromJson<String>(json['categoryId']),
-      amount: serializer.fromJson<double>(json['amount']),
-      periodType: serializer.fromJson<String>(json['periodType']),
-      isActive: serializer.fromJson<bool>(json['isActive']),
+      name: serializer.fromJson<String>(json['name']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      amount: serializer.fromJson<int>(json['amount']),
+      month: serializer.fromJson<int>(json['month']),
+      year: serializer.fromJson<int>(json['year']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
-      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      type: serializer.fromJson<String>(json['type']),
     );
   }
   @override
@@ -2741,45 +2758,47 @@ class Budget extends DataClass implements Insertable<Budget> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'categoryId': serializer.toJson<String>(categoryId),
-      'amount': serializer.toJson<double>(amount),
-      'periodType': serializer.toJson<String>(periodType),
-      'isActive': serializer.toJson<bool>(isActive),
+      'name': serializer.toJson<String>(name),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'amount': serializer.toJson<int>(amount),
+      'month': serializer.toJson<int>(month),
+      'year': serializer.toJson<int>(year),
       'createdAt': serializer.toJson<int>(createdAt),
-      'updatedAt': serializer.toJson<int>(updatedAt),
+      'type': serializer.toJson<String>(type),
     };
   }
 
   Budget copyWith({
     String? id,
-    String? categoryId,
-    double? amount,
-    String? periodType,
-    bool? isActive,
+    String? name,
+    Value<String?> categoryId = const Value.absent(),
+    int? amount,
+    int? month,
+    int? year,
     int? createdAt,
-    int? updatedAt,
+    String? type,
   }) => Budget(
     id: id ?? this.id,
-    categoryId: categoryId ?? this.categoryId,
+    name: name ?? this.name,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
     amount: amount ?? this.amount,
-    periodType: periodType ?? this.periodType,
-    isActive: isActive ?? this.isActive,
+    month: month ?? this.month,
+    year: year ?? this.year,
     createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
+    type: type ?? this.type,
   );
   Budget copyWithCompanion(BudgetsTableCompanion data) {
     return Budget(
       id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
       amount: data.amount.present ? data.amount.value : this.amount,
-      periodType: data.periodType.present
-          ? data.periodType.value
-          : this.periodType,
-      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      month: data.month.present ? data.month.value : this.month,
+      year: data.year.present ? data.year.value : this.year,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      type: data.type.present ? data.type.value : this.type,
     );
   }
 
@@ -2787,112 +2806,114 @@ class Budget extends DataClass implements Insertable<Budget> {
   String toString() {
     return (StringBuffer('Budget(')
           ..write('id: $id, ')
+          ..write('name: $name, ')
           ..write('categoryId: $categoryId, ')
           ..write('amount: $amount, ')
-          ..write('periodType: $periodType, ')
-          ..write('isActive: $isActive, ')
+          ..write('month: $month, ')
+          ..write('year: $year, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('type: $type')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    categoryId,
-    amount,
-    periodType,
-    isActive,
-    createdAt,
-    updatedAt,
-  );
+  int get hashCode =>
+      Object.hash(id, name, categoryId, amount, month, year, createdAt, type);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Budget &&
           other.id == this.id &&
+          other.name == this.name &&
           other.categoryId == this.categoryId &&
           other.amount == this.amount &&
-          other.periodType == this.periodType &&
-          other.isActive == this.isActive &&
+          other.month == this.month &&
+          other.year == this.year &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.type == this.type);
 }
 
 class BudgetsTableCompanion extends UpdateCompanion<Budget> {
   final Value<String> id;
-  final Value<String> categoryId;
-  final Value<double> amount;
-  final Value<String> periodType;
-  final Value<bool> isActive;
+  final Value<String> name;
+  final Value<String?> categoryId;
+  final Value<int> amount;
+  final Value<int> month;
+  final Value<int> year;
   final Value<int> createdAt;
-  final Value<int> updatedAt;
+  final Value<String> type;
   final Value<int> rowid;
   const BudgetsTableCompanion({
     this.id = const Value.absent(),
+    this.name = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.amount = const Value.absent(),
-    this.periodType = const Value.absent(),
-    this.isActive = const Value.absent(),
+    this.month = const Value.absent(),
+    this.year = const Value.absent(),
     this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    this.type = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BudgetsTableCompanion.insert({
     required String id,
-    required String categoryId,
-    required double amount,
-    this.periodType = const Value.absent(),
-    this.isActive = const Value.absent(),
+    this.name = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    required int amount,
+    required int month,
+    required int year,
     required int createdAt,
-    required int updatedAt,
+    this.type = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       categoryId = Value(categoryId),
        amount = Value(amount),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
+       month = Value(month),
+       year = Value(year),
+       createdAt = Value(createdAt);
   static Insertable<Budget> custom({
     Expression<String>? id,
+    Expression<String>? name,
     Expression<String>? categoryId,
-    Expression<double>? amount,
-    Expression<String>? periodType,
-    Expression<bool>? isActive,
+    Expression<int>? amount,
+    Expression<int>? month,
+    Expression<int>? year,
     Expression<int>? createdAt,
-    Expression<int>? updatedAt,
+    Expression<String>? type,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (name != null) 'name': name,
       if (categoryId != null) 'category_id': categoryId,
       if (amount != null) 'amount': amount,
-      if (periodType != null) 'period_type': periodType,
-      if (isActive != null) 'is_active': isActive,
+      if (month != null) 'month': month,
+      if (year != null) 'year': year,
       if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
+      if (type != null) 'type': type,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   BudgetsTableCompanion copyWith({
     Value<String>? id,
-    Value<String>? categoryId,
-    Value<double>? amount,
-    Value<String>? periodType,
-    Value<bool>? isActive,
+    Value<String>? name,
+    Value<String?>? categoryId,
+    Value<int>? amount,
+    Value<int>? month,
+    Value<int>? year,
     Value<int>? createdAt,
-    Value<int>? updatedAt,
+    Value<String>? type,
     Value<int>? rowid,
   }) {
     return BudgetsTableCompanion(
       id: id ?? this.id,
+      name: name ?? this.name,
       categoryId: categoryId ?? this.categoryId,
       amount: amount ?? this.amount,
-      periodType: periodType ?? this.periodType,
-      isActive: isActive ?? this.isActive,
+      month: month ?? this.month,
+      year: year ?? this.year,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      type: type ?? this.type,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2903,23 +2924,26 @@ class BudgetsTableCompanion extends UpdateCompanion<Budget> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = Variable<int>(amount.value);
     }
-    if (periodType.present) {
-      map['period_type'] = Variable<String>(periodType.value);
+    if (month.present) {
+      map['month'] = Variable<int>(month.value);
     }
-    if (isActive.present) {
-      map['is_active'] = Variable<bool>(isActive.value);
+    if (year.present) {
+      map['year'] = Variable<int>(year.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<int>(updatedAt.value);
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -2931,12 +2955,13 @@ class BudgetsTableCompanion extends UpdateCompanion<Budget> {
   String toString() {
     return (StringBuffer('BudgetsTableCompanion(')
           ..write('id: $id, ')
+          ..write('name: $name, ')
           ..write('categoryId: $categoryId, ')
           ..write('amount: $amount, ')
-          ..write('periodType: $periodType, ')
-          ..write('isActive: $isActive, ')
+          ..write('month: $month, ')
+          ..write('year: $year, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
+          ..write('type: $type, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3179,25 +3204,87 @@ class $SavingsGoalsTableTable extends SavingsGoalsTable
     'targetAmount',
   );
   @override
-  late final GeneratedColumn<double> targetAmount = GeneratedColumn<double>(
+  late final GeneratedColumn<int> targetAmount = GeneratedColumn<int>(
     'target_amount',
     aliasedName,
     false,
-    type: DriftSqlType.double,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _currentAmountMeta = const VerificationMeta(
     'currentAmount',
   );
   @override
-  late final GeneratedColumn<double> currentAmount = GeneratedColumn<double>(
+  late final GeneratedColumn<int> currentAmount = GeneratedColumn<int>(
     'current_amount',
     aliasedName,
     false,
-    type: DriftSqlType.double,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0.0),
+    defaultValue: const Constant(0),
   );
+  static const VerificationMeta _deadlineMeta = const VerificationMeta(
+    'deadline',
+  );
+  @override
+  late final GeneratedColumn<int> deadline = GeneratedColumn<int>(
+    'deadline',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _budgetIdMeta = const VerificationMeta(
+    'budgetId',
+  );
+  @override
+  late final GeneratedColumn<String> budgetId = GeneratedColumn<String>(
+    'budget_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES budgets (id)',
+    ),
+  );
+  static const VerificationMeta _autoDeductMeta = const VerificationMeta(
+    'autoDeduct',
+  );
+  @override
+  late final GeneratedColumn<bool> autoDeduct = GeneratedColumn<bool>(
+    'auto_deduct',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_deduct" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _autoDeductAmountMeta = const VerificationMeta(
+    'autoDeductAmount',
+  );
+  @override
+  late final GeneratedColumn<int> autoDeductAmount = GeneratedColumn<int>(
+    'auto_deduct_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastAutoDeductedMonthMeta =
+      const VerificationMeta('lastAutoDeductedMonth');
+  @override
+  late final GeneratedColumn<String> lastAutoDeductedMonth =
+      GeneratedColumn<String>(
+        'last_auto_deducted_month',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _categoryIdMeta = const VerificationMeta(
     'categoryId',
   );
@@ -3305,6 +3392,11 @@ class $SavingsGoalsTableTable extends SavingsGoalsTable
     name,
     targetAmount,
     currentAmount,
+    deadline,
+    budgetId,
+    autoDeduct,
+    autoDeductAmount,
+    lastAutoDeductedMonth,
     categoryId,
     targetDate,
     startDate,
@@ -3357,6 +3449,42 @@ class $SavingsGoalsTableTable extends SavingsGoalsTable
         currentAmount.isAcceptableOrUnknown(
           data['current_amount']!,
           _currentAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deadline')) {
+      context.handle(
+        _deadlineMeta,
+        deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
+      );
+    }
+    if (data.containsKey('budget_id')) {
+      context.handle(
+        _budgetIdMeta,
+        budgetId.isAcceptableOrUnknown(data['budget_id']!, _budgetIdMeta),
+      );
+    }
+    if (data.containsKey('auto_deduct')) {
+      context.handle(
+        _autoDeductMeta,
+        autoDeduct.isAcceptableOrUnknown(data['auto_deduct']!, _autoDeductMeta),
+      );
+    }
+    if (data.containsKey('auto_deduct_amount')) {
+      context.handle(
+        _autoDeductAmountMeta,
+        autoDeductAmount.isAcceptableOrUnknown(
+          data['auto_deduct_amount']!,
+          _autoDeductAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_auto_deducted_month')) {
+      context.handle(
+        _lastAutoDeductedMonthMeta,
+        lastAutoDeductedMonth.isAcceptableOrUnknown(
+          data['last_auto_deducted_month']!,
+          _lastAutoDeductedMonthMeta,
         ),
       );
     }
@@ -3438,13 +3566,33 @@ class $SavingsGoalsTableTable extends SavingsGoalsTable
         data['${effectivePrefix}name'],
       )!,
       targetAmount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        DriftSqlType.int,
         data['${effectivePrefix}target_amount'],
       )!,
       currentAmount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        DriftSqlType.int,
         data['${effectivePrefix}current_amount'],
       )!,
+      deadline: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}deadline'],
+      ),
+      budgetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}budget_id'],
+      ),
+      autoDeduct: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_deduct'],
+      )!,
+      autoDeductAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}auto_deduct_amount'],
+      ),
+      lastAutoDeductedMonth: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_auto_deducted_month'],
+      ),
       categoryId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
@@ -3493,8 +3641,13 @@ class $SavingsGoalsTableTable extends SavingsGoalsTable
 class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
   final String id;
   final String name;
-  final double targetAmount;
-  final double currentAmount;
+  final int targetAmount;
+  final int currentAmount;
+  final int? deadline;
+  final String? budgetId;
+  final bool autoDeduct;
+  final int? autoDeductAmount;
+  final String? lastAutoDeductedMonth;
   final String? categoryId;
   final int? targetDate;
   final int startDate;
@@ -3509,6 +3662,11 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
     required this.name,
     required this.targetAmount,
     required this.currentAmount,
+    this.deadline,
+    this.budgetId,
+    required this.autoDeduct,
+    this.autoDeductAmount,
+    this.lastAutoDeductedMonth,
     this.categoryId,
     this.targetDate,
     required this.startDate,
@@ -3524,8 +3682,21 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
-    map['target_amount'] = Variable<double>(targetAmount);
-    map['current_amount'] = Variable<double>(currentAmount);
+    map['target_amount'] = Variable<int>(targetAmount);
+    map['current_amount'] = Variable<int>(currentAmount);
+    if (!nullToAbsent || deadline != null) {
+      map['deadline'] = Variable<int>(deadline);
+    }
+    if (!nullToAbsent || budgetId != null) {
+      map['budget_id'] = Variable<String>(budgetId);
+    }
+    map['auto_deduct'] = Variable<bool>(autoDeduct);
+    if (!nullToAbsent || autoDeductAmount != null) {
+      map['auto_deduct_amount'] = Variable<int>(autoDeductAmount);
+    }
+    if (!nullToAbsent || lastAutoDeductedMonth != null) {
+      map['last_auto_deducted_month'] = Variable<String>(lastAutoDeductedMonth);
+    }
     if (!nullToAbsent || categoryId != null) {
       map['category_id'] = Variable<String>(categoryId);
     }
@@ -3550,6 +3721,19 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
       name: Value(name),
       targetAmount: Value(targetAmount),
       currentAmount: Value(currentAmount),
+      deadline: deadline == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deadline),
+      budgetId: budgetId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(budgetId),
+      autoDeduct: Value(autoDeduct),
+      autoDeductAmount: autoDeductAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(autoDeductAmount),
+      lastAutoDeductedMonth: lastAutoDeductedMonth == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAutoDeductedMonth),
       categoryId: categoryId == null && nullToAbsent
           ? const Value.absent()
           : Value(categoryId),
@@ -3574,8 +3758,15 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
     return SavingsGoal(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      targetAmount: serializer.fromJson<double>(json['targetAmount']),
-      currentAmount: serializer.fromJson<double>(json['currentAmount']),
+      targetAmount: serializer.fromJson<int>(json['targetAmount']),
+      currentAmount: serializer.fromJson<int>(json['currentAmount']),
+      deadline: serializer.fromJson<int?>(json['deadline']),
+      budgetId: serializer.fromJson<String?>(json['budgetId']),
+      autoDeduct: serializer.fromJson<bool>(json['autoDeduct']),
+      autoDeductAmount: serializer.fromJson<int?>(json['autoDeductAmount']),
+      lastAutoDeductedMonth: serializer.fromJson<String?>(
+        json['lastAutoDeductedMonth'],
+      ),
       categoryId: serializer.fromJson<String?>(json['categoryId']),
       targetDate: serializer.fromJson<int?>(json['targetDate']),
       startDate: serializer.fromJson<int>(json['startDate']),
@@ -3593,8 +3784,15 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
-      'targetAmount': serializer.toJson<double>(targetAmount),
-      'currentAmount': serializer.toJson<double>(currentAmount),
+      'targetAmount': serializer.toJson<int>(targetAmount),
+      'currentAmount': serializer.toJson<int>(currentAmount),
+      'deadline': serializer.toJson<int?>(deadline),
+      'budgetId': serializer.toJson<String?>(budgetId),
+      'autoDeduct': serializer.toJson<bool>(autoDeduct),
+      'autoDeductAmount': serializer.toJson<int?>(autoDeductAmount),
+      'lastAutoDeductedMonth': serializer.toJson<String?>(
+        lastAutoDeductedMonth,
+      ),
       'categoryId': serializer.toJson<String?>(categoryId),
       'targetDate': serializer.toJson<int?>(targetDate),
       'startDate': serializer.toJson<int>(startDate),
@@ -3610,8 +3808,13 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
   SavingsGoal copyWith({
     String? id,
     String? name,
-    double? targetAmount,
-    double? currentAmount,
+    int? targetAmount,
+    int? currentAmount,
+    Value<int?> deadline = const Value.absent(),
+    Value<String?> budgetId = const Value.absent(),
+    bool? autoDeduct,
+    Value<int?> autoDeductAmount = const Value.absent(),
+    Value<String?> lastAutoDeductedMonth = const Value.absent(),
     Value<String?> categoryId = const Value.absent(),
     Value<int?> targetDate = const Value.absent(),
     int? startDate,
@@ -3626,6 +3829,15 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
     name: name ?? this.name,
     targetAmount: targetAmount ?? this.targetAmount,
     currentAmount: currentAmount ?? this.currentAmount,
+    deadline: deadline.present ? deadline.value : this.deadline,
+    budgetId: budgetId.present ? budgetId.value : this.budgetId,
+    autoDeduct: autoDeduct ?? this.autoDeduct,
+    autoDeductAmount: autoDeductAmount.present
+        ? autoDeductAmount.value
+        : this.autoDeductAmount,
+    lastAutoDeductedMonth: lastAutoDeductedMonth.present
+        ? lastAutoDeductedMonth.value
+        : this.lastAutoDeductedMonth,
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
     targetDate: targetDate.present ? targetDate.value : this.targetDate,
     startDate: startDate ?? this.startDate,
@@ -3646,6 +3858,17 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
       currentAmount: data.currentAmount.present
           ? data.currentAmount.value
           : this.currentAmount,
+      deadline: data.deadline.present ? data.deadline.value : this.deadline,
+      budgetId: data.budgetId.present ? data.budgetId.value : this.budgetId,
+      autoDeduct: data.autoDeduct.present
+          ? data.autoDeduct.value
+          : this.autoDeduct,
+      autoDeductAmount: data.autoDeductAmount.present
+          ? data.autoDeductAmount.value
+          : this.autoDeductAmount,
+      lastAutoDeductedMonth: data.lastAutoDeductedMonth.present
+          ? data.lastAutoDeductedMonth.value
+          : this.lastAutoDeductedMonth,
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
@@ -3669,6 +3892,11 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
           ..write('name: $name, ')
           ..write('targetAmount: $targetAmount, ')
           ..write('currentAmount: $currentAmount, ')
+          ..write('deadline: $deadline, ')
+          ..write('budgetId: $budgetId, ')
+          ..write('autoDeduct: $autoDeduct, ')
+          ..write('autoDeductAmount: $autoDeductAmount, ')
+          ..write('lastAutoDeductedMonth: $lastAutoDeductedMonth, ')
           ..write('categoryId: $categoryId, ')
           ..write('targetDate: $targetDate, ')
           ..write('startDate: $startDate, ')
@@ -3688,6 +3916,11 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
     name,
     targetAmount,
     currentAmount,
+    deadline,
+    budgetId,
+    autoDeduct,
+    autoDeductAmount,
+    lastAutoDeductedMonth,
     categoryId,
     targetDate,
     startDate,
@@ -3706,6 +3939,11 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
           other.name == this.name &&
           other.targetAmount == this.targetAmount &&
           other.currentAmount == this.currentAmount &&
+          other.deadline == this.deadline &&
+          other.budgetId == this.budgetId &&
+          other.autoDeduct == this.autoDeduct &&
+          other.autoDeductAmount == this.autoDeductAmount &&
+          other.lastAutoDeductedMonth == this.lastAutoDeductedMonth &&
           other.categoryId == this.categoryId &&
           other.targetDate == this.targetDate &&
           other.startDate == this.startDate &&
@@ -3720,8 +3958,13 @@ class SavingsGoal extends DataClass implements Insertable<SavingsGoal> {
 class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
   final Value<String> id;
   final Value<String> name;
-  final Value<double> targetAmount;
-  final Value<double> currentAmount;
+  final Value<int> targetAmount;
+  final Value<int> currentAmount;
+  final Value<int?> deadline;
+  final Value<String?> budgetId;
+  final Value<bool> autoDeduct;
+  final Value<int?> autoDeductAmount;
+  final Value<String?> lastAutoDeductedMonth;
   final Value<String?> categoryId;
   final Value<int?> targetDate;
   final Value<int> startDate;
@@ -3737,6 +3980,11 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
     this.name = const Value.absent(),
     this.targetAmount = const Value.absent(),
     this.currentAmount = const Value.absent(),
+    this.deadline = const Value.absent(),
+    this.budgetId = const Value.absent(),
+    this.autoDeduct = const Value.absent(),
+    this.autoDeductAmount = const Value.absent(),
+    this.lastAutoDeductedMonth = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.targetDate = const Value.absent(),
     this.startDate = const Value.absent(),
@@ -3751,8 +3999,13 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
   SavingsGoalsTableCompanion.insert({
     required String id,
     required String name,
-    required double targetAmount,
+    required int targetAmount,
     this.currentAmount = const Value.absent(),
+    this.deadline = const Value.absent(),
+    this.budgetId = const Value.absent(),
+    this.autoDeduct = const Value.absent(),
+    this.autoDeductAmount = const Value.absent(),
+    this.lastAutoDeductedMonth = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.targetDate = const Value.absent(),
     required int startDate,
@@ -3772,8 +4025,13 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
   static Insertable<SavingsGoal> custom({
     Expression<String>? id,
     Expression<String>? name,
-    Expression<double>? targetAmount,
-    Expression<double>? currentAmount,
+    Expression<int>? targetAmount,
+    Expression<int>? currentAmount,
+    Expression<int>? deadline,
+    Expression<String>? budgetId,
+    Expression<bool>? autoDeduct,
+    Expression<int>? autoDeductAmount,
+    Expression<String>? lastAutoDeductedMonth,
     Expression<String>? categoryId,
     Expression<int>? targetDate,
     Expression<int>? startDate,
@@ -3790,6 +4048,12 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
       if (name != null) 'name': name,
       if (targetAmount != null) 'target_amount': targetAmount,
       if (currentAmount != null) 'current_amount': currentAmount,
+      if (deadline != null) 'deadline': deadline,
+      if (budgetId != null) 'budget_id': budgetId,
+      if (autoDeduct != null) 'auto_deduct': autoDeduct,
+      if (autoDeductAmount != null) 'auto_deduct_amount': autoDeductAmount,
+      if (lastAutoDeductedMonth != null)
+        'last_auto_deducted_month': lastAutoDeductedMonth,
       if (categoryId != null) 'category_id': categoryId,
       if (targetDate != null) 'target_date': targetDate,
       if (startDate != null) 'start_date': startDate,
@@ -3806,8 +4070,13 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
   SavingsGoalsTableCompanion copyWith({
     Value<String>? id,
     Value<String>? name,
-    Value<double>? targetAmount,
-    Value<double>? currentAmount,
+    Value<int>? targetAmount,
+    Value<int>? currentAmount,
+    Value<int?>? deadline,
+    Value<String?>? budgetId,
+    Value<bool>? autoDeduct,
+    Value<int?>? autoDeductAmount,
+    Value<String?>? lastAutoDeductedMonth,
     Value<String?>? categoryId,
     Value<int?>? targetDate,
     Value<int>? startDate,
@@ -3824,6 +4093,12 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
       name: name ?? this.name,
       targetAmount: targetAmount ?? this.targetAmount,
       currentAmount: currentAmount ?? this.currentAmount,
+      deadline: deadline ?? this.deadline,
+      budgetId: budgetId ?? this.budgetId,
+      autoDeduct: autoDeduct ?? this.autoDeduct,
+      autoDeductAmount: autoDeductAmount ?? this.autoDeductAmount,
+      lastAutoDeductedMonth:
+          lastAutoDeductedMonth ?? this.lastAutoDeductedMonth,
       categoryId: categoryId ?? this.categoryId,
       targetDate: targetDate ?? this.targetDate,
       startDate: startDate ?? this.startDate,
@@ -3847,10 +4122,27 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
       map['name'] = Variable<String>(name.value);
     }
     if (targetAmount.present) {
-      map['target_amount'] = Variable<double>(targetAmount.value);
+      map['target_amount'] = Variable<int>(targetAmount.value);
     }
     if (currentAmount.present) {
-      map['current_amount'] = Variable<double>(currentAmount.value);
+      map['current_amount'] = Variable<int>(currentAmount.value);
+    }
+    if (deadline.present) {
+      map['deadline'] = Variable<int>(deadline.value);
+    }
+    if (budgetId.present) {
+      map['budget_id'] = Variable<String>(budgetId.value);
+    }
+    if (autoDeduct.present) {
+      map['auto_deduct'] = Variable<bool>(autoDeduct.value);
+    }
+    if (autoDeductAmount.present) {
+      map['auto_deduct_amount'] = Variable<int>(autoDeductAmount.value);
+    }
+    if (lastAutoDeductedMonth.present) {
+      map['last_auto_deducted_month'] = Variable<String>(
+        lastAutoDeductedMonth.value,
+      );
     }
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
@@ -3892,6 +4184,11 @@ class SavingsGoalsTableCompanion extends UpdateCompanion<SavingsGoal> {
           ..write('name: $name, ')
           ..write('targetAmount: $targetAmount, ')
           ..write('currentAmount: $currentAmount, ')
+          ..write('deadline: $deadline, ')
+          ..write('budgetId: $budgetId, ')
+          ..write('autoDeduct: $autoDeduct, ')
+          ..write('autoDeductAmount: $autoDeductAmount, ')
+          ..write('lastAutoDeductedMonth: $lastAutoDeductedMonth, ')
           ..write('categoryId: $categoryId, ')
           ..write('targetDate: $targetDate, ')
           ..write('startDate: $startDate, ')
@@ -4057,27 +4354,6 @@ final class $$CategoriesTableTableReferences
     );
   }
 
-  static MultiTypedResultKey<$BudgetsTableTable, List<Budget>>
-  _budgetsTableRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.budgetsTable,
-    aliasName: $_aliasNameGenerator(
-      db.categoriesTable.id,
-      db.budgetsTable.categoryId,
-    ),
-  );
-
-  $$BudgetsTableTableProcessedTableManager get budgetsTableRefs {
-    final manager = $$BudgetsTableTableTableManager(
-      $_db,
-      $_db.budgetsTable,
-    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_budgetsTableRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
   static MultiTypedResultKey<$SavingsGoalsTableTable, List<SavingsGoal>>
   _savingsGoalsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
@@ -4220,31 +4496,6 @@ class $$CategoriesTableTableFilterComposer
           }) => $$TransactionsTableTableFilterComposer(
             $db: $db,
             $table: $db.transactionsTable,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> budgetsTableRefs(
-    Expression<bool> Function($$BudgetsTableTableFilterComposer f) f,
-  ) {
-    final $$BudgetsTableTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.budgetsTable,
-      getReferencedColumn: (t) => t.categoryId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$BudgetsTableTableFilterComposer(
-            $db: $db,
-            $table: $db.budgetsTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4443,31 +4694,6 @@ class $$CategoriesTableTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> budgetsTableRefs<T extends Object>(
-    Expression<T> Function($$BudgetsTableTableAnnotationComposer a) f,
-  ) {
-    final $$BudgetsTableTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.budgetsTable,
-      getReferencedColumn: (t) => t.categoryId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$BudgetsTableTableAnnotationComposer(
-            $db: $db,
-            $table: $db.budgetsTable,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
   Expression<T> savingsGoalsTableRefs<T extends Object>(
     Expression<T> Function($$SavingsGoalsTableTableAnnotationComposer a) f,
   ) {
@@ -4512,7 +4738,6 @@ class $$CategoriesTableTableTableManager
             bool merchantsTableRefs,
             bool recurringTransactionsTableRefs,
             bool transactionsTableRefs,
-            bool budgetsTableRefs,
             bool savingsGoalsTableRefs,
           })
         > {
@@ -4586,7 +4811,6 @@ class $$CategoriesTableTableTableManager
                 merchantsTableRefs = false,
                 recurringTransactionsTableRefs = false,
                 transactionsTableRefs = false,
-                budgetsTableRefs = false,
                 savingsGoalsTableRefs = false,
               }) {
                 return PrefetchHooks(
@@ -4596,7 +4820,6 @@ class $$CategoriesTableTableTableManager
                     if (recurringTransactionsTableRefs)
                       db.recurringTransactionsTable,
                     if (transactionsTableRefs) db.transactionsTable,
-                    if (budgetsTableRefs) db.budgetsTable,
                     if (savingsGoalsTableRefs) db.savingsGoalsTable,
                   ],
                   addJoins: null,
@@ -4665,27 +4888,6 @@ class $$CategoriesTableTableTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (budgetsTableRefs)
-                        await $_getPrefetchedData<
-                          Category,
-                          $CategoriesTableTable,
-                          Budget
-                        >(
-                          currentTable: table,
-                          referencedTable: $$CategoriesTableTableReferences
-                              ._budgetsTableRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$CategoriesTableTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).budgetsTableRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.categoryId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
                       if (savingsGoalsTableRefs)
                         await $_getPrefetchedData<
                           Category,
@@ -4731,7 +4933,6 @@ typedef $$CategoriesTableTableProcessedTableManager =
         bool merchantsTableRefs,
         bool recurringTransactionsTableRefs,
         bool transactionsTableRefs,
-        bool budgetsTableRefs,
         bool savingsGoalsTableRefs,
       })
     >;
@@ -6482,23 +6683,25 @@ typedef $$TransactionsTableTableProcessedTableManager =
 typedef $$BudgetsTableTableCreateCompanionBuilder =
     BudgetsTableCompanion Function({
       required String id,
-      required String categoryId,
-      required double amount,
-      Value<String> periodType,
-      Value<bool> isActive,
+      Value<String> name,
+      Value<String?> categoryId,
+      required int amount,
+      required int month,
+      required int year,
       required int createdAt,
-      required int updatedAt,
+      Value<String> type,
       Value<int> rowid,
     });
 typedef $$BudgetsTableTableUpdateCompanionBuilder =
     BudgetsTableCompanion Function({
       Value<String> id,
-      Value<String> categoryId,
-      Value<double> amount,
-      Value<String> periodType,
-      Value<bool> isActive,
+      Value<String> name,
+      Value<String?> categoryId,
+      Value<int> amount,
+      Value<int> month,
+      Value<int> year,
       Value<int> createdAt,
-      Value<int> updatedAt,
+      Value<String> type,
       Value<int> rowid,
     });
 
@@ -6506,22 +6709,27 @@ final class $$BudgetsTableTableReferences
     extends BaseReferences<_$AppDatabase, $BudgetsTableTable, Budget> {
   $$BudgetsTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) =>
-      db.categoriesTable.createAlias(
-        $_aliasNameGenerator(db.budgetsTable.categoryId, db.categoriesTable.id),
+  static MultiTypedResultKey<$SavingsGoalsTableTable, List<SavingsGoal>>
+  _savingsGoalsTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.savingsGoalsTable,
+        aliasName: $_aliasNameGenerator(
+          db.budgetsTable.id,
+          db.savingsGoalsTable.budgetId,
+        ),
       );
 
-  $$CategoriesTableTableProcessedTableManager get categoryId {
-    final $_column = $_itemColumn<String>('category_id')!;
-
-    final manager = $$CategoriesTableTableTableManager(
+  $$SavingsGoalsTableTableProcessedTableManager get savingsGoalsTableRefs {
+    final manager = $$SavingsGoalsTableTableTableManager(
       $_db,
-      $_db.categoriesTable,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
-    if (item == null) return manager;
+      $_db.savingsGoalsTable,
+    ).filter((f) => f.budgetId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _savingsGoalsTableRefsTable($_db),
+    );
     return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -6540,18 +6748,28 @@ class $$BudgetsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
     column: $table.amount,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get periodType => $composableBuilder(
-    column: $table.periodType,
+  ColumnFilters<int> get month => $composableBuilder(
+    column: $table.month,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get isActive => $composableBuilder(
-    column: $table.isActive,
+  ColumnFilters<int> get year => $composableBuilder(
+    column: $table.year,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6560,32 +6778,34 @@ class $$BudgetsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnFilters(column),
   );
 
-  $$CategoriesTableTableFilterComposer get categoryId {
-    final $$CategoriesTableTableFilterComposer composer = $composerBuilder(
+  Expression<bool> savingsGoalsTableRefs(
+    Expression<bool> Function($$SavingsGoalsTableTableFilterComposer f) f,
+  ) {
+    final $$SavingsGoalsTableTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.categoryId,
-      referencedTable: $db.categoriesTable,
-      getReferencedColumn: (t) => t.id,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.savingsGoalsTable,
+      getReferencedColumn: (t) => t.budgetId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$CategoriesTableTableFilterComposer(
+          }) => $$SavingsGoalsTableTableFilterComposer(
             $db: $db,
-            $table: $db.categoriesTable,
+            $table: $db.savingsGoalsTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
           ),
     );
-    return composer;
+    return f(composer);
   }
 }
 
@@ -6603,18 +6823,28 @@ class $$BudgetsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
     column: $table.amount,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get periodType => $composableBuilder(
-    column: $table.periodType,
+  ColumnOrderings<int> get month => $composableBuilder(
+    column: $table.month,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get isActive => $composableBuilder(
-    column: $table.isActive,
+  ColumnOrderings<int> get year => $composableBuilder(
+    column: $table.year,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6623,33 +6853,10 @@ class $$BudgetsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$CategoriesTableTableOrderingComposer get categoryId {
-    final $$CategoriesTableTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.categoryId,
-      referencedTable: $db.categoriesTable,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CategoriesTableTableOrderingComposer(
-            $db: $db,
-            $table: $db.categoriesTable,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$BudgetsTableTableAnnotationComposer
@@ -6664,44 +6871,53 @@ class $$BudgetsTableTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
-      $composableBuilder(column: $table.amount, builder: (column) => column);
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<String> get periodType => $composableBuilder(
-    column: $table.periodType,
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
     builder: (column) => column,
   );
 
-  GeneratedColumn<bool> get isActive =>
-      $composableBuilder(column: $table.isActive, builder: (column) => column);
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<int> get month =>
+      $composableBuilder(column: $table.month, builder: (column) => column);
+
+  GeneratedColumn<int> get year =>
+      $composableBuilder(column: $table.year, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<int> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
-  $$CategoriesTableTableAnnotationComposer get categoryId {
-    final $$CategoriesTableTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.categoryId,
-      referencedTable: $db.categoriesTable,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CategoriesTableTableAnnotationComposer(
-            $db: $db,
-            $table: $db.categoriesTable,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  Expression<T> savingsGoalsTableRefs<T extends Object>(
+    Expression<T> Function($$SavingsGoalsTableTableAnnotationComposer a) f,
+  ) {
+    final $$SavingsGoalsTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.savingsGoalsTable,
+          getReferencedColumn: (t) => t.budgetId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
+              }) => $$SavingsGoalsTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.savingsGoalsTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
   }
 }
 
@@ -6718,7 +6934,7 @@ class $$BudgetsTableTableTableManager
           $$BudgetsTableTableUpdateCompanionBuilder,
           (Budget, $$BudgetsTableTableReferences),
           Budget,
-          PrefetchHooks Function({bool categoryId})
+          PrefetchHooks Function({bool savingsGoalsTableRefs})
         > {
   $$BudgetsTableTableTableManager(_$AppDatabase db, $BudgetsTableTable table)
     : super(
@@ -6734,41 +6950,45 @@ class $$BudgetsTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> categoryId = const Value.absent(),
-                Value<double> amount = const Value.absent(),
-                Value<String> periodType = const Value.absent(),
-                Value<bool> isActive = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<int> month = const Value.absent(),
+                Value<int> year = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
-                Value<int> updatedAt = const Value.absent(),
+                Value<String> type = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BudgetsTableCompanion(
                 id: id,
+                name: name,
                 categoryId: categoryId,
                 amount: amount,
-                periodType: periodType,
-                isActive: isActive,
+                month: month,
+                year: year,
                 createdAt: createdAt,
-                updatedAt: updatedAt,
+                type: type,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
-                required String categoryId,
-                required double amount,
-                Value<String> periodType = const Value.absent(),
-                Value<bool> isActive = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                required int amount,
+                required int month,
+                required int year,
                 required int createdAt,
-                required int updatedAt,
+                Value<String> type = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BudgetsTableCompanion.insert(
                 id: id,
+                name: name,
                 categoryId: categoryId,
                 amount: amount,
-                periodType: periodType,
-                isActive: isActive,
+                month: month,
+                year: year,
                 createdAt: createdAt,
-                updatedAt: updatedAt,
+                type: type,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -6779,44 +6999,35 @@ class $$BudgetsTableTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({categoryId = false}) {
+          prefetchHooksCallback: ({savingsGoalsTableRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (categoryId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.categoryId,
-                                referencedTable: $$BudgetsTableTableReferences
-                                    ._categoryIdTable(db),
-                                referencedColumn: $$BudgetsTableTableReferences
-                                    ._categoryIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
+              explicitlyWatchedTables: [
+                if (savingsGoalsTableRefs) db.savingsGoalsTable,
+              ],
+              addJoins: null,
               getPrefetchedDataCallback: (items) async {
-                return [];
+                return [
+                  if (savingsGoalsTableRefs)
+                    await $_getPrefetchedData<
+                      Budget,
+                      $BudgetsTableTable,
+                      SavingsGoal
+                    >(
+                      currentTable: table,
+                      referencedTable: $$BudgetsTableTableReferences
+                          ._savingsGoalsTableRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$BudgetsTableTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).savingsGoalsTableRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.budgetId == item.id),
+                      typedResults: items,
+                    ),
+                ];
               },
             );
           },
@@ -6836,7 +7047,7 @@ typedef $$BudgetsTableTableProcessedTableManager =
       $$BudgetsTableTableUpdateCompanionBuilder,
       (Budget, $$BudgetsTableTableReferences),
       Budget,
-      PrefetchHooks Function({bool categoryId})
+      PrefetchHooks Function({bool savingsGoalsTableRefs})
     >;
 typedef $$AppSettingsTableTableCreateCompanionBuilder =
     AppSettingsTableCompanion Function({
@@ -6987,8 +7198,13 @@ typedef $$SavingsGoalsTableTableCreateCompanionBuilder =
     SavingsGoalsTableCompanion Function({
       required String id,
       required String name,
-      required double targetAmount,
-      Value<double> currentAmount,
+      required int targetAmount,
+      Value<int> currentAmount,
+      Value<int?> deadline,
+      Value<String?> budgetId,
+      Value<bool> autoDeduct,
+      Value<int?> autoDeductAmount,
+      Value<String?> lastAutoDeductedMonth,
       Value<String?> categoryId,
       Value<int?> targetDate,
       required int startDate,
@@ -7004,8 +7220,13 @@ typedef $$SavingsGoalsTableTableUpdateCompanionBuilder =
     SavingsGoalsTableCompanion Function({
       Value<String> id,
       Value<String> name,
-      Value<double> targetAmount,
-      Value<double> currentAmount,
+      Value<int> targetAmount,
+      Value<int> currentAmount,
+      Value<int?> deadline,
+      Value<String?> budgetId,
+      Value<bool> autoDeduct,
+      Value<int?> autoDeductAmount,
+      Value<String?> lastAutoDeductedMonth,
       Value<String?> categoryId,
       Value<int?> targetDate,
       Value<int> startDate,
@@ -7026,6 +7247,25 @@ final class $$SavingsGoalsTableTableReferences
     super.$_table,
     super.$_typedResult,
   );
+
+  static $BudgetsTableTable _budgetIdTable(_$AppDatabase db) =>
+      db.budgetsTable.createAlias(
+        $_aliasNameGenerator(db.savingsGoalsTable.budgetId, db.budgetsTable.id),
+      );
+
+  $$BudgetsTableTableProcessedTableManager? get budgetId {
+    final $_column = $_itemColumn<String>('budget_id');
+    if ($_column == null) return null;
+    final manager = $$BudgetsTableTableTableManager(
+      $_db,
+      $_db.budgetsTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_budgetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) =>
       db.categoriesTable.createAlias(
@@ -7069,13 +7309,33 @@ class $$SavingsGoalsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get targetAmount => $composableBuilder(
+  ColumnFilters<int> get targetAmount => $composableBuilder(
     column: $table.targetAmount,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get currentAmount => $composableBuilder(
+  ColumnFilters<int> get currentAmount => $composableBuilder(
     column: $table.currentAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get deadline => $composableBuilder(
+    column: $table.deadline,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoDeduct => $composableBuilder(
+    column: $table.autoDeduct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get autoDeductAmount => $composableBuilder(
+    column: $table.autoDeductAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastAutoDeductedMonth => $composableBuilder(
+    column: $table.lastAutoDeductedMonth,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7118,6 +7378,29 @@ class $$SavingsGoalsTableTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$BudgetsTableTableFilterComposer get budgetId {
+    final $$BudgetsTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.budgetId,
+      referencedTable: $db.budgetsTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BudgetsTableTableFilterComposer(
+            $db: $db,
+            $table: $db.budgetsTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$CategoriesTableTableFilterComposer get categoryId {
     final $$CategoriesTableTableFilterComposer composer = $composerBuilder(
@@ -7162,13 +7445,33 @@ class $$SavingsGoalsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get targetAmount => $composableBuilder(
+  ColumnOrderings<int> get targetAmount => $composableBuilder(
     column: $table.targetAmount,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get currentAmount => $composableBuilder(
+  ColumnOrderings<int> get currentAmount => $composableBuilder(
     column: $table.currentAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get deadline => $composableBuilder(
+    column: $table.deadline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoDeduct => $composableBuilder(
+    column: $table.autoDeduct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get autoDeductAmount => $composableBuilder(
+    column: $table.autoDeductAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastAutoDeductedMonth => $composableBuilder(
+    column: $table.lastAutoDeductedMonth,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -7212,6 +7515,29 @@ class $$SavingsGoalsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  $$BudgetsTableTableOrderingComposer get budgetId {
+    final $$BudgetsTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.budgetId,
+      referencedTable: $db.budgetsTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BudgetsTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.budgetsTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$CategoriesTableTableOrderingComposer get categoryId {
     final $$CategoriesTableTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7251,13 +7577,31 @@ class $$SavingsGoalsTableTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<double> get targetAmount => $composableBuilder(
+  GeneratedColumn<int> get targetAmount => $composableBuilder(
     column: $table.targetAmount,
     builder: (column) => column,
   );
 
-  GeneratedColumn<double> get currentAmount => $composableBuilder(
+  GeneratedColumn<int> get currentAmount => $composableBuilder(
     column: $table.currentAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get deadline =>
+      $composableBuilder(column: $table.deadline, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoDeduct => $composableBuilder(
+    column: $table.autoDeduct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get autoDeductAmount => $composableBuilder(
+    column: $table.autoDeductAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastAutoDeductedMonth => $composableBuilder(
+    column: $table.lastAutoDeductedMonth,
     builder: (column) => column,
   );
 
@@ -7286,6 +7630,29 @@ class $$SavingsGoalsTableTableAnnotationComposer
 
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$BudgetsTableTableAnnotationComposer get budgetId {
+    final $$BudgetsTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.budgetId,
+      referencedTable: $db.budgetsTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BudgetsTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.budgetsTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$CategoriesTableTableAnnotationComposer get categoryId {
     final $$CategoriesTableTableAnnotationComposer composer = $composerBuilder(
@@ -7324,7 +7691,7 @@ class $$SavingsGoalsTableTableTableManager
           $$SavingsGoalsTableTableUpdateCompanionBuilder,
           (SavingsGoal, $$SavingsGoalsTableTableReferences),
           SavingsGoal,
-          PrefetchHooks Function({bool categoryId})
+          PrefetchHooks Function({bool budgetId, bool categoryId})
         > {
   $$SavingsGoalsTableTableTableManager(
     _$AppDatabase db,
@@ -7346,8 +7713,13 @@ class $$SavingsGoalsTableTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
-                Value<double> targetAmount = const Value.absent(),
-                Value<double> currentAmount = const Value.absent(),
+                Value<int> targetAmount = const Value.absent(),
+                Value<int> currentAmount = const Value.absent(),
+                Value<int?> deadline = const Value.absent(),
+                Value<String?> budgetId = const Value.absent(),
+                Value<bool> autoDeduct = const Value.absent(),
+                Value<int?> autoDeductAmount = const Value.absent(),
+                Value<String?> lastAutoDeductedMonth = const Value.absent(),
                 Value<String?> categoryId = const Value.absent(),
                 Value<int?> targetDate = const Value.absent(),
                 Value<int> startDate = const Value.absent(),
@@ -7363,6 +7735,11 @@ class $$SavingsGoalsTableTableTableManager
                 name: name,
                 targetAmount: targetAmount,
                 currentAmount: currentAmount,
+                deadline: deadline,
+                budgetId: budgetId,
+                autoDeduct: autoDeduct,
+                autoDeductAmount: autoDeductAmount,
+                lastAutoDeductedMonth: lastAutoDeductedMonth,
                 categoryId: categoryId,
                 targetDate: targetDate,
                 startDate: startDate,
@@ -7378,8 +7755,13 @@ class $$SavingsGoalsTableTableTableManager
               ({
                 required String id,
                 required String name,
-                required double targetAmount,
-                Value<double> currentAmount = const Value.absent(),
+                required int targetAmount,
+                Value<int> currentAmount = const Value.absent(),
+                Value<int?> deadline = const Value.absent(),
+                Value<String?> budgetId = const Value.absent(),
+                Value<bool> autoDeduct = const Value.absent(),
+                Value<int?> autoDeductAmount = const Value.absent(),
+                Value<String?> lastAutoDeductedMonth = const Value.absent(),
                 Value<String?> categoryId = const Value.absent(),
                 Value<int?> targetDate = const Value.absent(),
                 required int startDate,
@@ -7395,6 +7777,11 @@ class $$SavingsGoalsTableTableTableManager
                 name: name,
                 targetAmount: targetAmount,
                 currentAmount: currentAmount,
+                deadline: deadline,
+                budgetId: budgetId,
+                autoDeduct: autoDeduct,
+                autoDeductAmount: autoDeductAmount,
+                lastAutoDeductedMonth: lastAutoDeductedMonth,
                 categoryId: categoryId,
                 targetDate: targetDate,
                 startDate: startDate,
@@ -7414,7 +7801,7 @@ class $$SavingsGoalsTableTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({categoryId = false}) {
+          prefetchHooksCallback: ({budgetId = false, categoryId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -7434,6 +7821,21 @@ class $$SavingsGoalsTableTableTableManager
                       dynamic
                     >
                   >(state) {
+                    if (budgetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.budgetId,
+                                referencedTable:
+                                    $$SavingsGoalsTableTableReferences
+                                        ._budgetIdTable(db),
+                                referencedColumn:
+                                    $$SavingsGoalsTableTableReferences
+                                        ._budgetIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
                     if (categoryId) {
                       state =
                           state.withJoin(
@@ -7473,7 +7875,7 @@ typedef $$SavingsGoalsTableTableProcessedTableManager =
       $$SavingsGoalsTableTableUpdateCompanionBuilder,
       (SavingsGoal, $$SavingsGoalsTableTableReferences),
       SavingsGoal,
-      PrefetchHooks Function({bool categoryId})
+      PrefetchHooks Function({bool budgetId, bool categoryId})
     >;
 
 class $AppDatabaseManager {

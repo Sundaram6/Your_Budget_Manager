@@ -6,7 +6,7 @@ part of 'database_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appDatabaseHash() => r'7bc738286c391590fba29a0360eb20249990977a';
+String _$appDatabaseHash() => r'59b1623e558679679d180641c732e64ed8028e2e';
 
 /// See also [appDatabase].
 @ProviderFor(appDatabase)
@@ -94,5 +94,40 @@ final recurringRepositoryProvider = Provider<RecurringRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef RecurringRepositoryRef = ProviderRef<RecurringRepository>;
+String _$savingsGoalDaoHash() => r'60d25e3d1c8408a370c9d246681af802a8971412';
+
+/// See also [savingsGoalDao].
+@ProviderFor(savingsGoalDao)
+final savingsGoalDaoProvider = Provider<SavingsGoalDao>.internal(
+  savingsGoalDao,
+  name: r'savingsGoalDaoProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$savingsGoalDaoHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SavingsGoalDaoRef = ProviderRef<SavingsGoalDao>;
+String _$savingsGoalRepositoryHash() =>
+    r'ae90f0cc08109bfee58d5fd713c5c6c7a5ed1f52';
+
+/// See also [savingsGoalRepository].
+@ProviderFor(savingsGoalRepository)
+final savingsGoalRepositoryProvider = Provider<SavingsGoalRepository>.internal(
+  savingsGoalRepository,
+  name: r'savingsGoalRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$savingsGoalRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SavingsGoalRepositoryRef = ProviderRef<SavingsGoalRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
