@@ -25,6 +25,8 @@ mixin _$DashboardState {
   List<BudgetProgress> get budgetProgress => throw _privateConstructorUsedError;
   List<Transaction> get recentTransactions =>
       throw _privateConstructorUsedError;
+  List<AiInsight> get insights => throw _privateConstructorUsedError;
+  int get healthScore => throw _privateConstructorUsedError;
 
   /// Create a copy of DashboardState
   /// with the given fields replaced by the non-null parameter values.
@@ -47,6 +49,8 @@ abstract class $DashboardStateCopyWith<$Res> {
     List<CategoryBreakdown> categoryBreakdown,
     List<BudgetProgress> budgetProgress,
     List<Transaction> recentTransactions,
+    List<AiInsight> insights,
+    int healthScore,
   });
 
   $DailyAllowanceCopyWith<$Res>? get dailyAllowance;
@@ -73,6 +77,8 @@ class _$DashboardStateCopyWithImpl<$Res, $Val extends DashboardState>
     Object? categoryBreakdown = null,
     Object? budgetProgress = null,
     Object? recentTransactions = null,
+    Object? insights = null,
+    Object? healthScore = null,
   }) {
     return _then(
       _value.copyWith(
@@ -100,6 +106,14 @@ class _$DashboardStateCopyWithImpl<$Res, $Val extends DashboardState>
                 ? _value.recentTransactions
                 : recentTransactions // ignore: cast_nullable_to_non_nullable
                       as List<Transaction>,
+            insights: null == insights
+                ? _value.insights
+                : insights // ignore: cast_nullable_to_non_nullable
+                      as List<AiInsight>,
+            healthScore: null == healthScore
+                ? _value.healthScore
+                : healthScore // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -136,6 +150,8 @@ abstract class _$$DashboardStateImplCopyWith<$Res>
     List<CategoryBreakdown> categoryBreakdown,
     List<BudgetProgress> budgetProgress,
     List<Transaction> recentTransactions,
+    List<AiInsight> insights,
+    int healthScore,
   });
 
   @override
@@ -162,6 +178,8 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
     Object? categoryBreakdown = null,
     Object? budgetProgress = null,
     Object? recentTransactions = null,
+    Object? insights = null,
+    Object? healthScore = null,
   }) {
     return _then(
       _$DashboardStateImpl(
@@ -189,6 +207,14 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
             ? _value._recentTransactions
             : recentTransactions // ignore: cast_nullable_to_non_nullable
                   as List<Transaction>,
+        insights: null == insights
+            ? _value._insights
+            : insights // ignore: cast_nullable_to_non_nullable
+                  as List<AiInsight>,
+        healthScore: null == healthScore
+            ? _value.healthScore
+            : healthScore // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -204,9 +230,12 @@ class _$DashboardStateImpl implements _DashboardState {
     required final List<CategoryBreakdown> categoryBreakdown,
     required final List<BudgetProgress> budgetProgress,
     required final List<Transaction> recentTransactions,
+    final List<AiInsight> insights = const [],
+    this.healthScore = 100,
   }) : _categoryBreakdown = categoryBreakdown,
        _budgetProgress = budgetProgress,
-       _recentTransactions = recentTransactions;
+       _recentTransactions = recentTransactions,
+       _insights = insights;
 
   @override
   final double monthlyTotal;
@@ -240,9 +269,22 @@ class _$DashboardStateImpl implements _DashboardState {
     return EqualUnmodifiableListView(_recentTransactions);
   }
 
+  final List<AiInsight> _insights;
+  @override
+  @JsonKey()
+  List<AiInsight> get insights {
+    if (_insights is EqualUnmodifiableListView) return _insights;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_insights);
+  }
+
+  @override
+  @JsonKey()
+  final int healthScore;
+
   @override
   String toString() {
-    return 'DashboardState(monthlyTotal: $monthlyTotal, dailyAllowance: $dailyAllowance, overallMonthlyBudget: $overallMonthlyBudget, categoryBreakdown: $categoryBreakdown, budgetProgress: $budgetProgress, recentTransactions: $recentTransactions)';
+    return 'DashboardState(monthlyTotal: $monthlyTotal, dailyAllowance: $dailyAllowance, overallMonthlyBudget: $overallMonthlyBudget, categoryBreakdown: $categoryBreakdown, budgetProgress: $budgetProgress, recentTransactions: $recentTransactions, insights: $insights, healthScore: $healthScore)';
   }
 
   @override
@@ -269,7 +311,10 @@ class _$DashboardStateImpl implements _DashboardState {
             const DeepCollectionEquality().equals(
               other._recentTransactions,
               _recentTransactions,
-            ));
+            ) &&
+            const DeepCollectionEquality().equals(other._insights, _insights) &&
+            (identical(other.healthScore, healthScore) ||
+                other.healthScore == healthScore));
   }
 
   @override
@@ -281,6 +326,8 @@ class _$DashboardStateImpl implements _DashboardState {
     const DeepCollectionEquality().hash(_categoryBreakdown),
     const DeepCollectionEquality().hash(_budgetProgress),
     const DeepCollectionEquality().hash(_recentTransactions),
+    const DeepCollectionEquality().hash(_insights),
+    healthScore,
   );
 
   /// Create a copy of DashboardState
@@ -303,6 +350,8 @@ abstract class _DashboardState implements DashboardState {
     required final List<CategoryBreakdown> categoryBreakdown,
     required final List<BudgetProgress> budgetProgress,
     required final List<Transaction> recentTransactions,
+    final List<AiInsight> insights,
+    final int healthScore,
   }) = _$DashboardStateImpl;
 
   @override
@@ -317,6 +366,10 @@ abstract class _DashboardState implements DashboardState {
   List<BudgetProgress> get budgetProgress;
   @override
   List<Transaction> get recentTransactions;
+  @override
+  List<AiInsight> get insights;
+  @override
+  int get healthScore;
 
   /// Create a copy of DashboardState
   /// with the given fields replaced by the non-null parameter values.

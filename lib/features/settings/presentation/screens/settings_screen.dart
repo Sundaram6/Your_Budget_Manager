@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../routing/route_names.dart';
 import '../../../../core/widgets/cards/glass_card.dart';
+import '../../../../routing/route_names.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../categories/presentation/screens/category_management_screen.dart';
+import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
 import '../../../recurring/presentation/screens/recurring_transactions_screen.dart';
 import 'about_screen.dart';
 import 'appearance_screen.dart';
@@ -61,6 +62,14 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(
+                  leading: const Icon(Icons.auto_awesome, color: Colors.purpleAccent),
+                  title: const Text('AI Financial Insights', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('View full rule-based financial advice & score', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
+                  onTap: () => context.push('/insights'),
+                ),
+                const Divider(height: 1, color: AppColors.darkBorderGlass),
+                ListTile(
                   leading: const Icon(Icons.message, color: Colors.blue),
                   title: const Text('SMS Auto-Tracking', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('Extract expenses from messages', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
@@ -111,6 +120,26 @@ class SettingsScreen extends ConsumerWidget {
                   title: 'Recurring Transactions',
                   subtitle: 'Bills, subscriptions, and reminders',
                   screen: const RecurringTransactionsScreen(),
+                ),
+                const Divider(height: 1, color: AppColors.darkBorderGlass),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkGoldPrimary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.replay_outlined, color: AppColors.darkGoldPrimary, size: 22),
+                  ),
+                  title: const Text('Replay Onboarding', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Restart initial setup flow', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
+                  onTap: () async {
+                    await ref.read(onboardingControllerProvider.notifier).resetOnboarding();
+                    if (context.mounted) {
+                      context.go('/onboarding');
+                    }
+                  },
                 ),
               ],
             ),

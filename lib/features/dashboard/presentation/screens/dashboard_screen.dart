@@ -7,6 +7,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/layout/section_header.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
 import '../controllers/dashboard_controller.dart';
+import '../widgets/ai_insights_card.dart';
 import '../widgets/budget_progress_card.dart';
 import '../widgets/category_breakdown.dart';
 import '../widgets/daily_allowance_card.dart';
@@ -47,6 +48,8 @@ class DashboardScreen extends ConsumerWidget {
               }
             }
           }
+
+          final topInsight = data.insights.isNotEmpty ? data.insights.first : null;
 
           return RefreshIndicator(
             onRefresh: () => ref.read(dashboardControllerProvider.notifier).refresh(),
@@ -113,6 +116,12 @@ class DashboardScreen extends ConsumerWidget {
                   DailyAllowanceCard(allowance: data.dailyAllowance!),
                   const SizedBox(height: AppSpacing.space4),
                 ],
+
+                AiInsightsCard(
+                  healthScore: data.healthScore,
+                  topInsight: topInsight,
+                ),
+                const SizedBox(height: AppSpacing.space4),
 
                 const SectionHeader(title: 'Category Breakdown'),
                 const SizedBox(height: AppSpacing.space3),

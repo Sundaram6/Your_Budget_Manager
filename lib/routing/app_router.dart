@@ -10,6 +10,7 @@ import '../features/backup/presentation/screens/backup_screen.dart';
 import '../features/budgets/presentation/screens/budget_detail_screen.dart';
 import '../features/budgets/presentation/screens/budget_settings_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../features/intelligence/presentation/screens/insights_screen.dart';
 import '../features/merchant_detection/presentation/screens/pending_transactions_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/recurring/presentation/screens/recurring_transactions_screen.dart';
@@ -35,7 +36,7 @@ GoRouter appRouter(AppRouterRef ref) {
     initialLocation: '/',
     redirect: (context, state) async {
       final prefs = await ref.read(sharedPreferencesProvider.future);
-      final isOnboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+      final isOnboardingComplete = (prefs.getBool('hasCompletedOnboarding') ?? prefs.getBool('onboarding_complete')) ?? false;
       final isPinSetupComplete = prefs.getBool('pin_setup_complete') ?? false;
 
       final pinService = ref.read(pinServiceProvider);
@@ -81,6 +82,10 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/pin-lock',
         name: RouteNames.pinLock,
         builder: (context, state) => const PinLockScreen(),
+      ),
+      GoRoute(
+        path: '/insights',
+        builder: (context, state) => const InsightsScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {

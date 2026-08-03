@@ -9,6 +9,8 @@ import '../../../../engines/analytics/models/analytics_models.dart';
 import '../../../../engines/budget/budget_engine_provider.dart';
 import '../../../../engines/budget/models/budget_progress.dart';
 import '../../../../engines/budget/models/daily_allowance.dart';
+import '../../../../engines/intelligence/intelligence_engine_provider.dart';
+import '../../../../engines/intelligence/models/ai_insight.dart';
 import '../../../transactions/domain/entities/transaction.dart';
 
 part 'dashboard_controller.freezed.dart';
@@ -23,6 +25,8 @@ class DashboardState with _$DashboardState {
     required List<CategoryBreakdown> categoryBreakdown,
     required List<BudgetProgress> budgetProgress,
     required List<Transaction> recentTransactions,
+    @Default([]) List<AiInsight> insights,
+    @Default(100) int healthScore,
   }) = _DashboardState;
 }
 
@@ -45,11 +49,15 @@ class DashboardController extends _$DashboardController {
     final budgetEngine = ref.watch(budgetEngineProvider);
     final budgetRepo = ref.watch(budgetRepositoryProvider);
     final txRepo = ref.watch(transactionRepositoryProvider);
+    final intelligenceEngine = ref.watch(intelligenceEngineProvider);
 
     final monthlyTotal = await analyticsEngine.getMonthlyTotal(now.year, now.month);
     final dailyAllowance = await budgetEngine.calculateDailyAllowance(date: now);
     final overallBudget = await budgetRepo.getOverallBudget(now.month, now.year);
     final categoryBreakdown = await analyticsEngine.getCategoryBreakdown(now.year, now.month);
+
+    final insights = await intelligenceEngine.generateInsights();
+    final healthScore = await intelligenceEngine.calculateBudgetHealthScore();
 
     final allTransactions = await txRepo.watchAllTransactions().first;
     final recentTransactions = allTransactions.toList()
@@ -63,6 +71,8 @@ class DashboardController extends _$DashboardController {
       categoryBreakdown: categoryBreakdown,
       budgetProgress: const [],
       recentTransactions: limitedTransactions,
+      insights: insights,
+      healthScore: healthScore,
     );
   }
 

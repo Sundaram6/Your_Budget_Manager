@@ -12,7 +12,17 @@ class OnboardingController extends _$OnboardingController {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('hasCompletedOnboarding', true);
       await prefs.setBool('onboarding_complete', true);
+    });
+  }
+
+  Future<void> resetOnboarding() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('hasCompletedOnboarding', false);
+      await prefs.setBool('onboarding_complete', false);
     });
   }
 }

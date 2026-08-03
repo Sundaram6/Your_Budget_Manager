@@ -7,7 +7,7 @@ part of 'intelligence_engine_provider.dart';
 // **************************************************************************
 
 String _$intelligenceEngineHash() =>
-    r'9e46830d2fb40c1fcc724c016f1521ca7dd68b96';
+    r'a537b90acbec9739c23c34e87dc1a42ed99042e2';
 
 /// See also [intelligenceEngine].
 @ProviderFor(intelligenceEngine)

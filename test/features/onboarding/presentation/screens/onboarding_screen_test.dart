@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 void main() {
-  testWidgets('OnboardingScreen renders PrivacyPromisePage first', (WidgetTester tester) async {
+  testWidgets('OnboardingScreen renders Welcome page first and navigates through steps', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
@@ -13,14 +13,15 @@ void main() {
       ),
     );
     
-    // Privacy promise page text
-    expect(find.text('Your money is yours.'), findsOneWidget);
+    // Page 1: Welcome title & button
+    expect(find.text('Take control of your money'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
     
-    // Tap continue to go to second page
-    await tester.tap(find.text('Continue'));
+    // Tap Get Started to go to Page 2
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
     
-    // Feature Highlight page text
-    expect(find.text('Features designed for you'), findsOneWidget);
+    // Page 2: Monthly Budget
+    expect(find.text('What\'s your monthly budget?'), findsOneWidget);
   });
 }
