@@ -19,7 +19,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _currentPage = 0;
 
   // Page 2 State
@@ -34,6 +34,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _budgetController.dispose();
@@ -43,7 +49,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < 3) {
+    if (_pageController.hasClients) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -63,42 +69,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  Future<void> _saveBudgetAndNext() async {
+  void _saveBudgetAndNext() {
     final text = _budgetController.text.trim();
     final rupees = double.tryParse(text) ?? 0.0;
     if (rupees > 0) {
       final now = DateTime.now();
       final engine = ref.read(budgetEngineProvider);
-      await engine.setMonthlyBudget(
+      engine.setMonthlyBudget(
         amountPaise: (rupees * 100).round(),
         month: now.month,
         year: now.year,
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Monthly budget set to ₹${rupees.toStringAsFixed(0)}!')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Monthly budget set to ₹${rupees.toStringAsFixed(0)}!')),
+      );
     }
     _nextPage();
   }
 
-  Future<void> _saveGoalAndNext() async {
+  void _saveGoalAndNext() {
     final name = _goalNameController.text.trim();
     final amountText = _goalAmountController.text.trim();
     final rupees = double.tryParse(amountText) ?? 0.0;
 
     if (name.isNotEmpty && rupees > 0) {
       final engine = ref.read(savingsEngineProvider);
-      await engine.createGoal(
+      engine.createGoal(
         name: name,
         targetAmountPaise: (rupees * 100).round(),
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Savings Goal "$name" created!')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Savings Goal "$name" created!')),
+      );
     }
     _nextPage();
   }
@@ -139,6 +141,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.darkCanvas,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -152,63 +155,68 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (idx) => setState(() => _currentPage = idx),
-                    children: [
-                      _buildPage1Welcome(),
-                      _buildPage2Budget(),
-                      _buildPage3SavingsGoal(),
-                      _buildPage4SmsAutoTrack(),
-                    ],
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (idx) => setState(() => _currentPage = idx),
+                      children: [
+                        _buildPage1Welcome(),
+                        _buildPage2Budget(),
+                        _buildPage3SavingsGoal(),
+                        _buildPage4SmsAutoTrack(),
+                      ],
+                    ),
                   ),
-                ),
 
-                // Progress Dots Indicator & Step Counter
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.space4),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(4, (index) {
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: _currentPage == index ? 24 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _currentPage == index ? AppColors.darkGoldPrimary : AppColors.darkSurface3,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Step ${_currentPage + 1} of 4',
-                        style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 12),
-                      ),
-                    ],
+                  // Progress Dots Indicator & Step Counter
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(4, (index) {
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: _currentPage == index ? 24 : 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: _currentPage == index ? AppColors.darkGoldPrimary : AppColors.darkSurface3,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Step ${_currentPage + 1} of 4',
+                          style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 
   // PAGE 1 — Welcome
   Widget _buildPage1Welcome() {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: AppSpacing.space4),
           const Icon(Icons.account_balance_wallet_outlined, size: 80, color: AppColors.darkGoldPrimary),
           const SizedBox(height: AppSpacing.space6),
           Text(
@@ -243,11 +251,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // PAGE 2 — Monthly Budget
   Widget _buildPage2Budget() {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: AppSpacing.space2),
           const Icon(Icons.calculate_outlined, size: 64, color: AppColors.darkGoldPrimary),
           const SizedBox(height: AppSpacing.space4),
           Text(
@@ -299,11 +309,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // PAGE 3 — Savings Goal
   Widget _buildPage3SavingsGoal() {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: AppSpacing.space2),
           const Icon(Icons.savings_outlined, size: 64, color: AppColors.darkGoldPrimary),
           const SizedBox(height: AppSpacing.space4),
           Text(
@@ -365,11 +377,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // PAGE 4 — SMS Auto-Tracking
   Widget _buildPage4SmsAutoTrack() {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: AppSpacing.space2),
           const Icon(Icons.sms_outlined, size: 64, color: AppColors.darkGoldPrimary),
           const SizedBox(height: AppSpacing.space4),
           Text(
