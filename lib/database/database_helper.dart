@@ -31,6 +31,25 @@ class DatabaseHelper {
     _db = database;
   }
 
+  Stream<List<RecurringTransactionModel>> watchAllRecurringTransactions() async* {
+    final dbInstance = await db;
+    yield* dbInstance.customSelect(
+      'SELECT * FROM recurring_transactions ORDER BY next_due_date ASC',
+      readsFrom: {dbInstance.recurringTransactionsTable},
+    ).watch().map((rows) {
+      return rows.map((r) {
+        final data = Map<String, dynamic>.from(r.data);
+        if (data['is_active'] is int) {
+          data['is_active'] = (data['is_active'] as int) == 1;
+        }
+        if (data['auto_confirm'] is int) {
+          data['auto_confirm'] = (data['auto_confirm'] as int) == 1;
+        }
+        return RecurringTransactionModel.fromJson(data);
+      }).toList();
+    });
+  }
+
   Future<List<RecurringTransactionModel>> getDueRecurringTransactions(String todayStr) async {
     final dbInstance = await db;
     final rows = await dbInstance.customSelect(
@@ -40,7 +59,6 @@ class DatabaseHelper {
 
     return rows.map((r) {
       final data = Map<String, dynamic>.from(r.data);
-      // Ensure boolean values are converted from int if stored as 0/1 in SQLite
       if (data['is_active'] is int) {
         data['is_active'] = (data['is_active'] as int) == 1;
       }
@@ -136,6 +154,15 @@ class DatabaseHelper {
         json['created_at'],
         json['updated_at'],
       ],
+    );
+    return 1;
+  }
+
+  Future<int> deleteRecurringTransaction(String id) async {
+    final dbInstance = await db;
+    await dbInstance.customStatement(
+      'DELETE FROM recurring_transactions WHERE id = ?',
+      [id],
     );
     return 1;
   }
