@@ -40,7 +40,6 @@ dependencies:
   fl_chart: ^1.2.0
   shimmer: ^3.0.0
   lottie: ^3.5.1
-  google_fonts: ^6.2.1
 
   # Utilities
   intl: ^0.20.3
@@ -75,3 +74,8 @@ flutter:
   assets:
     - assets/animations/
     - assets/icons/
+
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-VariableFont_wght.ttf

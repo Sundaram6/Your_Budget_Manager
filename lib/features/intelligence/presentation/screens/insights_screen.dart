@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/charts/progress_donut_chart.dart';
+import '../../../../engines/analytics/analytics_engine_provider.dart';
+import '../../../../engines/analytics/models/analytics_models.dart';
 import '../../../../engines/intelligence/intelligence_engine_provider.dart';
 import '../../../../engines/intelligence/models/ai_insight.dart';
 
@@ -16,8 +20,10 @@ class InsightsScreen extends ConsumerStatefulWidget {
 
 class _InsightsScreenState extends ConsumerState<InsightsScreen> {
   List<AiInsight> _insights = [];
+  List<CategoryBreakdown> _categoryBreakdown = [];
   int _healthScore = 100;
   bool _isLoading = true;
+  int _selectedSegment = 0; // 0 for Categories, 1 for AI Insights
 
   @override
   void initState() {
@@ -27,13 +33,21 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    final engine = ref.read(intelligenceEngineProvider);
-    final insights = await engine.generateInsights();
-    final score = await engine.calculateBudgetHealthScore();
+    
+    final intelligenceEngine = ref.read(intelligenceEngineProvider);
+    final analyticsEngine = ref.read(analyticsEngineProvider);
+    
+    final insights = await intelligenceEngine.generateInsights();
+    final score = await intelligenceEngine.calculateBudgetHealthScore();
+    
+    final now = DateTime.now();
+    final breakdown = await analyticsEngine.getCategoryBreakdown(now.year, now.month);
+    
     if (mounted) {
       setState(() {
         _insights = insights;
         _healthScore = score;
+        _categoryBreakdown = breakdown;
         _isLoading = false;
       });
     }
@@ -41,12 +55,20 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppCustomTokens>()!;
+    
     return Scaffold(
-      backgroundColor: AppColors.darkCanvas,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('AI Financial Insights', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Analytics',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -55,185 +77,323 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.space4),
                 children: [
-                  // Health Score Card
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.space4),
-                    decoration: BoxDecoration(
-                      color: AppColors.darkSurface2,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.darkGoldPrimary.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: CircularProgressIndicator(
-                                value: (_healthScore / 100).clamp(0.0, 1.0),
-                                backgroundColor: AppColors.darkSurface3,
-                                valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(_healthScore)),
-                                strokeWidth: 6,
-                              ),
-                            ),
-                            Text(
-                              '$_healthScore',
-                              style: TextStyle(
-                                color: _getScoreColor(_healthScore),
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: AppSpacing.space4),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Budget Health Score',
-                                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _getScoreLabel(_healthScore),
-                                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: AppSpacing.space6),
-
-                  const Text(
-                    'Active Insights',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: AppSpacing.space3),
-
-                  if (_insights.isEmpty)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSpacing.space6),
-                        child: Column(
-                          children: [
-                            Icon(Icons.auto_awesome_outlined, size: 64, color: Color(0xFF94A3B8)),
-                            SizedBox(height: AppSpacing.space3),
-                            Text(
-                              'No insights yet. Start tracking expenses!',
-                              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    ..._insights.map((insight) {
-                      final borderBorderColor = _getInsightColor(insight.type);
-                      final titleText = insight.title.isNotEmpty ? insight.title : 'Financial Insight';
-                      final descText = insight.description.isNotEmpty ? insight.description : 'Keep tracking expenses for recommendations.';
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: AppSpacing.space3),
-                        padding: const EdgeInsets.all(AppSpacing.space4),
-                        decoration: BoxDecoration(
-                          color: AppColors.darkSurface2,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border(
-                            left: BorderSide(color: borderBorderColor, width: 5),
-                            top: const BorderSide(color: AppColors.darkSurface3),
-                            right: const BorderSide(color: AppColors.darkSurface3),
-                            bottom: const BorderSide(color: AppColors.darkSurface3),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(_getInsightIcon(insight.type), color: borderBorderColor, size: 20),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    titleText,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              descText,
-                              style: const TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              DateFormat('dd MMM yyyy, hh:mm a').format(insight.generatedAt),
-                              style: TextStyle(
-                                color: const Color(0xFF94A3B8).withValues(alpha: 0.6),
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                ],
+                  _buildSegmentedControl(context, tokens),
+                  const SizedBox(height: AppSpacing.space5),
+                  
+                  if (_selectedSegment == 0) ...[
+                    _buildCategoryDonut(context, tokens),
+                    const SizedBox(height: AppSpacing.space5),
+                    _buildLegendChips(context, tokens),
+                  ] else ...[
+                    _buildHealthScoreCard(context, tokens),
+                    const SizedBox(height: AppSpacing.space5),
+                    ..._buildInsightsList(context, tokens),
+                  ],
+                  const SizedBox(height: 80), // bottom padding
+                ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, end: 0, duration: 300.ms, curve: Curves.easeOutQuad),
               ),
             ),
     );
   }
 
-  Color _getScoreColor(int score) {
-    if (score >= 90) return AppColors.darkIncome;
-    if (score >= 70) return Colors.amber;
-    if (score >= 50) return Colors.orange;
-    return AppColors.darkExpense;
+  Widget _buildSegmentedControl(BuildContext context, AppCustomTokens tokens) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedSegment = 0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _selectedSegment == 0 ? tokens.accentTransport : Colors.transparent,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Spending',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _selectedSegment == 0 ? tokens.heroTextColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedSegment = 1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _selectedSegment == 1 ? tokens.accentSavings : Colors.transparent,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'AI Insights',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _selectedSegment == 1 ? tokens.heroTextColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  String _getScoreLabel(int score) {
-    if (score >= 90) return 'Excellent — spending and saving on track!';
-    if (score >= 70) return 'Good — staying within target range.';
-    if (score >= 50) return 'Fair — approaching your monthly budget limit.';
-    return 'Poor — budget exceeded or no savings set up.';
-  }
-
-  Color _getInsightColor(InsightType type) {
-    switch (type) {
-      case InsightType.warning:
-        return AppColors.darkExpense;
-      case InsightType.tip:
-        return AppColors.darkGoldPrimary;
-      case InsightType.achievement:
-        return AppColors.darkIncome;
-      case InsightType.suggestion:
-        return Colors.blueAccent;
+  Widget _buildCategoryDonut(BuildContext context, AppCustomTokens tokens) {
+    if (_categoryBreakdown.isEmpty) {
+      return const Center(child: Text('No spending data for this month.'));
     }
+
+    final data = <String, double>{};
+    final colors = <Color>[];
+    
+    // Sort by amount descending
+    final sortedBreakdown = List<CategoryBreakdown>.from(_categoryBreakdown)
+      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+
+    double total = 0;
+    final predefinedColors = [
+      tokens.accentShopping,
+      tokens.accentTransport,
+      tokens.accentBills,
+      tokens.accentSavings,
+      tokens.accentAlert,
+    ];
+
+    for (int i = 0; i < sortedBreakdown.length; i++) {
+      final cb = sortedBreakdown[i];
+      data[cb.categoryName] = cb.totalAmount;
+      total += cb.totalAmount;
+      colors.add(predefinedColors[i % predefinedColors.length]);
+    }
+
+    return Container(
+      padding: EdgeInsets.all(tokens.gridUnit * 3),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+      ),
+      child: AspectRatio(
+        aspectRatio: 1.2,
+        child: ProgressDonutChart(
+          data: data,
+          colors: colors,
+          strokeWidth: 24,
+          centerRadius: 80,
+          centerWidget: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Total',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '\$${total.toStringAsFixed(0)}',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  IconData _getInsightIcon(InsightType type) {
-    switch (type) {
-      case InsightType.warning:
-        return Icons.warning_amber_rounded;
-      case InsightType.tip:
-        return Icons.lightbulb_outline;
-      case InsightType.achievement:
-        return Icons.emoji_events_outlined;
-      case InsightType.suggestion:
-        return Icons.auto_awesome;
+  Widget _buildLegendChips(BuildContext context, AppCustomTokens tokens) {
+    final predefinedColors = [
+      tokens.accentShopping,
+      tokens.accentTransport,
+      tokens.accentBills,
+      tokens.accentSavings,
+      tokens.accentAlert,
+    ];
+
+    final sortedBreakdown = List<CategoryBreakdown>.from(_categoryBreakdown)
+      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+
+    return Wrap(
+      spacing: AppSpacing.space2,
+      runSpacing: AppSpacing.space2,
+      children: List.generate(sortedBreakdown.length, (index) {
+        final cb = sortedBreakdown[index];
+        final color = predefinedColors[index % predefinedColors.length];
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: color.withOpacity(0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                cb.categoryName,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '\$${cb.totalAmount.toStringAsFixed(0)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildHealthScoreCard(BuildContext context, AppCustomTokens tokens) {
+    Color getScoreColor(int score) {
+      if (score >= 90) return tokens.accentSavings;
+      if (score >= 70) return tokens.accentTransport;
+      if (score >= 50) return tokens.accentShopping;
+      return tokens.accentAlert;
     }
+
+    final scoreColor = getScoreColor(_healthScore);
+
+    return Container(
+      padding: EdgeInsets.all(tokens.gridUnit * 3),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: scoreColor.withOpacity(0.2), width: 8),
+            ),
+            child: Center(
+              child: Text(
+                '$_healthScore',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: scoreColor,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.space4),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Financial Health',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _healthScore >= 70 ? 'You are on track. Keep it up!' : 'Action required to balance budget.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildInsightsList(BuildContext context, AppCustomTokens tokens) {
+    if (_insights.isEmpty) {
+      return [
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.space6),
+            child: Text('No insights yet. Start tracking expenses!'),
+          ),
+        )
+      ];
+    }
+
+    return _insights.map((insight) {
+      final isWarning = insight.type == InsightType.warning;
+      final color = isWarning ? tokens.accentAlert : tokens.accentTransport;
+      final icon = isWarning ? Icons.warning_amber_rounded : Icons.lightbulb_outline;
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.space3),
+        padding: EdgeInsets.all(tokens.gridUnit * 2),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: AppSpacing.space3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    insight.title.isNotEmpty ? insight.title : 'Insight',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    insight.description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 }

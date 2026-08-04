@@ -4,164 +4,283 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/enums.dart';
-import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/theme/app_custom_tokens.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/inputs/numeric_keypad.dart';
 import '../controllers/add_transaction_controller.dart';
-import '../widgets/amount_keypad.dart';
 import '../widgets/category_picker.dart';
 
-class AddTransactionScreen extends ConsumerWidget {
+class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
+}
+
+class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
+  String _amountStr = '0';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialAmt = ref.read(addTransactionControllerProvider).amount;
+      if (initialAmt > 0) {
+        setState(() {
+          _amountStr = initialAmt.toString().replaceAll(RegExp(r'\.0$'), '');
+        });
+      }
+    });
+  }
+
+  void _onKeyPressed(String key) {
+    setState(() {
+      if (_amountStr == '0' && key != '.') {
+        _amountStr = key;
+      } else {
+        if (key == '.' && _amountStr.contains('.')) return; // prevent multiple dots
+        
+        // Prevent more than 2 decimal places
+        if (_amountStr.contains('.')) {
+          final parts = _amountStr.split('.');
+          if (parts.length > 1 && parts[1].length >= 2) return;
+        }
+
+        _amountStr += key;
+      }
+    });
+    _updateControllerAmount();
+  }
+
+  void _onBackspace() {
+    setState(() {
+      if (_amountStr.length > 1) {
+        _amountStr = _amountStr.substring(0, _amountStr.length - 1);
+      } else {
+        _amountStr = '0';
+      }
+    });
+    _updateControllerAmount();
+  }
+
+  void _updateControllerAmount() {
+    final val = double.tryParse(_amountStr) ?? 0.0;
+    ref.read(addTransactionControllerProvider.notifier).setAmount(val);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(addTransactionControllerProvider);
     final controller = ref.read(addTransactionControllerProvider.notifier);
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppCustomTokens>()!;
 
-    // Show error if any
     ref.listen<AddTransactionState>(addTransactionControllerProvider, (previous, next) {
       if (next.error != null && previous?.error != next.error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!)),
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: tokens.accentAlert,
+          ),
         );
       }
     });
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Add Transaction'),
-        actions: [
-          if (state.isSaving)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: () => _handleSave(context, controller),
-            ),
-        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Add Transaction',
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => context.pop(),
+        ),
       ),
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Column(
           children: [
-            // Toggle Income / Expense
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: SegmentedButton<TransactionType>(
-                segments: const [
-                  ButtonSegment(value: TransactionType.expense, label: Text('Expense')),
-                  ButtonSegment(value: TransactionType.income, label: Text('Income')),
-                ],
-                selected: {state.type},
-                onSelectionChanged: (Set<TransactionType> newSelection) {
-                  controller.setType(newSelection.first);
-                },
-              ),
-            ),
-            
-            // Amount Display
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    CurrencyFormatter.format(state.amount),
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: state.type == TransactionType.expense ? Colors.red : Colors.green,
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: state.date,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                      );
-                      if (date != null) {
-                        controller.setDate(date);
-                      }
-                    },
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(DateFormat.yMMMd().format(state.date)),
-                  ),
-                ],
-              ),
-            ),
-
-            // Note Input
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Add a note (optional)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                onChanged: controller.setNote,
-              ),
-            ),
-
-            // Error display banner if present
-            if (state.error != null)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade400),
-                ),
-                child: Row(
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
+                child: Column(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        state.error!,
-                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    // Pill Toggles for Expense / Income
+                    _buildPillToggles(context, state, controller, tokens),
+                    
+                    const SizedBox(height: AppSpacing.space6),
+                    
+                    // Amount Display
+                    Text(
+                      '\$$_amountStr',
+                      style: theme.textTheme.displayLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: state.type == TransactionType.expense 
+                          ? theme.colorScheme.onSurface 
+                          : tokens.accentSavings,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
+                    ),
+                    
+                    const SizedBox(height: AppSpacing.space2),
+                    
+                    // Date picker
+                    TextButton.icon(
+                      onPressed: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: state.date,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: Theme.of(context).colorScheme.copyWith(
+                                  primary: tokens.accentTransport,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (date != null) {
+                          controller.setDate(date);
+                        }
+                      },
+                      icon: Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      label: Text(
+                        DateFormat.yMMMd().format(state.date),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.space6),
+
+                    // Note Input
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                      ),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Add a note (optional)',
+                          border: InputBorder.none,
+                          icon: Icon(Icons.edit_note, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        ),
+                        onChanged: controller.setNote,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.space4),
+
+                    // Category Picker
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Category',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space2),
+                    
+                    CategoryPicker(
+                      selectedCategoryId: state.selectedCategoryId,
+                      onCategorySelected: controller.setCategory,
                     ),
                   ],
                 ),
               ),
-
-            // Category Picker
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Category', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            
+            // Numeric Keypad fixed at bottom
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.space4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
-            ),
-
-            CategoryPicker(
-              selectedCategoryId: state.selectedCategoryId,
-              onCategorySelected: controller.setCategory,
-            ),
-
-            // Keypad
-            AmountKeypad(
-              value: state.amount > 0 ? state.amount.toString().replaceAll(RegExp(r'\.0$'), '') : '',
-              onChanged: (val) {
-                final amount = double.tryParse(val) ?? 0.0;
-                controller.setAmount(amount);
-              },
-              onSubmit: () => _handleSave(context, controller),
+              child: state.isSaving
+                  ? const Center(child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
+                    ))
+                  : NumericKeypad(
+                      onKeyPressed: _onKeyPressed,
+                      onBackspace: _onBackspace,
+                      onSubmit: () => _handleSave(context, controller),
+                      submitLabel: 'Save ${state.type == TransactionType.expense ? "Expense" : "Income"}',
+                    ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPillToggles(BuildContext context, AddTransactionState state, AddTransactionController controller, AppCustomTokens tokens) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setType(TransactionType.expense),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: state.type == TransactionType.expense ? Theme.of(context).colorScheme.onSurface : Colors.transparent,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Expense',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: state.type == TransactionType.expense ? Theme.of(context).scaffoldBackgroundColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setType(TransactionType.income),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: state.type == TransactionType.income ? tokens.accentSavings : Colors.transparent,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Income',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: state.type == TransactionType.income ? tokens.heroTextColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

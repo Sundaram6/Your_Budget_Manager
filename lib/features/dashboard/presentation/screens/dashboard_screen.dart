@@ -5,24 +5,21 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/layout/section_header.dart';
+import '../../../../core/widgets/charts/progress_donut_chart.dart';
+import '../../../../core/widgets/cards/status_tile.dart';
+import '../../../../core/widgets/cards/transaction_row.dart';
 import '../../../../database/database_helper.dart';
-import '../../../../engines/savings/savings_engine_provider.dart';
 import '../../../../models/recurring_transaction.dart';
 import '../../../../routing/route_names.dart';
 import '../../../../services/notification_reader_service.dart';
 import '../../../../services/notification_router.dart';
 import '../../../../widgets/notification_transaction_sheet.dart';
 import '../controllers/dashboard_controller.dart';
-import '../widgets/ai_insights_card.dart';
-import '../widgets/budget_progress_card.dart';
-import '../widgets/category_breakdown.dart';
-import '../widgets/daily_allowance_card.dart';
+import '../widgets/hero_balance_card.dart';
 import '../widgets/quick_add_fab.dart';
-import '../widgets/recent_transactions.dart';
-import '../widgets/savings_goals_section.dart';
-import '../widgets/total_spend_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -38,7 +35,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     NotificationReaderService.instance.initialize();
     NotificationRouter.instance.pendingNotification.addListener(_onPendingNotification);
 
-    // Check if there is an unhandled pending notification on launch
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onPendingNotification();
     });
@@ -65,264 +61,49 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardControllerProvider);
-    final goalsAsync = ref.watch(savingsGoalsStreamProvider);
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppCustomTokens>()!;
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.repeat, color: Color(0xFFD4AF37)),
-            tooltip: 'Recurring Transactions',
-            onPressed: () {
-              context.pushNamed(RouteNames.recurring);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_active_outlined, color: Color(0xFFD4AF37)),
-            tooltip: 'Notification Settings',
-            onPressed: () {
-              context.push('/notification-settings');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
-            onPressed: () {
-              context.pushNamed('settings');
-            },
-          ),
-        ],
-      ),
-      body: state.when(
-        data: (data) {
-          final budget = data.overallMonthlyBudget;
-          double savingsAllocationsRupees = 0.0;
-          if (budget != null && goalsAsync.hasValue) {
-            final linkedGoals = goalsAsync.value!.where((g) => g.budgetId == budget.id);
-            for (final g in linkedGoals) {
-              if (g.autoDeduct && g.autoDeductAmount != null && g.autoDeductAmount! > 0) {
-                savingsAllocationsRupees += (g.autoDeductAmount! / 100);
-              }
-            }
-          }
-
-          final topInsight = data.insights.isNotEmpty ? data.insights.first : null;
-
-          return RefreshIndicator(
-            onRefresh: () => ref.read(dashboardControllerProvider.notifier).refresh(),
-            child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.space4),
-              children: [
-                // Recurring Transactions Due Today Summary Card
-                FutureBuilder<List<RecurringTransactionModel>>(
-                  future: DatabaseHelper.instance.getDueRecurringTransactions(todayStr),
-                  builder: (context, snapshot) {
-                    final dueCount = snapshot.data?.length ?? 0;
-                    if (dueCount == 0) return const SizedBox.shrink();
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.space4),
-                      padding: const EdgeInsets.all(AppSpacing.space4),
-                      decoration: BoxDecoration(
-                        color: AppColors.darkSurface2,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFD4AF37)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.repeat, color: Color(0xFFD4AF37), size: 28),
-                          const SizedBox(width: AppSpacing.space3),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '$dueCount Recurring Due Today',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                const Text(
-                                  'Tap to view and manage recurring transactions',
-                                  style: TextStyle(
-                                    color: AppColors.darkTextSecondary,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => context.pushNamed(RouteNames.recurring),
-                            child: const Text(
-                              'View',
-                              style: TextStyle(
-                                color: Color(0xFFD4AF37),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-                TotalSpendCard(totalSpend: data.monthlyTotal),
-                const SizedBox(height: AppSpacing.space4),
-
-                if (budget != null) ...[
-                  BudgetProgressCard(
-                    budget: budget,
-                    spentAmount: data.monthlyTotal,
-                    savingsAllocationsRupees: savingsAllocationsRupees,
-                  ),
+      body: SafeArea(
+        child: state.when(
+          data: (data) {
+            return RefreshIndicator(
+              onRefresh: () => ref.read(dashboardControllerProvider.notifier).refresh(),
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.space4),
+                children: [
+                  _buildTopBar(context, tokens),
                   const SizedBox(height: AppSpacing.space4),
-                ] else ...[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppSpacing.space4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF171A23),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFF5D395).withValues(alpha: 0.4)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.account_balance_wallet, color: Color(0xFFF5D395)),
-                            SizedBox(width: AppSpacing.space2),
-                            Text(
-                              'Set Monthly Budget',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.space2),
-                        const Text(
-                          'Set your monthly budget to track spending & daily allowance',
-                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                        ),
-                        const SizedBox(height: AppSpacing.space3),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFF5D395),
-                              foregroundColor: Colors.black,
-                            ),
-                            onPressed: () => context.pushNamed('budgets'),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Set Monthly Budget', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  HeroBalanceCard(totalBalance: data.monthlyTotal), // TODO: Use real total balance
                   const SizedBox(height: AppSpacing.space4),
-                ],
-
-                if (data.dailyAllowance != null) ...[
-                  DailyAllowanceCard(allowance: data.dailyAllowance!),
+                  _buildAccountsStrip(context, tokens),
                   const SizedBox(height: AppSpacing.space4),
-                ],
+                  _buildStatusTiles(context, tokens, data.healthScore, data.insights.isNotEmpty ? data.insights.first.title : 'No new insights'),
+                  const SizedBox(height: AppSpacing.space4),
+                  
+                  if (data.overallMonthlyBudget != null) ...[
+                    const SectionHeader(title: 'Budget Progress'),
+                    const SizedBox(height: AppSpacing.space3),
+                    _buildBudgetDonut(context, tokens, data.overallMonthlyBudget!.amount / 100, data.monthlyTotal),
+                    const SizedBox(height: AppSpacing.space4),
+                  ],
 
-                AiInsightsCard(
-                  healthScore: data.healthScore,
-                  topInsight: topInsight,
-                ),
-                const SizedBox(height: AppSpacing.space4),
-
-                const SectionHeader(title: 'Category Breakdown'),
-                const SizedBox(height: AppSpacing.space3),
-                CategoryBreakdownWidget(breakdowns: data.categoryBreakdown),
-                const SizedBox(height: AppSpacing.space4),
-
-                const SavingsGoalsSection(),
-                const SizedBox(height: AppSpacing.space4),
-
-                SectionHeader(
-                  title: 'Recurring Payments',
-                  actionLabel: 'View All',
-                  onActionPressed: () => context.push('/recurring'),
-                ),
-                const SizedBox(height: AppSpacing.space2),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.space4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF2A2A2A)),
+                  SectionHeader(
+                    title: 'Recent Transactions',
+                    actionLabel: 'See All',
+                    onActionPressed: () => context.pushNamed('transactionList'),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.repeat, color: Color(0xFFD4AF37), size: 24),
-                      ),
-                      const SizedBox(width: 14),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Bills & Subscriptions',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Rent, EMI, Netflix, Mobile Recharge...',
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        onPressed: () => context.push('/create-recurring'),
-                        child: const Text('+ Add', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.space4),
-
-                SectionHeader(
-                  title: 'Recent Transactions',
-                  actionLabel: 'See All',
-                  onActionPressed: () => context.pushNamed('transactionList'),
-                ),
-                const SizedBox(height: AppSpacing.space3),
-                RecentTransactionsWidget(transactions: data.recentTransactions),
-              ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, end: 0, duration: 300.ms, curve: Curves.easeOutQuad),
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+                  const SizedBox(height: AppSpacing.space3),
+                  _buildRecentTransactions(context, data.recentTransactions),
+                  const SizedBox(height: 80), // Padding for FAB
+                ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, end: 0, duration: 300.ms, curve: Curves.easeOutQuad),
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+        ),
       ),
       floatingActionButton: QuickAddFab(
         onPressed: () {
@@ -332,65 +113,276 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  Widget _buildTopBar(BuildContext context, AppCustomTokens tokens) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () => context.pushNamed('settings'),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: tokens.accentTransport.withOpacity(0.2),
+            child: Icon(Icons.person, color: tokens.accentTransport),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: tokens.accentSavings.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.shield_outlined, size: 14, color: tokens.accentSavings),
+              const SizedBox(width: 4),
+              Text(
+                'Local Only',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: tokens.accentSavings,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountsStrip(BuildContext context, AppCustomTokens tokens) {
+    return SizedBox(
+      height: 60,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        children: [
+          _buildAccountPill(context, tokens, 'Main Account', 12450.00, true),
+          const SizedBox(width: 12),
+          _buildAccountPill(context, tokens, 'Cash Wallet', 450.00, false),
+          const SizedBox(width: 12),
+          _buildAddAccountPill(context, tokens),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountPill(BuildContext context, AppCustomTokens tokens, String name, double balance, bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: active ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(tokens.cardBorderRadius / 2),
+        border: Border.all(
+          color: active ? tokens.heroSurfaceColor.withOpacity(0.2) : Colors.transparent,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            name,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '\$${balance.toStringAsFixed(2)}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddAccountPill(BuildContext context, AppCustomTokens tokens) {
+    return Container(
+      width: 60,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(tokens.cardBorderRadius / 2),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.add,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusTiles(BuildContext context, AppCustomTokens tokens, int healthScore, String insight) {
+    final isHealthy = healthScore > 70;
+    return Row(
+      children: [
+        Expanded(
+          child: StatusTile(
+            icon: isHealthy ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+            title: isHealthy ? 'Safe to spend' : 'Watch spending',
+            subtitle: 'Health: $healthScore',
+            statusColor: isHealthy ? tokens.accentSavings : tokens.accentAlert,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.space3),
+        Expanded(
+          child: StatusTile(
+            icon: Icons.lightbulb_outline,
+            title: 'Insight',
+            subtitle: insight,
+            statusColor: tokens.accentBills,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBudgetDonut(BuildContext context, AppCustomTokens tokens, double budget, double spent) {
+    final remaining = budget - spent;
+    final data = {
+      'Spent': spent,
+      'Remaining': remaining > 0 ? remaining : 0.0,
+    };
+    final percentage = (spent / budget) * 100;
+    
+    return Container(
+      padding: EdgeInsets.all(tokens.gridUnit * 3),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ProgressDonutChart(
+              data: data,
+              colors: [
+                percentage > 90 ? tokens.accentAlert : tokens.accentTransport,
+                Theme.of(context).scaffoldBackgroundColor, // Empty part of donut
+              ],
+              strokeWidth: 16,
+              centerRadius: 40,
+              centerWidget: Text(
+                '${percentage.toStringAsFixed(0)}%',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.space4),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Monthly Budget',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${spent.toStringAsFixed(0)} of \$${budget.toStringAsFixed(0)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactions(BuildContext context, List<dynamic> transactions) {
+    if (transactions.isEmpty) {
+      return const Center(child: Text('No transactions yet.'));
+    }
+    
+    return Column(
+      children: transactions.map((tx) {
+        // Need to parse category color from tx.category if possible, 
+        // for now just use a fallback or determine by isIncome
+        final color = tx.isIncome 
+            ? Theme.of(context).extension<AppCustomTokens>()!.accentSavings 
+            : Theme.of(context).extension<AppCustomTokens>()!.accentShopping;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: TransactionRow(
+            merchantName: tx.title,
+            category: tx.category,
+            amount: tx.amount,
+            date: tx.date,
+            isIncome: tx.isIncome,
+            categoryColor: color,
+            onTap: () {
+              // Navigate to details if needed
+            },
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   void _showAddOptionsSheet(BuildContext context) {
+    // Keep original logic or style to match v2
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF171A23),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Create New',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.add, color: Color(0xFFD4AF37)),
+                contentPadding: EdgeInsets.zero,
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(context).extension<AppCustomTokens>()!.accentTransport.withOpacity(0.2),
+                  child: Icon(Icons.add, color: Theme.of(context).extension<AppCustomTokens>()!.accentTransport),
                 ),
-                title: const Text(
+                title: Text(
                   'One-Time Transaction',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text(
-                  'Record a single expense or income',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
+                subtitle: const Text('Record a single expense or income'),
                 onTap: () {
                   Navigator.pop(ctx);
                   context.pushNamed('addTransaction');
                 },
               ),
-              const Divider(color: Color(0xFF2A2A2A)),
+              const Divider(),
               ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.purpleAccent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.repeat, color: Colors.purpleAccent),
+                contentPadding: EdgeInsets.zero,
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(context).extension<AppCustomTokens>()!.accentBills.withOpacity(0.2),
+                  child: Icon(Icons.repeat, color: Theme.of(context).extension<AppCustomTokens>()!.accentBills),
                 ),
-                title: const Text(
+                title: Text(
                   'Recurring Payment',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text(
-                  'Rent, EMI, Netflix, SIP, Recharge...',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
+                subtitle: const Text('Rent, EMI, Netflix, SIP, Recharge...'),
                 onTap: () {
                   Navigator.pop(ctx);
                   context.push('/create-recurring');

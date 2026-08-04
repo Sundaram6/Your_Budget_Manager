@@ -17,7 +17,7 @@ class AppLockController extends _$AppLockController with WidgetsBindingObserver 
     ref.onDispose(() {
       WidgetsBinding.instance.removeObserver(this);
     });
-    return false;
+    return true; // Locked by default on startup
   }
 
   @override

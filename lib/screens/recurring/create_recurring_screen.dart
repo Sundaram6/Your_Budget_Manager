@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_custom_tokens.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/widgets/buttons/primary_button.dart';
+import '../../core/widgets/inputs/numeric_keypad.dart';
+import '../../features/transactions/presentation/widgets/category_picker.dart';
 import '../../models/recurring_transaction.dart';
 import '../../repositories/recurring_repository.dart';
 
@@ -16,12 +18,11 @@ class CreateRecurringScreen extends StatefulWidget {
 }
 
 class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
   final _intervalDaysController = TextEditingController(text: '30');
   final _notesController = TextEditingController();
 
+  String _amountStr = '0';
   String _selectedType = 'expense';
   String _selectedCategory = 'cat_utilities';
   String _selectedFrequency = 'monthly';
@@ -30,18 +31,6 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
   bool _hasNoEndDate = true;
   bool _autoConfirm = false;
   bool _isSaving = false;
-
-  static const _categories = [
-    MapEntry('cat_groceries', 'Groceries'),
-    MapEntry('cat_food', 'Food & Dining'),
-    MapEntry('cat_transport', 'Transport'),
-    MapEntry('cat_shopping', 'Shopping'),
-    MapEntry('cat_utilities', 'Utilities & Bills'),
-    MapEntry('cat_entertainment', 'Entertainment'),
-    MapEntry('cat_health', 'Health & Medical'),
-    MapEntry('cat_income', 'Income'),
-    MapEntry('cat_misc', 'Miscellaneous'),
-  ];
 
   static const _frequencies = [
     MapEntry('daily', 'Daily'),
@@ -52,7 +41,6 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
     MapEntry('custom', 'Custom'),
   ];
 
-  // Quick Templates
   static const _templates = [
     {'label': '🏠 Rent', 'title': 'Monthly Rent', 'category': 'cat_utilities', 'type': 'expense', 'frequency': 'monthly'},
     {'label': '🏦 EMI', 'title': 'Loan EMI', 'category': 'cat_misc', 'type': 'expense', 'frequency': 'monthly'},
@@ -70,81 +58,43 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _amountController.dispose();
-    _intervalDaysController.dispose();
-    _notesController.dispose();
-    super.dispose();
+  void _onKeyPressed(String key) {
+    setState(() {
+      if (_amountStr == '0' && key != '.') {
+        _amountStr = key;
+      } else {
+        if (key == '.' && _amountStr.contains('.')) return;
+        if (_amountStr.contains('.')) {
+          final parts = _amountStr.split('.');
+          if (parts.length > 1 && parts[1].length >= 2) return;
+        }
+        _amountStr += key;
+      }
+    });
   }
 
-  Future<void> _selectStartDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _startDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFD4AF37),
-              onPrimary: Colors.black,
-              surface: AppColors.darkSurface2,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _startDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectEndDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _endDate ?? _startDate.add(const Duration(days: 30)),
-      firstDate: _startDate,
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFD4AF37),
-              onPrimary: Colors.black,
-              surface: AppColors.darkSurface2,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _endDate = picked;
-        _hasNoEndDate = false;
-      });
-    }
+  void _onBackspace() {
+    setState(() {
+      if (_amountStr.length > 1) {
+        _amountStr = _amountStr.substring(0, _amountStr.length - 1);
+      } else {
+        _amountStr = '0';
+      }
+    });
   }
 
   Future<void> _saveRecurringTransaction() async {
-    if (!_formKey.currentState!.validate()) {
+    final amountDouble = double.tryParse(_amountStr);
+    if (amountDouble == null || amountDouble <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid amount')),
+      );
       return;
     }
 
-    final amountDouble = double.tryParse(_amountController.text.trim());
-    if (amountDouble == null || amountDouble <= 0) {
+    if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount greater than zero')),
+        const SnackBar(content: Text('Please enter a title')),
       );
       return;
     }
@@ -160,9 +110,7 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
       }
     }
 
-    setState(() {
-      _isSaving = true;
-    });
+    setState(() => _isSaving = true);
 
     final now = DateTime.now();
     final amountPaise = (amountDouble * 100).round();
@@ -190,18 +138,12 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
 
     try {
       await RecurringRepository.instance.insert(recurringItem);
-
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Recurring transaction created')),
-        );
-        Navigator.of(context).pop();
+        context.pop();
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error saving: $e')),
         );
@@ -209,352 +151,332 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
     }
   }
 
-  InputDecoration _inputDecoration(String labelText, {String? hintText, String? prefixText}) {
-    return InputDecoration(
-      labelText: labelText,
-      hintText: hintText,
-      prefixText: prefixText,
-      prefixStyle: const TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold),
-      labelStyle: const TextStyle(color: AppColors.darkTextSecondary),
-      hintStyle: const TextStyle(color: AppColors.darkTextTertiary),
-      filled: true,
-      fillColor: AppColors.darkSurface2,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.darkBorderGlass),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.darkBorderGlass),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFD4AF37)),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppCustomTokens>()!;
     final dateFormat = DateFormat('yyyy-MM-dd');
 
     return Scaffold(
-      backgroundColor: AppColors.darkCanvas,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Add Recurring',
-          style: TextStyle(
-            color: AppColors.darkTextPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => context.pop(),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.space4),
+      body: SafeArea(
+        child: Column(
           children: [
-            // ── Quick Templates ──
-            const Text(
-              'QUICK TEMPLATES',
-              style: TextStyle(
-                color: AppColors.darkTextTertiary,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _templates.map((t) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ActionChip(
-                      label: Text(
-                        t['label'] as String,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      backgroundColor: AppColors.darkSurface2,
-                      side: const BorderSide(color: Color(0x55D4AF37)),
-                      onPressed: () => _applyTemplate(t),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.space4),
-
-            // Type Segmented Control
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.darkSurface2,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedType = 'expense'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _selectedType == 'expense'
-                              ? const Color(0xFFD4AF37)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Expense',
-                          style: TextStyle(
-                            color: _selectedType == 'expense' ? Colors.black : AppColors.darkTextSecondary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedType = 'income'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _selectedType == 'income'
-                              ? const Color(0xFFD4AF37)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Income',
-                          style: TextStyle(
-                            color: _selectedType == 'income' ? Colors.black : AppColors.darkTextSecondary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.space4),
-
-            // Title Field
-            TextFormField(
-              controller: _titleController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Title', hintText: 'e.g. Netflix, Rent, Salary'),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppSpacing.space3),
-
-            // Amount Field
-            TextFormField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Amount', hintText: '0.00', prefixText: '₹ '),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an amount';
-                }
-                final val = double.tryParse(value.trim());
-                if (val == null || val <= 0) {
-                  return 'Amount must be greater than zero';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppSpacing.space3),
-
-            // Category Dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              dropdownColor: AppColors.darkSurface2,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Category'),
-              items: _categories.map((c) {
-                return DropdownMenuItem<String>(
-                  value: c.key,
-                  child: Text(c.value, style: const TextStyle(color: Colors.white)),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => _selectedCategory = val);
-                }
-              },
-            ),
-            const SizedBox(height: AppSpacing.space3),
-
-            // Frequency Dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedFrequency,
-              dropdownColor: AppColors.darkSurface2,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Frequency'),
-              items: _frequencies.map((f) {
-                return DropdownMenuItem<String>(
-                  value: f.key,
-                  child: Text(f.value, style: const TextStyle(color: Colors.white)),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => _selectedFrequency = val);
-                }
-              },
-            ),
-            const SizedBox(height: AppSpacing.space3),
-
-            // Custom Interval Days if frequency == 'custom'
-            if (_selectedFrequency == 'custom') ...[
-              TextFormField(
-                controller: _intervalDaysController,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Interval Days', hintText: 'e.g. 10, 45'),
-                validator: (value) {
-                  if (_selectedFrequency == 'custom') {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter interval days';
-                    }
-                    final val = int.tryParse(value.trim());
-                    if (val == null || val <= 0) {
-                      return 'Interval days must be > 0';
-                    }
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppSpacing.space3),
-            ],
-
-            // Start Date Picker
-            InkWell(
-              onTap: _selectStartDate,
-              borderRadius: BorderRadius.circular(12),
-              child: InputDecorator(
-                decoration: _inputDecoration('Start Date'),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
+                child: Column(
                   children: [
+                    // Pill Toggles
+                    _buildPillToggles(context, tokens),
+                    const SizedBox(height: AppSpacing.space6),
+
+                    // Amount Display
                     Text(
-                      dateFormat.format(_startDate),
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      '\$$_amountStr',
+                      style: theme.textTheme.displayLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: _selectedType == 'expense' 
+                          ? theme.colorScheme.onSurface 
+                          : tokens.accentSavings,
+                      ),
                     ),
-                    const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
+                    const SizedBox(height: AppSpacing.space6),
+
+                    // Title
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                      ),
+                      child: TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: 'Title (e.g. Netflix, Rent)',
+                          border: InputBorder.none,
+                          icon: Icon(Icons.title, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
+                    
+                    // Quick Templates
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _templates.map((t) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ActionChip(
+                              label: Text(
+                                t['label'] as String,
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              backgroundColor: theme.colorScheme.surface,
+                              side: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                              onPressed: () => _applyTemplate(t),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
+
+                    // Category Picker
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Category',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space2),
+                    CategoryPicker(
+                      selectedCategoryId: _selectedCategory,
+                      onCategorySelected: (val) => setState(() => _selectedCategory = val),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
+
+                    // Frequency
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedFrequency,
+                          dropdownColor: theme.colorScheme.surface,
+                          isExpanded: true,
+                          items: _frequencies.map((f) {
+                            return DropdownMenuItem<String>(
+                              value: f.key,
+                              child: Text(f.value),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _selectedFrequency = val);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
+
+                    if (_selectedFrequency == 'custom') ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                        ),
+                        child: TextField(
+                          controller: _intervalDaysController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            hintText: 'Interval Days (e.g. 10)',
+                            border: InputBorder.none,
+                            icon: Icon(Icons.repeat, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.space4),
+                    ],
+
+                    // Dates
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate: _startDate,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2100),
+                              );
+                              if (d != null) setState(() => _startDate = d);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(AppSpacing.space3),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Start Date', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                                  const SizedBox(height: 4),
+                                  Text(dateFormat.format(_startDate), style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.space3),
+                        Expanded(
+                          child: InkWell(
+                            onTap: _hasNoEndDate ? null : () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate: _endDate ?? _startDate.add(const Duration(days: 30)),
+                                firstDate: _startDate,
+                                lastDate: DateTime(2100),
+                              );
+                              if (d != null) setState(() => _endDate = d);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(AppSpacing.space3),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('End Date', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _hasNoEndDate || _endDate == null ? 'No End Date' : dateFormat.format(_endDate!),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: _hasNoEndDate ? theme.colorScheme.onSurface.withOpacity(0.3) : theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('No End Date'),
+                      value: _hasNoEndDate,
+                      activeColor: tokens.accentTransport,
+                      onChanged: (val) {
+                        setState(() {
+                          _hasNoEndDate = val ?? true;
+                          if (_hasNoEndDate) _endDate = null;
+                        });
+                      },
+                    ),
+
+                    // Auto-confirm Switch
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Auto-add to budget'),
+                      subtitle: const Text('Automatically create transactions when due'),
+                      value: _autoConfirm,
+                      activeColor: tokens.accentTransport,
+                      onChanged: (val) => setState(() => _autoConfirm = val),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.space3),
-
-            // End Date Picker & No End Date Checkbox
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: _hasNoEndDate ? null : _selectEndDate,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InputDecorator(
-                      decoration: _inputDecoration('End Date (Optional)'),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _hasNoEndDate || _endDate == null
-                                ? 'No End Date'
-                                : dateFormat.format(_endDate!),
-                            style: TextStyle(
-                              color: _hasNoEndDate ? AppColors.darkTextTertiary : Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Icon(
-                            Icons.calendar_month,
-                            color: _hasNoEndDate ? AppColors.darkTextTertiary : const Color(0xFFD4AF37),
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
+            
+            // Numeric Keypad fixed at bottom
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.space4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
                   ),
-                ),
-              ],
-            ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text(
-                'No End Date',
-                style: TextStyle(color: AppColors.darkTextSecondary, fontSize: 14),
+                ],
               ),
-              value: _hasNoEndDate,
-              activeColor: const Color(0xFFD4AF37),
-              checkColor: Colors.black,
-              onChanged: (val) {
-                setState(() {
-                  _hasNoEndDate = val ?? true;
-                  if (_hasNoEndDate) {
-                    _endDate = null;
-                  }
-                });
-              },
+              child: _isSaving
+                  ? const Center(child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
+                    ))
+                  : NumericKeypad(
+                      onKeyPressed: _onKeyPressed,
+                      onBackspace: _onBackspace,
+                      onSubmit: _saveRecurringTransaction,
+                      submitLabel: 'Save Recurring',
+                    ),
             ),
-            const SizedBox(height: AppSpacing.space2),
-
-            // Auto-confirm Switch
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text(
-                'Auto-add to budget without asking',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-              ),
-              subtitle: const Text(
-                'Automatically create transactions when due',
-                style: TextStyle(color: AppColors.darkTextSecondary, fontSize: 12),
-              ),
-              value: _autoConfirm,
-              activeColor: const Color(0xFFD4AF37),
-              onChanged: (val) {
-                setState(() => _autoConfirm = val);
-              },
-            ),
-            const SizedBox(height: AppSpacing.space3),
-
-            // Notes
-            TextFormField(
-              controller: _notesController,
-              maxLines: 3,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Notes (Optional)', hintText: 'Add extra details...'),
-            ),
-            const SizedBox(height: AppSpacing.space6),
-
-            // Save Button
-            PrimaryButton(
-              onPressed: _saveRecurringTransaction,
-              label: 'Save Recurring Transaction',
-              isLoading: _isSaving,
-            ),
-            const SizedBox(height: AppSpacing.space4),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPillToggles(BuildContext context, AppCustomTokens tokens) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedType = 'expense'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _selectedType == 'expense' ? Theme.of(context).colorScheme.onSurface : Colors.transparent,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Expense',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _selectedType == 'expense' ? Theme.of(context).scaffoldBackgroundColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedType = 'income'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _selectedType == 'income' ? tokens.accentSavings : Colors.transparent,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Income',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _selectedType == 'income' ? tokens.heroTextColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,45 +1,42 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Dark Mode (Default / Primary)
-  static const Color darkCanvas = Color(0xFF08090C);
-  static const Color darkSurface1 = Color(0xFF0F1117);
-  static const Color darkSurface2 = Color(0xFF171A23);
-  static const Color darkSurface3 = Color(0xFF212534);
-  static const Color darkSurfaceGlass = Color(0xA6171A23); // 0.65 opacity
+  // Dark Mode - "Dark Jewel Tone"
+  static const Color darkCanvas = Color(0xFF15151F);
+  static const Color darkSurface1 = Color(0xFF1E1E2C);
+  static const Color darkSurface2 = Color(0xFF2A2A3D);
 
-  static const Color darkBorderSubtle = Color(0x0FFFFFFF); // 0.06
-  static const Color darkBorderMedium = Color(0x1EFFFFFF); // 0.12
-  static const Color darkBorderGlass = Color(0x26FFFFFF); // 0.15
-  static const Color darkBorderGoldRim = Color(0x4CF5D395); // 0.30
-
-  static const Color darkTextPrimary = Color(0xFFF8FAFC);
-  static const Color darkTextSecondary = Color(0xFF94A3B8);
-  static const Color darkTextTertiary = Color(0xFF64748B);
-  static const Color darkTextGold = Color(0xFFF5D395);
-
-  static const Color darkGoldLight = Color(0xFFFBE8C3);
-  static const Color darkGoldPrimary = Color(0xFFF5D395);
-  static const Color darkGoldDark = Color(0xFFC89B43);
-  static const Color darkAmber = Color(0xFFFFB800);
-  static const Color darkGoldGlow = Color(0x26F5D395); // 0.15
-
-  static const Color darkIncome = Color(0xFF10B981);
-  static const Color darkIncomeGlow = Color(0x2610B981);
-  static const Color darkExpense = Color(0xFFF43F5E);
-  static const Color darkExpenseGlow = Color(0x26F43F5E);
-
-  // Light Mode
-  static const Color lightCanvas = Color(0xFFF8FAFC);
-  static const Color lightSurface1 = Color(0xFFFFFFFF);
-  static const Color lightSurface2 = Color(0xFFF1F5F9);
-  static const Color lightSurface3 = Color(0xFFE2E8F0);
+  static const Color darkTextPrimary = Color(0xFFF2F1F7);
+  static const Color darkTextSecondary = Color(0xFF8B8AA0);
   
-  static const Color lightTextPrimary = Color(0xFF0F172A);
-  static const Color lightTextSecondary = Color(0xFF475569);
-  static const Color lightTextTertiary = Color(0xFF94A3B8);
-  static const Color lightGoldPrimary = Color(0xFFB8860B);
+  static const Color darkHeroSurface = Color(0xFF1E1E2C);
+  static const Color darkHeroAccentText = Color(0xFFFFC64B); // The old CRED gold
 
-  static const Color lightIncome = Color(0xFF059669);
-  static const Color lightExpense = Color(0xFFDC2626);
+  // Light Mode - "Friendly Pastel"
+  static const Color lightCanvas = Color(0xFFF5F3FF);
+  static const Color lightSurface1 = Color(0xFFFFFFFF);
+  static const Color lightSurface2 = Color(0xFFF8F9FA); // Very light grey for nested elements
+
+  static const Color lightTextPrimary = Color(0xFF1A1A2E);
+  static const Color lightTextSecondary = Color(0xFF6B6B80);
+  
+  static const Color lightHeroSurface = Color(0xFF171730);
+  static const Color lightHeroText = Color(0xFFFFFFFF);
+
+  // Category Accents (Dual Theme where needed)
+  static const Color accentGroceriesLight = Color(0xFF4ECDC4);
+  static const Color accentGroceriesDark = Color(0xFF3DDC97);
+  
+  static const Color accentShopping = Color(0xFFFF9F5A);
+  static const Color accentBills = Color(0xFFFFC64B);
+  static const Color accentTransport = Color(0xFF5B9BFF);
+  static const Color accentSavings = Color(0xFF3DDC97);
+  static const Color accentAlert = Color(0xFFFF6B9D);
+
+  // Legacy/Standard Semantic Fallbacks for backwards compatibility during transition
+  static const Color darkIncome = accentSavings;
+  static const Color darkExpense = accentAlert;
+  static const Color lightIncome = accentSavings;
+  static const Color lightExpense = accentAlert;
+  static const Color darkBorderGlass = Color(0x26FFFFFF);
 }

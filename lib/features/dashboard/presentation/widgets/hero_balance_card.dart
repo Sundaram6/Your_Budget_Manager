@@ -1,0 +1,99 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/theme/app_custom_tokens.dart';
+
+class HeroBalanceCard extends StatelessWidget {
+  final double totalBalance;
+  
+  const HeroBalanceCard({
+    super.key,
+    required this.totalBalance,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppCustomTokens>()!;
+    
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(tokens.gridUnit * 3),
+      decoration: BoxDecoration(
+        color: tokens.heroSurfaceColor,
+        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: tokens.heroSurfaceColor.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'TOTAL BALANCE',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: tokens.heroTextColor.withOpacity(0.7),
+                ),
+              ),
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                color: tokens.heroTextColor.withOpacity(0.5),
+                size: 20,
+              ),
+            ],
+          ),
+          SizedBox(height: tokens.gridUnit),
+          Text(
+            '\$${totalBalance.toStringAsFixed(2)}',
+            style: theme.textTheme.displayLarge?.copyWith(
+              color: tokens.heroTextColor,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          SizedBox(height: tokens.gridUnit * 2),
+          // We can put some quick actions or month indicator here if needed
+          Row(
+            children: [
+              _buildPillAction(context, Icons.add, 'Add Money', tokens),
+              SizedBox(width: tokens.gridUnit),
+              _buildPillAction(context, Icons.arrow_upward, 'Transfer', tokens),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPillAction(BuildContext context, IconData icon, String label, AppCustomTokens tokens) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: tokens.gridUnit * 1.5,
+        vertical: tokens.gridUnit,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: tokens.heroTextColor, size: 16),
+          SizedBox(width: tokens.gridUnit / 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: tokens.heroTextColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

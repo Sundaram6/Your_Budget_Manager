@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +25,7 @@ import '../features/settings/presentation/screens/sms_settings_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
 import '../features/transactions/presentation/screens/add_transaction_screen.dart';
 import '../features/transactions/presentation/screens/transaction_list_screen.dart';
+import '../core/widgets/layout/main_navigation_shell.dart';
 import 'route_names.dart';
 
 part 'app_router.g.dart';
@@ -33,16 +35,29 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>(
   (ref) => SharedPreferences.getInstance(),
 );
 
+class RouterNotifier extends ChangeNotifier {
+  RouterNotifier(this.ref) {
+    ref.listen<bool>(
+      appLockControllerProvider,
+      (_, __) => notifyListeners(),
+    );
+  }
+  final Ref ref;
+}
+
+final routerNotifierProvider = Provider((ref) => RouterNotifier(ref));
+
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
   // initialLocation is set synchronously in main.dart before the app starts.
   // The router NEVER re-evaluates onboarding state reactively — that was the
   // source of the infinite redirect loop.
   final initialLocation = ref.watch(initialRouteProvider);
-  final isLocked = ref.watch(appLockControllerProvider);
+  final notifier = ref.read(routerNotifierProvider);
 
   return GoRouter(
     initialLocation: initialLocation,
+    refreshListenable: notifier,
     // ── REDIRECT: PIN lock only. Onboarding is NOT guarded here. ──────────
     redirect: (context, state) async {
       final prefs = await ref.read(sharedPreferencesProvider.future);
@@ -69,6 +84,7 @@ GoRouter appRouter(AppRouterRef ref) {
 
       final useBiometric = prefs.getBool('pref_use_biometric') ?? false;
       final isSecurityActive = hasPin || useBiometric;
+      final isLocked = ref.read(appLockControllerProvider);
 
       if (isSecurityActive && isLocked) {
         if (isLockPath) return null;
@@ -97,13 +113,13 @@ GoRouter appRouter(AppRouterRef ref) {
         name: RouteNames.pinLock,
         builder: (context, state) => const PinLockScreen(),
       ),
-      GoRoute(
-        path: '/insights',
-        builder: (context, state) => const InsightsScreen(),
-      ),
       ShellRoute(
-        builder: (context, state, child) => child,
+        builder: (context, state, child) => MainNavigationShell(child: child),
         routes: [
+          GoRoute(
+            path: '/insights',
+            builder: (context, state) => const InsightsScreen(),
+          ),
           GoRoute(
             path: '/',
             name: RouteNames.dashboard,
