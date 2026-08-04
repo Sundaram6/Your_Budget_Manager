@@ -36,8 +36,7 @@ class MerchantEngine {
 
       for (final msg in messages) {
         final body = msg.body ?? '';
-        final date = msg.date;
-        if (date == null) continue;
+        final date = msg.date ?? DateTime.now();
 
         if (!_isDebitTransaction(body)) continue;
 

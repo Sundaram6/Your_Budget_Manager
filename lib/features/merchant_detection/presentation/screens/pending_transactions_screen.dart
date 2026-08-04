@@ -16,6 +16,7 @@ class PendingTransactionsScreen extends ConsumerStatefulWidget {
 
 class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsScreen> {
   final Map<String, bool> _confirmingMap = {};
+  bool _isBulkConfirming = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +27,54 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
       appBar: AppBar(
         title: const Text('Pending Transactions'),
         actions: [
+          if (state.transactions.isNotEmpty)
+            TextButton(
+              onPressed: _isBulkConfirming
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isBulkConfirming = true;
+                      });
+                      try {
+                        final count = await controller.confirmAllTransactions();
+                        if (!context.mounted) return;
+                        final messenger = ScaffoldMessenger.of(context);
+                        messenger.clearSnackBars();
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('$count transactions saved successfully'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        final messenger = ScaffoldMessenger.of(context);
+                        messenger.clearSnackBars();
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to confirm all: $e'),
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                          ),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isBulkConfirming = false;
+                          });
+                        }
+                      }
+                    },
+              child: _isBulkConfirming
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text(
+                      'Import All',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Rescan Inbox',
@@ -118,10 +167,12 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
                                       });
 
                                       if (success) {
+                                        messenger.clearSnackBars();
                                         messenger.showSnackBar(
                                           SnackBar(
-                                            content: Text('Transaction saved'),
+                                            content: const Text('Transaction saved'),
                                             backgroundColor: Colors.green,
+                                            duration: const Duration(seconds: 2),
                                           ),
                                         );
                                       }
@@ -133,11 +184,12 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
                                       setState(() {
                                         _confirmingMap.remove(tx.smsId);
                                       });
+                                      messenger.clearSnackBars();
                                       messenger.showSnackBar(
                                         SnackBar(
                                           content: Text('Failed to save ${tx.merchantName}: $e'),
                                           backgroundColor: Theme.of(context).colorScheme.error,
-                                          duration: const Duration(seconds: 5),
+                                          duration: const Duration(seconds: 3),
                                         ),
                                       );
                                     }

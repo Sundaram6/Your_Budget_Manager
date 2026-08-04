@@ -95,4 +95,29 @@ class PendingTransactionsController extends _$PendingTransactionsController {
     }
   }
 
+  /// Confirms all pending transactions in bulk. Returns count of successfully confirmed transactions.
+  Future<int> confirmAllTransactions() async {
+    final engine = ref.read(merchantEngineProvider);
+    final list = List<ParsedTransaction>.from(state.transactions);
+    int successCount = 0;
+    final remaining = <ParsedTransaction>[];
+
+    for (final tx in list) {
+      try {
+        final success = await engine.confirmPendingTransaction(
+          transaction: tx,
+        );
+        if (success) {
+          successCount++;
+        } else {
+          remaining.add(tx);
+        }
+      } catch (e) {
+        remaining.add(tx);
+      }
+    }
+
+    state = state.copyWith(transactions: remaining);
+    return successCount;
+  }
 }
