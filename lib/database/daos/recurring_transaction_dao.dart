@@ -8,19 +8,19 @@ part 'recurring_transaction_dao.g.dart';
 class RecurringTransactionDao extends DatabaseAccessor<AppDatabase> with _$RecurringTransactionDaoMixin {
   RecurringTransactionDao(super.db);
 
-  Stream<List<RecurringTransaction>> watchAll() => select(recurringTransactionsTable).watch();
+  Stream<List<RecurringTransactionData>> watchAll() => select(recurringTransactionsTable).watch();
 
-  Future<List<RecurringTransaction>> getActive() {
+  Future<List<RecurringTransactionData>> getActive() {
     return (select(recurringTransactionsTable)..where((t) => t.isActive.equals(true))).get();
   }
 
-  Future<List<RecurringTransaction>> getDueTransactions(DateTime beforeDate) {
-    return (select(recurringTransactionsTable)..where((t) => t.nextDueDate.isSmallerOrEqualValue(beforeDate.millisecondsSinceEpoch) & t.isActive.equals(true))).get();
+  Future<List<RecurringTransactionData>> getDueTransactions(String beforeDateStr) {
+    return (select(recurringTransactionsTable)..where((t) => t.nextDueDate.isSmallerOrEqualValue(beforeDateStr) & t.isActive.equals(true))).get();
   }
 
-  Future<int> insert(Insertable<RecurringTransaction> recurringTransaction) => into(recurringTransactionsTable).insert(recurringTransaction);
+  Future<int> insert(Insertable<RecurringTransactionData> recurringTransaction) => into(recurringTransactionsTable).insert(recurringTransaction);
 
-  Future<bool> updateRecurringTransaction(Insertable<RecurringTransaction> recurringTransaction) => update(recurringTransactionsTable).replace(recurringTransaction);
+  Future<bool> updateRecurringTransaction(Insertable<RecurringTransactionData> recurringTransaction) => update(recurringTransactionsTable).replace(recurringTransaction);
 
-  Future<int> deleteRecurringTransaction(Insertable<RecurringTransaction> recurringTransaction) => delete(recurringTransactionsTable).delete(recurringTransaction);
+  Future<int> deleteRecurringTransaction(Insertable<RecurringTransactionData> recurringTransaction) => delete(recurringTransactionsTable).delete(recurringTransaction);
 }

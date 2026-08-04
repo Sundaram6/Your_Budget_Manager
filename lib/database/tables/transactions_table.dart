@@ -16,7 +16,10 @@ class TransactionsTable extends Table {
   TextColumn get note => text().nullable()();
   TextColumn get merchantName => text().nullable()();
   TextColumn get merchantId => text().nullable().references(MerchantsTable, #id)();
+  BoolColumn get isRecurring => boolean().withDefault(const Constant(false))();
   TextColumn get recurringId => text().nullable().references(RecurringTransactionsTable, #id)();
+  BoolColumn get isAutoCaptured => boolean().withDefault(const Constant(false))();
+  TextColumn get sourceApp => text().nullable()();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 

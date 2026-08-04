@@ -29,6 +29,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: entity.categoryId,
       date: entity.date.millisecondsSinceEpoch,
       note: entity.note,
+      isRecurring: false,
+      isAutoCaptured: false,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
     );

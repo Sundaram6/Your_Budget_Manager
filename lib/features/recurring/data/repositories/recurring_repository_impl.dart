@@ -10,32 +10,36 @@ class RecurringRepositoryImpl implements RecurringRepository {
 
   RecurringRepositoryImpl(this._dao);
 
-  domain.RecurringTransaction _mapToDomain(db.RecurringTransaction entity) {
+  domain.RecurringTransaction _mapToDomain(db.RecurringTransactionData entity) {
     return domain.RecurringTransaction(
       id: entity.id,
-      amount: Amount(entity.amount),
+      amount: Amount(entity.amountPaise / 100.0),
       categoryId: entity.categoryId,
-      type: TransactionType.values.firstWhere((e) => e.name == entity.type),
-      frequency: RecurringFrequency.values.firstWhere((e) => e.name == entity.frequency),
-      nextDate: DateTime.fromMillisecondsSinceEpoch(entity.nextDueDate),
-      note: entity.note,
+      type: TransactionType.values.firstWhere((e) => e.name == entity.type, orElse: () => TransactionType.expense),
+      frequency: RecurringFrequency.values.firstWhere((e) => e.name == entity.frequency, orElse: () => RecurringFrequency.monthly),
+      nextDate: DateTime.tryParse(entity.nextDueDate) ?? DateTime.now(),
+      note: entity.notes,
     );
   }
 
-  db.RecurringTransaction _mapToDrift(domain.RecurringTransaction entity) {
-    return db.RecurringTransaction(
+  db.RecurringTransactionData _mapToDrift(domain.RecurringTransaction entity) {
+    final now = DateTime.now();
+    final yyyyMmDd = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final nextYyyyMmDd = '${entity.nextDate.year.toString().padLeft(4, '0')}-${entity.nextDate.month.toString().padLeft(2, '0')}-${entity.nextDate.day.toString().padLeft(2, '0')}';
+    return db.RecurringTransactionData(
       id: entity.id,
-      name: entity.note ?? 'Recurring Transaction',
-      amount: entity.amount.value.toDouble(),
+      title: entity.note ?? 'Recurring Transaction',
+      amountPaise: (entity.amount.value * 100).round(),
       type: entity.type.name,
       categoryId: entity.categoryId,
       frequency: entity.frequency.name,
-      startDate: DateTime.now().millisecondsSinceEpoch,
-      nextDueDate: entity.nextDate.millisecondsSinceEpoch,
+      startDate: yyyyMmDd,
+      nextDueDate: nextYyyyMmDd,
       isActive: true,
-      note: entity.note,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      updatedAt: DateTime.now().millisecondsSinceEpoch,
+      autoConfirm: false,
+      notes: entity.note,
+      createdAt: now.toIso8601String(),
+      updatedAt: now.toIso8601String(),
     );
   }
 
@@ -52,7 +56,8 @@ class RecurringRepositoryImpl implements RecurringRepository {
 
   @override
   Future<List<domain.RecurringTransaction>> getDueTransactions(DateTime beforeDate) async {
-    final list = await _dao.getDueTransactions(beforeDate);
+    final yyyyMmDd = '${beforeDate.year.toString().padLeft(4, '0')}-${beforeDate.month.toString().padLeft(2, '0')}-${beforeDate.day.toString().padLeft(2, '0')}';
+    final list = await _dao.getDueTransactions(yyyyMmDd);
     return list.map(_mapToDomain).toList();
   }
 

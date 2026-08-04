@@ -1,25 +1,27 @@
 import 'package:drift/drift.dart';
 import 'categories_table.dart';
 
-@DataClassName('RecurringTransaction')
+@DataClassName('RecurringTransactionData')
 class RecurringTransactionsTable extends Table {
   @override
   String get tableName => 'recurring_transactions';
 
   TextColumn get id => text()();
-  TextColumn get name => text()();
-  RealColumn get amount => real()();
-  TextColumn get type => text()();
+  TextColumn get title => text()();
+  IntColumn get amountPaise => integer()();
   TextColumn get categoryId => text().references(CategoriesTable, #id)();
-  TextColumn get frequency => text()();
-  IntColumn get startDate => integer()();
-  IntColumn get endDate => integer().nullable()();
-  IntColumn get nextDueDate => integer()();
-  IntColumn get lastProcessedDate => integer().nullable()();
+  TextColumn get type => text()(); // 'expense'|'income'
+  TextColumn get frequency => text()(); // 'daily'|'weekly'|'biweekly'|'monthly'|'yearly'|'custom'
+  IntColumn get intervalDays => integer().nullable()();
+  TextColumn get startDate => text()(); // yyyy-MM-dd
+  TextColumn get endDate => text().nullable()(); // yyyy-MM-dd
+  TextColumn get nextDueDate => text()(); // yyyy-MM-dd
+  TextColumn get lastGeneratedDate => text().nullable()(); // yyyy-MM-dd
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  TextColumn get note => text().nullable()();
-  IntColumn get createdAt => integer()();
-  IntColumn get updatedAt => integer()();
+  BoolColumn get autoConfirm => boolean().withDefault(const Constant(false))();
+  TextColumn get notes => text().nullable()();
+  TextColumn get createdAt => text()(); // ISO8601
+  TextColumn get updatedAt => text()(); // ISO8601
 
   @override
   Set<Column> get primaryKey => {id};

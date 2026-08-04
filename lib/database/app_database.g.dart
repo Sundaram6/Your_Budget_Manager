@@ -988,7 +988,7 @@ class MerchantsTableCompanion extends UpdateCompanion<Merchant> {
 }
 
 class $RecurringTransactionsTableTable extends RecurringTransactionsTable
-    with TableInfo<$RecurringTransactionsTableTable, RecurringTransaction> {
+    with TableInfo<$RecurringTransactionsTableTable, RecurringTransactionData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1002,31 +1002,24 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
-  @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-    'amount',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
+  static const VerificationMeta _amountPaiseMeta = const VerificationMeta(
+    'amountPaise',
   );
-  static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
-  late final GeneratedColumn<String> type = GeneratedColumn<String>(
-    'type',
+  late final GeneratedColumn<int> amountPaise = GeneratedColumn<int>(
+    'amount_paise',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _categoryIdMeta = const VerificationMeta(
@@ -1043,6 +1036,15 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
       'REFERENCES categories (id)',
     ),
   );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _frequencyMeta = const VerificationMeta(
     'frequency',
   );
@@ -1054,50 +1056,62 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _intervalDaysMeta = const VerificationMeta(
+    'intervalDays',
+  );
+  @override
+  late final GeneratedColumn<int> intervalDays = GeneratedColumn<int>(
+    'interval_days',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
     'startDate',
   );
   @override
-  late final GeneratedColumn<int> startDate = GeneratedColumn<int>(
+  late final GeneratedColumn<String> startDate = GeneratedColumn<String>(
     'start_date',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _endDateMeta = const VerificationMeta(
     'endDate',
   );
   @override
-  late final GeneratedColumn<int> endDate = GeneratedColumn<int>(
+  late final GeneratedColumn<String> endDate = GeneratedColumn<String>(
     'end_date',
     aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _nextDueDateMeta = const VerificationMeta(
     'nextDueDate',
   );
   @override
-  late final GeneratedColumn<int> nextDueDate = GeneratedColumn<int>(
+  late final GeneratedColumn<String> nextDueDate = GeneratedColumn<String>(
     'next_due_date',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _lastProcessedDateMeta = const VerificationMeta(
-    'lastProcessedDate',
+  static const VerificationMeta _lastGeneratedDateMeta = const VerificationMeta(
+    'lastGeneratedDate',
   );
   @override
-  late final GeneratedColumn<int> lastProcessedDate = GeneratedColumn<int>(
-    'last_processed_date',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
+  late final GeneratedColumn<String> lastGeneratedDate =
+      GeneratedColumn<String>(
+        'last_generated_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
     'isActive',
   );
@@ -1113,10 +1127,25 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     ),
     defaultValue: const Constant(true),
   );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  static const VerificationMeta _autoConfirmMeta = const VerificationMeta(
+    'autoConfirm',
+  );
   @override
-  late final GeneratedColumn<String> note = GeneratedColumn<String>(
-    'note',
+  late final GeneratedColumn<bool> autoConfirm = GeneratedColumn<bool>(
+    'auto_confirm',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_confirm" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -1126,38 +1155,40 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     'createdAt',
   );
   @override
-  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
     'created_at',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
   @override
-  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    name,
-    amount,
-    type,
+    title,
+    amountPaise,
     categoryId,
+    type,
     frequency,
+    intervalDays,
     startDate,
     endDate,
     nextDueDate,
-    lastProcessedDate,
+    lastGeneratedDate,
     isActive,
-    note,
+    autoConfirm,
+    notes,
     createdAt,
     updatedAt,
   ];
@@ -1168,7 +1199,7 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
   static const String $name = 'recurring_transactions';
   @override
   VerificationContext validateIntegrity(
-    Insertable<RecurringTransaction> instance, {
+    Insertable<RecurringTransactionData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1178,29 +1209,24 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     } else if (isInserting) {
       context.missing(_idMeta);
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('title')) {
       context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
       );
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_titleMeta);
     }
-    if (data.containsKey('amount')) {
+    if (data.containsKey('amount_paise')) {
       context.handle(
-        _amountMeta,
-        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+        _amountPaiseMeta,
+        amountPaise.isAcceptableOrUnknown(
+          data['amount_paise']!,
+          _amountPaiseMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_amountMeta);
-    }
-    if (data.containsKey('type')) {
-      context.handle(
-        _typeMeta,
-        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_typeMeta);
+      context.missing(_amountPaiseMeta);
     }
     if (data.containsKey('category_id')) {
       context.handle(
@@ -1210,6 +1236,14 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     } else if (isInserting) {
       context.missing(_categoryIdMeta);
     }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
     if (data.containsKey('frequency')) {
       context.handle(
         _frequencyMeta,
@@ -1217,6 +1251,15 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
       );
     } else if (isInserting) {
       context.missing(_frequencyMeta);
+    }
+    if (data.containsKey('interval_days')) {
+      context.handle(
+        _intervalDaysMeta,
+        intervalDays.isAcceptableOrUnknown(
+          data['interval_days']!,
+          _intervalDaysMeta,
+        ),
+      );
     }
     if (data.containsKey('start_date')) {
       context.handle(
@@ -1243,12 +1286,12 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     } else if (isInserting) {
       context.missing(_nextDueDateMeta);
     }
-    if (data.containsKey('last_processed_date')) {
+    if (data.containsKey('last_generated_date')) {
       context.handle(
-        _lastProcessedDateMeta,
-        lastProcessedDate.isAcceptableOrUnknown(
-          data['last_processed_date']!,
-          _lastProcessedDateMeta,
+        _lastGeneratedDateMeta,
+        lastGeneratedDate.isAcceptableOrUnknown(
+          data['last_generated_date']!,
+          _lastGeneratedDateMeta,
         ),
       );
     }
@@ -1258,10 +1301,19 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
-    if (data.containsKey('note')) {
+    if (data.containsKey('auto_confirm')) {
       context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+        _autoConfirmMeta,
+        autoConfirm.isAcceptableOrUnknown(
+          data['auto_confirm']!,
+          _autoConfirmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -1286,63 +1338,74 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  RecurringTransaction map(Map<String, dynamic> data, {String? tablePrefix}) {
+  RecurringTransactionData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return RecurringTransaction(
+    return RecurringTransactionData(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
-      name: attachedDatabase.typeMapping.read(
+      title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}name'],
+        data['${effectivePrefix}title'],
       )!,
-      amount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}amount'],
-      )!,
-      type: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}type'],
+      amountPaise: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_paise'],
       )!,
       categoryId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
       )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
       frequency: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}frequency'],
       )!,
-      startDate: attachedDatabase.typeMapping.read(
+      intervalDays: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
+        data['${effectivePrefix}interval_days'],
+      ),
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
         data['${effectivePrefix}start_date'],
       )!,
       endDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}end_date'],
       ),
       nextDueDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}next_due_date'],
       )!,
-      lastProcessedDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}last_processed_date'],
+      lastGeneratedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_generated_date'],
       ),
       isActive: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
-      note: attachedDatabase.typeMapping.read(
+      autoConfirm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_confirm'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}note'],
+        data['${effectivePrefix}notes'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}created_at'],
       )!,
       updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}updated_at'],
       )!,
     );
@@ -1354,35 +1417,39 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
   }
 }
 
-class RecurringTransaction extends DataClass
-    implements Insertable<RecurringTransaction> {
+class RecurringTransactionData extends DataClass
+    implements Insertable<RecurringTransactionData> {
   final String id;
-  final String name;
-  final double amount;
-  final String type;
+  final String title;
+  final int amountPaise;
   final String categoryId;
+  final String type;
   final String frequency;
-  final int startDate;
-  final int? endDate;
-  final int nextDueDate;
-  final int? lastProcessedDate;
+  final int? intervalDays;
+  final String startDate;
+  final String? endDate;
+  final String nextDueDate;
+  final String? lastGeneratedDate;
   final bool isActive;
-  final String? note;
-  final int createdAt;
-  final int updatedAt;
-  const RecurringTransaction({
+  final bool autoConfirm;
+  final String? notes;
+  final String createdAt;
+  final String updatedAt;
+  const RecurringTransactionData({
     required this.id,
-    required this.name,
-    required this.amount,
-    required this.type,
+    required this.title,
+    required this.amountPaise,
     required this.categoryId,
+    required this.type,
     required this.frequency,
+    this.intervalDays,
     required this.startDate,
     this.endDate,
     required this.nextDueDate,
-    this.lastProcessedDate,
+    this.lastGeneratedDate,
     required this.isActive,
-    this.note,
+    required this.autoConfirm,
+    this.notes,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1390,71 +1457,85 @@ class RecurringTransaction extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['name'] = Variable<String>(name);
-    map['amount'] = Variable<double>(amount);
-    map['type'] = Variable<String>(type);
+    map['title'] = Variable<String>(title);
+    map['amount_paise'] = Variable<int>(amountPaise);
     map['category_id'] = Variable<String>(categoryId);
+    map['type'] = Variable<String>(type);
     map['frequency'] = Variable<String>(frequency);
-    map['start_date'] = Variable<int>(startDate);
-    if (!nullToAbsent || endDate != null) {
-      map['end_date'] = Variable<int>(endDate);
+    if (!nullToAbsent || intervalDays != null) {
+      map['interval_days'] = Variable<int>(intervalDays);
     }
-    map['next_due_date'] = Variable<int>(nextDueDate);
-    if (!nullToAbsent || lastProcessedDate != null) {
-      map['last_processed_date'] = Variable<int>(lastProcessedDate);
+    map['start_date'] = Variable<String>(startDate);
+    if (!nullToAbsent || endDate != null) {
+      map['end_date'] = Variable<String>(endDate);
+    }
+    map['next_due_date'] = Variable<String>(nextDueDate);
+    if (!nullToAbsent || lastGeneratedDate != null) {
+      map['last_generated_date'] = Variable<String>(lastGeneratedDate);
     }
     map['is_active'] = Variable<bool>(isActive);
-    if (!nullToAbsent || note != null) {
-      map['note'] = Variable<String>(note);
+    map['auto_confirm'] = Variable<bool>(autoConfirm);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
     }
-    map['created_at'] = Variable<int>(createdAt);
-    map['updated_at'] = Variable<int>(updatedAt);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
     return map;
   }
 
   RecurringTransactionsTableCompanion toCompanion(bool nullToAbsent) {
     return RecurringTransactionsTableCompanion(
       id: Value(id),
-      name: Value(name),
-      amount: Value(amount),
-      type: Value(type),
+      title: Value(title),
+      amountPaise: Value(amountPaise),
       categoryId: Value(categoryId),
+      type: Value(type),
       frequency: Value(frequency),
+      intervalDays: intervalDays == null && nullToAbsent
+          ? const Value.absent()
+          : Value(intervalDays),
       startDate: Value(startDate),
       endDate: endDate == null && nullToAbsent
           ? const Value.absent()
           : Value(endDate),
       nextDueDate: Value(nextDueDate),
-      lastProcessedDate: lastProcessedDate == null && nullToAbsent
+      lastGeneratedDate: lastGeneratedDate == null && nullToAbsent
           ? const Value.absent()
-          : Value(lastProcessedDate),
+          : Value(lastGeneratedDate),
       isActive: Value(isActive),
-      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      autoConfirm: Value(autoConfirm),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
   }
 
-  factory RecurringTransaction.fromJson(
+  factory RecurringTransactionData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return RecurringTransaction(
+    return RecurringTransactionData(
       id: serializer.fromJson<String>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      amount: serializer.fromJson<double>(json['amount']),
-      type: serializer.fromJson<String>(json['type']),
+      title: serializer.fromJson<String>(json['title']),
+      amountPaise: serializer.fromJson<int>(json['amountPaise']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
+      type: serializer.fromJson<String>(json['type']),
       frequency: serializer.fromJson<String>(json['frequency']),
-      startDate: serializer.fromJson<int>(json['startDate']),
-      endDate: serializer.fromJson<int?>(json['endDate']),
-      nextDueDate: serializer.fromJson<int>(json['nextDueDate']),
-      lastProcessedDate: serializer.fromJson<int?>(json['lastProcessedDate']),
+      intervalDays: serializer.fromJson<int?>(json['intervalDays']),
+      startDate: serializer.fromJson<String>(json['startDate']),
+      endDate: serializer.fromJson<String?>(json['endDate']),
+      nextDueDate: serializer.fromJson<String>(json['nextDueDate']),
+      lastGeneratedDate: serializer.fromJson<String?>(
+        json['lastGeneratedDate'],
+      ),
       isActive: serializer.fromJson<bool>(json['isActive']),
-      note: serializer.fromJson<String?>(json['note']),
-      createdAt: serializer.fromJson<int>(json['createdAt']),
-      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      autoConfirm: serializer.fromJson<bool>(json['autoConfirm']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
     );
   }
   @override
@@ -1462,77 +1543,91 @@ class RecurringTransaction extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'name': serializer.toJson<String>(name),
-      'amount': serializer.toJson<double>(amount),
-      'type': serializer.toJson<String>(type),
+      'title': serializer.toJson<String>(title),
+      'amountPaise': serializer.toJson<int>(amountPaise),
       'categoryId': serializer.toJson<String>(categoryId),
+      'type': serializer.toJson<String>(type),
       'frequency': serializer.toJson<String>(frequency),
-      'startDate': serializer.toJson<int>(startDate),
-      'endDate': serializer.toJson<int?>(endDate),
-      'nextDueDate': serializer.toJson<int>(nextDueDate),
-      'lastProcessedDate': serializer.toJson<int?>(lastProcessedDate),
+      'intervalDays': serializer.toJson<int?>(intervalDays),
+      'startDate': serializer.toJson<String>(startDate),
+      'endDate': serializer.toJson<String?>(endDate),
+      'nextDueDate': serializer.toJson<String>(nextDueDate),
+      'lastGeneratedDate': serializer.toJson<String?>(lastGeneratedDate),
       'isActive': serializer.toJson<bool>(isActive),
-      'note': serializer.toJson<String?>(note),
-      'createdAt': serializer.toJson<int>(createdAt),
-      'updatedAt': serializer.toJson<int>(updatedAt),
+      'autoConfirm': serializer.toJson<bool>(autoConfirm),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
     };
   }
 
-  RecurringTransaction copyWith({
+  RecurringTransactionData copyWith({
     String? id,
-    String? name,
-    double? amount,
-    String? type,
+    String? title,
+    int? amountPaise,
     String? categoryId,
+    String? type,
     String? frequency,
-    int? startDate,
-    Value<int?> endDate = const Value.absent(),
-    int? nextDueDate,
-    Value<int?> lastProcessedDate = const Value.absent(),
+    Value<int?> intervalDays = const Value.absent(),
+    String? startDate,
+    Value<String?> endDate = const Value.absent(),
+    String? nextDueDate,
+    Value<String?> lastGeneratedDate = const Value.absent(),
     bool? isActive,
-    Value<String?> note = const Value.absent(),
-    int? createdAt,
-    int? updatedAt,
-  }) => RecurringTransaction(
+    bool? autoConfirm,
+    Value<String?> notes = const Value.absent(),
+    String? createdAt,
+    String? updatedAt,
+  }) => RecurringTransactionData(
     id: id ?? this.id,
-    name: name ?? this.name,
-    amount: amount ?? this.amount,
-    type: type ?? this.type,
+    title: title ?? this.title,
+    amountPaise: amountPaise ?? this.amountPaise,
     categoryId: categoryId ?? this.categoryId,
+    type: type ?? this.type,
     frequency: frequency ?? this.frequency,
+    intervalDays: intervalDays.present ? intervalDays.value : this.intervalDays,
     startDate: startDate ?? this.startDate,
     endDate: endDate.present ? endDate.value : this.endDate,
     nextDueDate: nextDueDate ?? this.nextDueDate,
-    lastProcessedDate: lastProcessedDate.present
-        ? lastProcessedDate.value
-        : this.lastProcessedDate,
+    lastGeneratedDate: lastGeneratedDate.present
+        ? lastGeneratedDate.value
+        : this.lastGeneratedDate,
     isActive: isActive ?? this.isActive,
-    note: note.present ? note.value : this.note,
+    autoConfirm: autoConfirm ?? this.autoConfirm,
+    notes: notes.present ? notes.value : this.notes,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  RecurringTransaction copyWithCompanion(
+  RecurringTransactionData copyWithCompanion(
     RecurringTransactionsTableCompanion data,
   ) {
-    return RecurringTransaction(
+    return RecurringTransactionData(
       id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      amount: data.amount.present ? data.amount.value : this.amount,
-      type: data.type.present ? data.type.value : this.type,
+      title: data.title.present ? data.title.value : this.title,
+      amountPaise: data.amountPaise.present
+          ? data.amountPaise.value
+          : this.amountPaise,
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
+      type: data.type.present ? data.type.value : this.type,
       frequency: data.frequency.present ? data.frequency.value : this.frequency,
+      intervalDays: data.intervalDays.present
+          ? data.intervalDays.value
+          : this.intervalDays,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       endDate: data.endDate.present ? data.endDate.value : this.endDate,
       nextDueDate: data.nextDueDate.present
           ? data.nextDueDate.value
           : this.nextDueDate,
-      lastProcessedDate: data.lastProcessedDate.present
-          ? data.lastProcessedDate.value
-          : this.lastProcessedDate,
+      lastGeneratedDate: data.lastGeneratedDate.present
+          ? data.lastGeneratedDate.value
+          : this.lastGeneratedDate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
-      note: data.note.present ? data.note.value : this.note,
+      autoConfirm: data.autoConfirm.present
+          ? data.autoConfirm.value
+          : this.autoConfirm,
+      notes: data.notes.present ? data.notes.value : this.notes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1540,19 +1635,21 @@ class RecurringTransaction extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('RecurringTransaction(')
+    return (StringBuffer('RecurringTransactionData(')
           ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('amount: $amount, ')
-          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
+          ..write('type: $type, ')
           ..write('frequency: $frequency, ')
+          ..write('intervalDays: $intervalDays, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('lastProcessedDate: $lastProcessedDate, ')
+          ..write('lastGeneratedDate: $lastGeneratedDate, ')
           ..write('isActive: $isActive, ')
-          ..write('note: $note, ')
+          ..write('autoConfirm: $autoConfirm, ')
+          ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1562,130 +1659,144 @@ class RecurringTransaction extends DataClass
   @override
   int get hashCode => Object.hash(
     id,
-    name,
-    amount,
-    type,
+    title,
+    amountPaise,
     categoryId,
+    type,
     frequency,
+    intervalDays,
     startDate,
     endDate,
     nextDueDate,
-    lastProcessedDate,
+    lastGeneratedDate,
     isActive,
-    note,
+    autoConfirm,
+    notes,
     createdAt,
     updatedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is RecurringTransaction &&
+      (other is RecurringTransactionData &&
           other.id == this.id &&
-          other.name == this.name &&
-          other.amount == this.amount &&
-          other.type == this.type &&
+          other.title == this.title &&
+          other.amountPaise == this.amountPaise &&
           other.categoryId == this.categoryId &&
+          other.type == this.type &&
           other.frequency == this.frequency &&
+          other.intervalDays == this.intervalDays &&
           other.startDate == this.startDate &&
           other.endDate == this.endDate &&
           other.nextDueDate == this.nextDueDate &&
-          other.lastProcessedDate == this.lastProcessedDate &&
+          other.lastGeneratedDate == this.lastGeneratedDate &&
           other.isActive == this.isActive &&
-          other.note == this.note &&
+          other.autoConfirm == this.autoConfirm &&
+          other.notes == this.notes &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
 class RecurringTransactionsTableCompanion
-    extends UpdateCompanion<RecurringTransaction> {
+    extends UpdateCompanion<RecurringTransactionData> {
   final Value<String> id;
-  final Value<String> name;
-  final Value<double> amount;
-  final Value<String> type;
+  final Value<String> title;
+  final Value<int> amountPaise;
   final Value<String> categoryId;
+  final Value<String> type;
   final Value<String> frequency;
-  final Value<int> startDate;
-  final Value<int?> endDate;
-  final Value<int> nextDueDate;
-  final Value<int?> lastProcessedDate;
+  final Value<int?> intervalDays;
+  final Value<String> startDate;
+  final Value<String?> endDate;
+  final Value<String> nextDueDate;
+  final Value<String?> lastGeneratedDate;
   final Value<bool> isActive;
-  final Value<String?> note;
-  final Value<int> createdAt;
-  final Value<int> updatedAt;
+  final Value<bool> autoConfirm;
+  final Value<String?> notes;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
   final Value<int> rowid;
   const RecurringTransactionsTableCompanion({
     this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.type = const Value.absent(),
+    this.title = const Value.absent(),
+    this.amountPaise = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.type = const Value.absent(),
     this.frequency = const Value.absent(),
+    this.intervalDays = const Value.absent(),
     this.startDate = const Value.absent(),
     this.endDate = const Value.absent(),
     this.nextDueDate = const Value.absent(),
-    this.lastProcessedDate = const Value.absent(),
+    this.lastGeneratedDate = const Value.absent(),
     this.isActive = const Value.absent(),
-    this.note = const Value.absent(),
+    this.autoConfirm = const Value.absent(),
+    this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RecurringTransactionsTableCompanion.insert({
     required String id,
-    required String name,
-    required double amount,
-    required String type,
+    required String title,
+    required int amountPaise,
     required String categoryId,
+    required String type,
     required String frequency,
-    required int startDate,
+    this.intervalDays = const Value.absent(),
+    required String startDate,
     this.endDate = const Value.absent(),
-    required int nextDueDate,
-    this.lastProcessedDate = const Value.absent(),
+    required String nextDueDate,
+    this.lastGeneratedDate = const Value.absent(),
     this.isActive = const Value.absent(),
-    this.note = const Value.absent(),
-    required int createdAt,
-    required int updatedAt,
+    this.autoConfirm = const Value.absent(),
+    this.notes = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       name = Value(name),
-       amount = Value(amount),
-       type = Value(type),
+       title = Value(title),
+       amountPaise = Value(amountPaise),
        categoryId = Value(categoryId),
+       type = Value(type),
        frequency = Value(frequency),
        startDate = Value(startDate),
        nextDueDate = Value(nextDueDate),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<RecurringTransaction> custom({
+  static Insertable<RecurringTransactionData> custom({
     Expression<String>? id,
-    Expression<String>? name,
-    Expression<double>? amount,
-    Expression<String>? type,
+    Expression<String>? title,
+    Expression<int>? amountPaise,
     Expression<String>? categoryId,
+    Expression<String>? type,
     Expression<String>? frequency,
-    Expression<int>? startDate,
-    Expression<int>? endDate,
-    Expression<int>? nextDueDate,
-    Expression<int>? lastProcessedDate,
+    Expression<int>? intervalDays,
+    Expression<String>? startDate,
+    Expression<String>? endDate,
+    Expression<String>? nextDueDate,
+    Expression<String>? lastGeneratedDate,
     Expression<bool>? isActive,
-    Expression<String>? note,
-    Expression<int>? createdAt,
-    Expression<int>? updatedAt,
+    Expression<bool>? autoConfirm,
+    Expression<String>? notes,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (amount != null) 'amount': amount,
-      if (type != null) 'type': type,
+      if (title != null) 'title': title,
+      if (amountPaise != null) 'amount_paise': amountPaise,
       if (categoryId != null) 'category_id': categoryId,
+      if (type != null) 'type': type,
       if (frequency != null) 'frequency': frequency,
+      if (intervalDays != null) 'interval_days': intervalDays,
       if (startDate != null) 'start_date': startDate,
       if (endDate != null) 'end_date': endDate,
       if (nextDueDate != null) 'next_due_date': nextDueDate,
-      if (lastProcessedDate != null) 'last_processed_date': lastProcessedDate,
+      if (lastGeneratedDate != null) 'last_generated_date': lastGeneratedDate,
       if (isActive != null) 'is_active': isActive,
-      if (note != null) 'note': note,
+      if (autoConfirm != null) 'auto_confirm': autoConfirm,
+      if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1694,34 +1805,38 @@ class RecurringTransactionsTableCompanion
 
   RecurringTransactionsTableCompanion copyWith({
     Value<String>? id,
-    Value<String>? name,
-    Value<double>? amount,
-    Value<String>? type,
+    Value<String>? title,
+    Value<int>? amountPaise,
     Value<String>? categoryId,
+    Value<String>? type,
     Value<String>? frequency,
-    Value<int>? startDate,
-    Value<int?>? endDate,
-    Value<int>? nextDueDate,
-    Value<int?>? lastProcessedDate,
+    Value<int?>? intervalDays,
+    Value<String>? startDate,
+    Value<String?>? endDate,
+    Value<String>? nextDueDate,
+    Value<String?>? lastGeneratedDate,
     Value<bool>? isActive,
-    Value<String?>? note,
-    Value<int>? createdAt,
-    Value<int>? updatedAt,
+    Value<bool>? autoConfirm,
+    Value<String?>? notes,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
     Value<int>? rowid,
   }) {
     return RecurringTransactionsTableCompanion(
       id: id ?? this.id,
-      name: name ?? this.name,
-      amount: amount ?? this.amount,
-      type: type ?? this.type,
+      title: title ?? this.title,
+      amountPaise: amountPaise ?? this.amountPaise,
       categoryId: categoryId ?? this.categoryId,
+      type: type ?? this.type,
       frequency: frequency ?? this.frequency,
+      intervalDays: intervalDays ?? this.intervalDays,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
-      lastProcessedDate: lastProcessedDate ?? this.lastProcessedDate,
+      lastGeneratedDate: lastGeneratedDate ?? this.lastGeneratedDate,
       isActive: isActive ?? this.isActive,
-      note: note ?? this.note,
+      autoConfirm: autoConfirm ?? this.autoConfirm,
+      notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1734,44 +1849,50 @@ class RecurringTransactionsTableCompanion
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
     }
-    if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
-    }
-    if (type.present) {
-      map['type'] = Variable<String>(type.value);
+    if (amountPaise.present) {
+      map['amount_paise'] = Variable<int>(amountPaise.value);
     }
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
     }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
     if (frequency.present) {
       map['frequency'] = Variable<String>(frequency.value);
     }
+    if (intervalDays.present) {
+      map['interval_days'] = Variable<int>(intervalDays.value);
+    }
     if (startDate.present) {
-      map['start_date'] = Variable<int>(startDate.value);
+      map['start_date'] = Variable<String>(startDate.value);
     }
     if (endDate.present) {
-      map['end_date'] = Variable<int>(endDate.value);
+      map['end_date'] = Variable<String>(endDate.value);
     }
     if (nextDueDate.present) {
-      map['next_due_date'] = Variable<int>(nextDueDate.value);
+      map['next_due_date'] = Variable<String>(nextDueDate.value);
     }
-    if (lastProcessedDate.present) {
-      map['last_processed_date'] = Variable<int>(lastProcessedDate.value);
+    if (lastGeneratedDate.present) {
+      map['last_generated_date'] = Variable<String>(lastGeneratedDate.value);
     }
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
-    if (note.present) {
-      map['note'] = Variable<String>(note.value);
+    if (autoConfirm.present) {
+      map['auto_confirm'] = Variable<bool>(autoConfirm.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<int>(createdAt.value);
+      map['created_at'] = Variable<String>(createdAt.value);
     }
     if (updatedAt.present) {
-      map['updated_at'] = Variable<int>(updatedAt.value);
+      map['updated_at'] = Variable<String>(updatedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1783,17 +1904,19 @@ class RecurringTransactionsTableCompanion
   String toString() {
     return (StringBuffer('RecurringTransactionsTableCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('amount: $amount, ')
-          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
+          ..write('type: $type, ')
           ..write('frequency: $frequency, ')
+          ..write('intervalDays: $intervalDays, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('lastProcessedDate: $lastProcessedDate, ')
+          ..write('lastGeneratedDate: $lastGeneratedDate, ')
           ..write('isActive: $isActive, ')
-          ..write('note: $note, ')
+          ..write('autoConfirm: $autoConfirm, ')
+          ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1892,6 +2015,21 @@ class $TransactionsTableTable extends TransactionsTable
       'REFERENCES merchants (id)',
     ),
   );
+  static const VerificationMeta _isRecurringMeta = const VerificationMeta(
+    'isRecurring',
+  );
+  @override
+  late final GeneratedColumn<bool> isRecurring = GeneratedColumn<bool>(
+    'is_recurring',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_recurring" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _recurringIdMeta = const VerificationMeta(
     'recurringId',
   );
@@ -1905,6 +2043,32 @@ class $TransactionsTableTable extends TransactionsTable
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES recurring_transactions (id)',
     ),
+  );
+  static const VerificationMeta _isAutoCapturedMeta = const VerificationMeta(
+    'isAutoCaptured',
+  );
+  @override
+  late final GeneratedColumn<bool> isAutoCaptured = GeneratedColumn<bool>(
+    'is_auto_captured',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_auto_captured" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _sourceAppMeta = const VerificationMeta(
+    'sourceApp',
+  );
+  @override
+  late final GeneratedColumn<String> sourceApp = GeneratedColumn<String>(
+    'source_app',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -1938,7 +2102,10 @@ class $TransactionsTableTable extends TransactionsTable
     note,
     merchantName,
     merchantId,
+    isRecurring,
     recurringId,
+    isAutoCaptured,
+    sourceApp,
     createdAt,
     updatedAt,
   ];
@@ -2012,6 +2179,15 @@ class $TransactionsTableTable extends TransactionsTable
         merchantId.isAcceptableOrUnknown(data['merchant_id']!, _merchantIdMeta),
       );
     }
+    if (data.containsKey('is_recurring')) {
+      context.handle(
+        _isRecurringMeta,
+        isRecurring.isAcceptableOrUnknown(
+          data['is_recurring']!,
+          _isRecurringMeta,
+        ),
+      );
+    }
     if (data.containsKey('recurring_id')) {
       context.handle(
         _recurringIdMeta,
@@ -2019,6 +2195,21 @@ class $TransactionsTableTable extends TransactionsTable
           data['recurring_id']!,
           _recurringIdMeta,
         ),
+      );
+    }
+    if (data.containsKey('is_auto_captured')) {
+      context.handle(
+        _isAutoCapturedMeta,
+        isAutoCaptured.isAcceptableOrUnknown(
+          data['is_auto_captured']!,
+          _isAutoCapturedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_app')) {
+      context.handle(
+        _sourceAppMeta,
+        sourceApp.isAcceptableOrUnknown(data['source_app']!, _sourceAppMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -2078,9 +2269,21 @@ class $TransactionsTableTable extends TransactionsTable
         DriftSqlType.string,
         data['${effectivePrefix}merchant_id'],
       ),
+      isRecurring: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_recurring'],
+      )!,
       recurringId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}recurring_id'],
+      ),
+      isAutoCaptured: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_auto_captured'],
+      )!,
+      sourceApp: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_app'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -2108,7 +2311,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String? note;
   final String? merchantName;
   final String? merchantId;
+  final bool isRecurring;
   final String? recurringId;
+  final bool isAutoCaptured;
+  final String? sourceApp;
   final int createdAt;
   final int updatedAt;
   const Transaction({
@@ -2120,7 +2326,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.note,
     this.merchantName,
     this.merchantId,
+    required this.isRecurring,
     this.recurringId,
+    required this.isAutoCaptured,
+    this.sourceApp,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2141,8 +2350,13 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || merchantId != null) {
       map['merchant_id'] = Variable<String>(merchantId);
     }
+    map['is_recurring'] = Variable<bool>(isRecurring);
     if (!nullToAbsent || recurringId != null) {
       map['recurring_id'] = Variable<String>(recurringId);
+    }
+    map['is_auto_captured'] = Variable<bool>(isAutoCaptured);
+    if (!nullToAbsent || sourceApp != null) {
+      map['source_app'] = Variable<String>(sourceApp);
     }
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -2163,9 +2377,14 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       merchantId: merchantId == null && nullToAbsent
           ? const Value.absent()
           : Value(merchantId),
+      isRecurring: Value(isRecurring),
       recurringId: recurringId == null && nullToAbsent
           ? const Value.absent()
           : Value(recurringId),
+      isAutoCaptured: Value(isAutoCaptured),
+      sourceApp: sourceApp == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceApp),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2185,7 +2404,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       note: serializer.fromJson<String?>(json['note']),
       merchantName: serializer.fromJson<String?>(json['merchantName']),
       merchantId: serializer.fromJson<String?>(json['merchantId']),
+      isRecurring: serializer.fromJson<bool>(json['isRecurring']),
       recurringId: serializer.fromJson<String?>(json['recurringId']),
+      isAutoCaptured: serializer.fromJson<bool>(json['isAutoCaptured']),
+      sourceApp: serializer.fromJson<String?>(json['sourceApp']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -2202,7 +2424,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'note': serializer.toJson<String?>(note),
       'merchantName': serializer.toJson<String?>(merchantName),
       'merchantId': serializer.toJson<String?>(merchantId),
+      'isRecurring': serializer.toJson<bool>(isRecurring),
       'recurringId': serializer.toJson<String?>(recurringId),
+      'isAutoCaptured': serializer.toJson<bool>(isAutoCaptured),
+      'sourceApp': serializer.toJson<String?>(sourceApp),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
@@ -2217,7 +2442,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<String?> note = const Value.absent(),
     Value<String?> merchantName = const Value.absent(),
     Value<String?> merchantId = const Value.absent(),
+    bool? isRecurring,
     Value<String?> recurringId = const Value.absent(),
+    bool? isAutoCaptured,
+    Value<String?> sourceApp = const Value.absent(),
     int? createdAt,
     int? updatedAt,
   }) => Transaction(
@@ -2229,7 +2457,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     note: note.present ? note.value : this.note,
     merchantName: merchantName.present ? merchantName.value : this.merchantName,
     merchantId: merchantId.present ? merchantId.value : this.merchantId,
+    isRecurring: isRecurring ?? this.isRecurring,
     recurringId: recurringId.present ? recurringId.value : this.recurringId,
+    isAutoCaptured: isAutoCaptured ?? this.isAutoCaptured,
+    sourceApp: sourceApp.present ? sourceApp.value : this.sourceApp,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2249,9 +2480,16 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       merchantId: data.merchantId.present
           ? data.merchantId.value
           : this.merchantId,
+      isRecurring: data.isRecurring.present
+          ? data.isRecurring.value
+          : this.isRecurring,
       recurringId: data.recurringId.present
           ? data.recurringId.value
           : this.recurringId,
+      isAutoCaptured: data.isAutoCaptured.present
+          ? data.isAutoCaptured.value
+          : this.isAutoCaptured,
+      sourceApp: data.sourceApp.present ? data.sourceApp.value : this.sourceApp,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2268,7 +2506,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('note: $note, ')
           ..write('merchantName: $merchantName, ')
           ..write('merchantId: $merchantId, ')
+          ..write('isRecurring: $isRecurring, ')
           ..write('recurringId: $recurringId, ')
+          ..write('isAutoCaptured: $isAutoCaptured, ')
+          ..write('sourceApp: $sourceApp, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2285,7 +2526,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     note,
     merchantName,
     merchantId,
+    isRecurring,
     recurringId,
+    isAutoCaptured,
+    sourceApp,
     createdAt,
     updatedAt,
   );
@@ -2301,7 +2545,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.note == this.note &&
           other.merchantName == this.merchantName &&
           other.merchantId == this.merchantId &&
+          other.isRecurring == this.isRecurring &&
           other.recurringId == this.recurringId &&
+          other.isAutoCaptured == this.isAutoCaptured &&
+          other.sourceApp == this.sourceApp &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2315,7 +2562,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> note;
   final Value<String?> merchantName;
   final Value<String?> merchantId;
+  final Value<bool> isRecurring;
   final Value<String?> recurringId;
+  final Value<bool> isAutoCaptured;
+  final Value<String?> sourceApp;
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
@@ -2328,7 +2578,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     this.note = const Value.absent(),
     this.merchantName = const Value.absent(),
     this.merchantId = const Value.absent(),
+    this.isRecurring = const Value.absent(),
     this.recurringId = const Value.absent(),
+    this.isAutoCaptured = const Value.absent(),
+    this.sourceApp = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2342,7 +2595,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     this.note = const Value.absent(),
     this.merchantName = const Value.absent(),
     this.merchantId = const Value.absent(),
+    this.isRecurring = const Value.absent(),
     this.recurringId = const Value.absent(),
+    this.isAutoCaptured = const Value.absent(),
+    this.sourceApp = const Value.absent(),
     required int createdAt,
     required int updatedAt,
     this.rowid = const Value.absent(),
@@ -2362,7 +2618,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? note,
     Expression<String>? merchantName,
     Expression<String>? merchantId,
+    Expression<bool>? isRecurring,
     Expression<String>? recurringId,
+    Expression<bool>? isAutoCaptured,
+    Expression<String>? sourceApp,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
@@ -2376,7 +2635,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       if (note != null) 'note': note,
       if (merchantName != null) 'merchant_name': merchantName,
       if (merchantId != null) 'merchant_id': merchantId,
+      if (isRecurring != null) 'is_recurring': isRecurring,
       if (recurringId != null) 'recurring_id': recurringId,
+      if (isAutoCaptured != null) 'is_auto_captured': isAutoCaptured,
+      if (sourceApp != null) 'source_app': sourceApp,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2392,7 +2654,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     Value<String?>? note,
     Value<String?>? merchantName,
     Value<String?>? merchantId,
+    Value<bool>? isRecurring,
     Value<String?>? recurringId,
+    Value<bool>? isAutoCaptured,
+    Value<String?>? sourceApp,
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int>? rowid,
@@ -2406,7 +2671,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       note: note ?? this.note,
       merchantName: merchantName ?? this.merchantName,
       merchantId: merchantId ?? this.merchantId,
+      isRecurring: isRecurring ?? this.isRecurring,
       recurringId: recurringId ?? this.recurringId,
+      isAutoCaptured: isAutoCaptured ?? this.isAutoCaptured,
+      sourceApp: sourceApp ?? this.sourceApp,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2440,8 +2708,17 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     if (merchantId.present) {
       map['merchant_id'] = Variable<String>(merchantId.value);
     }
+    if (isRecurring.present) {
+      map['is_recurring'] = Variable<bool>(isRecurring.value);
+    }
     if (recurringId.present) {
       map['recurring_id'] = Variable<String>(recurringId.value);
+    }
+    if (isAutoCaptured.present) {
+      map['is_auto_captured'] = Variable<bool>(isAutoCaptured.value);
+    }
+    if (sourceApp.present) {
+      map['source_app'] = Variable<String>(sourceApp.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
@@ -2466,7 +2743,10 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
           ..write('note: $note, ')
           ..write('merchantName: $merchantName, ')
           ..write('merchantId: $merchantId, ')
+          ..write('isRecurring: $isRecurring, ')
           ..write('recurringId: $recurringId, ')
+          ..write('isAutoCaptured: $isAutoCaptured, ')
+          ..write('sourceApp: $sourceApp, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -4304,7 +4584,7 @@ final class $$CategoriesTableTableReferences
 
   static MultiTypedResultKey<
     $RecurringTransactionsTableTable,
-    List<RecurringTransaction>
+    List<RecurringTransactionData>
   >
   _recurringTransactionsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
@@ -4850,7 +5130,7 @@ class $$CategoriesTableTableTableManager
                         await $_getPrefetchedData<
                           Category,
                           $CategoriesTableTable,
-                          RecurringTransaction
+                          RecurringTransactionData
                         >(
                           currentTable: table,
                           referencedTable: $$CategoriesTableTableReferences
@@ -5415,37 +5695,41 @@ typedef $$MerchantsTableTableProcessedTableManager =
 typedef $$RecurringTransactionsTableTableCreateCompanionBuilder =
     RecurringTransactionsTableCompanion Function({
       required String id,
-      required String name,
-      required double amount,
-      required String type,
+      required String title,
+      required int amountPaise,
       required String categoryId,
+      required String type,
       required String frequency,
-      required int startDate,
-      Value<int?> endDate,
-      required int nextDueDate,
-      Value<int?> lastProcessedDate,
+      Value<int?> intervalDays,
+      required String startDate,
+      Value<String?> endDate,
+      required String nextDueDate,
+      Value<String?> lastGeneratedDate,
       Value<bool> isActive,
-      Value<String?> note,
-      required int createdAt,
-      required int updatedAt,
+      Value<bool> autoConfirm,
+      Value<String?> notes,
+      required String createdAt,
+      required String updatedAt,
       Value<int> rowid,
     });
 typedef $$RecurringTransactionsTableTableUpdateCompanionBuilder =
     RecurringTransactionsTableCompanion Function({
       Value<String> id,
-      Value<String> name,
-      Value<double> amount,
-      Value<String> type,
+      Value<String> title,
+      Value<int> amountPaise,
       Value<String> categoryId,
+      Value<String> type,
       Value<String> frequency,
-      Value<int> startDate,
-      Value<int?> endDate,
-      Value<int> nextDueDate,
-      Value<int?> lastProcessedDate,
+      Value<int?> intervalDays,
+      Value<String> startDate,
+      Value<String?> endDate,
+      Value<String> nextDueDate,
+      Value<String?> lastGeneratedDate,
       Value<bool> isActive,
-      Value<String?> note,
-      Value<int> createdAt,
-      Value<int> updatedAt,
+      Value<bool> autoConfirm,
+      Value<String?> notes,
+      Value<String> createdAt,
+      Value<String> updatedAt,
       Value<int> rowid,
     });
 
@@ -5454,7 +5738,7 @@ final class $$RecurringTransactionsTableTableReferences
         BaseReferences<
           _$AppDatabase,
           $RecurringTransactionsTableTable,
-          RecurringTransaction
+          RecurringTransactionData
         > {
   $$RecurringTransactionsTableTableReferences(
     super.$_db,
@@ -5523,13 +5807,13 @@ class $$RecurringTransactionsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
-    column: $table.amount,
+  ColumnFilters<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5543,23 +5827,28 @@ class $$RecurringTransactionsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get startDate => $composableBuilder(
+  ColumnFilters<int> get intervalDays => $composableBuilder(
+    column: $table.intervalDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startDate => $composableBuilder(
     column: $table.startDate,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get endDate => $composableBuilder(
+  ColumnFilters<String> get endDate => $composableBuilder(
     column: $table.endDate,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get nextDueDate => $composableBuilder(
+  ColumnFilters<String> get nextDueDate => $composableBuilder(
     column: $table.nextDueDate,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get lastProcessedDate => $composableBuilder(
-    column: $table.lastProcessedDate,
+  ColumnFilters<String> get lastGeneratedDate => $composableBuilder(
+    column: $table.lastGeneratedDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5568,17 +5857,22 @@ class $$RecurringTransactionsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
+  ColumnFilters<bool> get autoConfirm => $composableBuilder(
+    column: $table.autoConfirm,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get createdAt => $composableBuilder(
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get updatedAt => $composableBuilder(
+  ColumnFilters<String> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
@@ -5646,13 +5940,13 @@ class $$RecurringTransactionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
-    column: $table.amount,
+  ColumnOrderings<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5666,23 +5960,28 @@ class $$RecurringTransactionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get startDate => $composableBuilder(
+  ColumnOrderings<int> get intervalDays => $composableBuilder(
+    column: $table.intervalDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startDate => $composableBuilder(
     column: $table.startDate,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get endDate => $composableBuilder(
+  ColumnOrderings<String> get endDate => $composableBuilder(
     column: $table.endDate,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get nextDueDate => $composableBuilder(
+  ColumnOrderings<String> get nextDueDate => $composableBuilder(
     column: $table.nextDueDate,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get lastProcessedDate => $composableBuilder(
-    column: $table.lastProcessedDate,
+  ColumnOrderings<String> get lastGeneratedDate => $composableBuilder(
+    column: $table.lastGeneratedDate,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5691,17 +5990,22 @@ class $$RecurringTransactionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
+  ColumnOrderings<bool> get autoConfirm => $composableBuilder(
+    column: $table.autoConfirm,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get createdAt => $composableBuilder(
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get updatedAt => $composableBuilder(
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
@@ -5742,11 +6046,13 @@ class $$RecurringTransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
-      $composableBuilder(column: $table.amount, builder: (column) => column);
+  GeneratedColumn<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
@@ -5754,32 +6060,42 @@ class $$RecurringTransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get frequency =>
       $composableBuilder(column: $table.frequency, builder: (column) => column);
 
-  GeneratedColumn<int> get startDate =>
+  GeneratedColumn<int> get intervalDays => $composableBuilder(
+    column: $table.intervalDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
 
-  GeneratedColumn<int> get endDate =>
+  GeneratedColumn<String> get endDate =>
       $composableBuilder(column: $table.endDate, builder: (column) => column);
 
-  GeneratedColumn<int> get nextDueDate => $composableBuilder(
+  GeneratedColumn<String> get nextDueDate => $composableBuilder(
     column: $table.nextDueDate,
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get lastProcessedDate => $composableBuilder(
-    column: $table.lastProcessedDate,
+  GeneratedColumn<String> get lastGeneratedDate => $composableBuilder(
+    column: $table.lastGeneratedDate,
     builder: (column) => column,
   );
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
 
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
+  GeneratedColumn<bool> get autoConfirm => $composableBuilder(
+    column: $table.autoConfirm,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<int> get createdAt =>
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<int> get updatedAt =>
+  GeneratedColumn<String> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
   $$CategoriesTableTableAnnotationComposer get categoryId {
@@ -5837,14 +6153,17 @@ class $$RecurringTransactionsTableTableTableManager
         RootTableManager<
           _$AppDatabase,
           $RecurringTransactionsTableTable,
-          RecurringTransaction,
+          RecurringTransactionData,
           $$RecurringTransactionsTableTableFilterComposer,
           $$RecurringTransactionsTableTableOrderingComposer,
           $$RecurringTransactionsTableTableAnnotationComposer,
           $$RecurringTransactionsTableTableCreateCompanionBuilder,
           $$RecurringTransactionsTableTableUpdateCompanionBuilder,
-          (RecurringTransaction, $$RecurringTransactionsTableTableReferences),
-          RecurringTransaction,
+          (
+            RecurringTransactionData,
+            $$RecurringTransactionsTableTableReferences,
+          ),
+          RecurringTransactionData,
           PrefetchHooks Function({bool categoryId, bool transactionsTableRefs})
         > {
   $$RecurringTransactionsTableTableTableManager(
@@ -5872,33 +6191,37 @@ class $$RecurringTransactionsTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<double> amount = const Value.absent(),
-                Value<String> type = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<int> amountPaise = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
+                Value<String> type = const Value.absent(),
                 Value<String> frequency = const Value.absent(),
-                Value<int> startDate = const Value.absent(),
-                Value<int?> endDate = const Value.absent(),
-                Value<int> nextDueDate = const Value.absent(),
-                Value<int?> lastProcessedDate = const Value.absent(),
+                Value<int?> intervalDays = const Value.absent(),
+                Value<String> startDate = const Value.absent(),
+                Value<String?> endDate = const Value.absent(),
+                Value<String> nextDueDate = const Value.absent(),
+                Value<String?> lastGeneratedDate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<int> createdAt = const Value.absent(),
-                Value<int> updatedAt = const Value.absent(),
+                Value<bool> autoConfirm = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecurringTransactionsTableCompanion(
                 id: id,
-                name: name,
-                amount: amount,
-                type: type,
+                title: title,
+                amountPaise: amountPaise,
                 categoryId: categoryId,
+                type: type,
                 frequency: frequency,
+                intervalDays: intervalDays,
                 startDate: startDate,
                 endDate: endDate,
                 nextDueDate: nextDueDate,
-                lastProcessedDate: lastProcessedDate,
+                lastGeneratedDate: lastGeneratedDate,
                 isActive: isActive,
-                note: note,
+                autoConfirm: autoConfirm,
+                notes: notes,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -5906,33 +6229,37 @@ class $$RecurringTransactionsTableTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required String name,
-                required double amount,
-                required String type,
+                required String title,
+                required int amountPaise,
                 required String categoryId,
+                required String type,
                 required String frequency,
-                required int startDate,
-                Value<int?> endDate = const Value.absent(),
-                required int nextDueDate,
-                Value<int?> lastProcessedDate = const Value.absent(),
+                Value<int?> intervalDays = const Value.absent(),
+                required String startDate,
+                Value<String?> endDate = const Value.absent(),
+                required String nextDueDate,
+                Value<String?> lastGeneratedDate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                required int createdAt,
-                required int updatedAt,
+                Value<bool> autoConfirm = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => RecurringTransactionsTableCompanion.insert(
                 id: id,
-                name: name,
-                amount: amount,
-                type: type,
+                title: title,
+                amountPaise: amountPaise,
                 categoryId: categoryId,
+                type: type,
                 frequency: frequency,
+                intervalDays: intervalDays,
                 startDate: startDate,
                 endDate: endDate,
                 nextDueDate: nextDueDate,
-                lastProcessedDate: lastProcessedDate,
+                lastGeneratedDate: lastGeneratedDate,
                 isActive: isActive,
-                note: note,
+                autoConfirm: autoConfirm,
+                notes: notes,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -5990,7 +6317,7 @@ class $$RecurringTransactionsTableTableTableManager
                     return [
                       if (transactionsTableRefs)
                         await $_getPrefetchedData<
-                          RecurringTransaction,
+                          RecurringTransactionData,
                           $RecurringTransactionsTableTable,
                           Transaction
                         >(
@@ -6022,14 +6349,14 @@ typedef $$RecurringTransactionsTableTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $RecurringTransactionsTableTable,
-      RecurringTransaction,
+      RecurringTransactionData,
       $$RecurringTransactionsTableTableFilterComposer,
       $$RecurringTransactionsTableTableOrderingComposer,
       $$RecurringTransactionsTableTableAnnotationComposer,
       $$RecurringTransactionsTableTableCreateCompanionBuilder,
       $$RecurringTransactionsTableTableUpdateCompanionBuilder,
-      (RecurringTransaction, $$RecurringTransactionsTableTableReferences),
-      RecurringTransaction,
+      (RecurringTransactionData, $$RecurringTransactionsTableTableReferences),
+      RecurringTransactionData,
       PrefetchHooks Function({bool categoryId, bool transactionsTableRefs})
     >;
 typedef $$TransactionsTableTableCreateCompanionBuilder =
@@ -6042,7 +6369,10 @@ typedef $$TransactionsTableTableCreateCompanionBuilder =
       Value<String?> note,
       Value<String?> merchantName,
       Value<String?> merchantId,
+      Value<bool> isRecurring,
       Value<String?> recurringId,
+      Value<bool> isAutoCaptured,
+      Value<String?> sourceApp,
       required int createdAt,
       required int updatedAt,
       Value<int> rowid,
@@ -6057,7 +6387,10 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder =
       Value<String?> note,
       Value<String?> merchantName,
       Value<String?> merchantId,
+      Value<bool> isRecurring,
       Value<String?> recurringId,
+      Value<bool> isAutoCaptured,
+      Value<String?> sourceApp,
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int> rowid,
@@ -6175,6 +6508,21 @@ class $$TransactionsTableTableFilterComposer
 
   ColumnFilters<String> get merchantName => $composableBuilder(
     column: $table.merchantName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isRecurring => $composableBuilder(
+    column: $table.isRecurring,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isAutoCaptured => $composableBuilder(
+    column: $table.isAutoCaptured,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceApp => $composableBuilder(
+    column: $table.sourceApp,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6298,6 +6646,21 @@ class $$TransactionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isRecurring => $composableBuilder(
+    column: $table.isRecurring,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isAutoCaptured => $composableBuilder(
+    column: $table.isAutoCaptured,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceApp => $composableBuilder(
+    column: $table.sourceApp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6407,6 +6770,19 @@ class $$TransactionsTableTableAnnotationComposer
     column: $table.merchantName,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isRecurring => $composableBuilder(
+    column: $table.isRecurring,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isAutoCaptured => $composableBuilder(
+    column: $table.isAutoCaptured,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceApp =>
+      $composableBuilder(column: $table.sourceApp, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -6530,7 +6906,10 @@ class $$TransactionsTableTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<String?> merchantName = const Value.absent(),
                 Value<String?> merchantId = const Value.absent(),
+                Value<bool> isRecurring = const Value.absent(),
                 Value<String?> recurringId = const Value.absent(),
+                Value<bool> isAutoCaptured = const Value.absent(),
+                Value<String?> sourceApp = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6543,7 +6922,10 @@ class $$TransactionsTableTableTableManager
                 note: note,
                 merchantName: merchantName,
                 merchantId: merchantId,
+                isRecurring: isRecurring,
                 recurringId: recurringId,
+                isAutoCaptured: isAutoCaptured,
+                sourceApp: sourceApp,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -6558,7 +6940,10 @@ class $$TransactionsTableTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<String?> merchantName = const Value.absent(),
                 Value<String?> merchantId = const Value.absent(),
+                Value<bool> isRecurring = const Value.absent(),
                 Value<String?> recurringId = const Value.absent(),
+                Value<bool> isAutoCaptured = const Value.absent(),
+                Value<String?> sourceApp = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -6571,7 +6956,10 @@ class $$TransactionsTableTableTableManager
                 note: note,
                 merchantName: merchantName,
                 merchantId: merchantId,
+                isRecurring: isRecurring,
                 recurringId: recurringId,
+                isAutoCaptured: isAutoCaptured,
+                sourceApp: sourceApp,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

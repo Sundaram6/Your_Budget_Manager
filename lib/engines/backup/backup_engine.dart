@@ -120,7 +120,7 @@ class BackupEngine {
 
       if (data.containsKey('recurringTransactions')) {
         for (var item in (data['recurringTransactions'] as List)) {
-          await _db.into(_db.recurringTransactionsTable).insert(RecurringTransaction.fromJson(item as Map<String, dynamic>));
+          await _db.into(_db.recurringTransactionsTable).insert(RecurringTransactionData.fromJson(item as Map<String, dynamic>));
         }
       }
 
