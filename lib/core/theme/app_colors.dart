@@ -46,4 +46,5 @@ class AppColors {
   static const Color lightIncome = accentSavings;
   static const Color lightExpense = accentAlert;
   static const Color darkBorderGlass = Color(0x26FFFFFF);
+  static const Color darkSurfaceGlass = Color(0x1A1E1E2C);
 }

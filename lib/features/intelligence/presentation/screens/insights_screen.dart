@@ -160,7 +160,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     
     // Sort by amount descending
     final sortedBreakdown = List<CategoryBreakdown>.from(_categoryBreakdown)
-      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+      ..sort((a, b) => b.total.compareTo(a.total));
 
     double total = 0;
     final predefinedColors = [
@@ -173,8 +173,8 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
 
     for (int i = 0; i < sortedBreakdown.length; i++) {
       final cb = sortedBreakdown[i];
-      data[cb.categoryName] = cb.totalAmount;
-      total += cb.totalAmount;
+      data[cb.categoryName] = cb.total;
+      total += cb.total;
       colors.add(predefinedColors[i % predefinedColors.length]);
     }
 
@@ -225,7 +225,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     ];
 
     final sortedBreakdown = List<CategoryBreakdown>.from(_categoryBreakdown)
-      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+      ..sort((a, b) => b.total.compareTo(a.total));
 
     return Wrap(
       spacing: AppSpacing.space2,
@@ -261,7 +261,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               ),
               const SizedBox(width: 4),
               Text(
-                '\$${cb.totalAmount.toStringAsFixed(0)}',
+                '\$${cb.total.toStringAsFixed(0)}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 ),
