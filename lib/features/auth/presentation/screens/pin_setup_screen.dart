@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../routing/route_names.dart';
 import '../controllers/auth_controller.dart';
 
 class PinSetupScreen extends ConsumerStatefulWidget {
@@ -16,9 +15,10 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   final TextEditingController _pinController = TextEditingController();
   final TextEditingController _confirmPinController = TextEditingController();
   bool _isConfirming = false;
+  bool _isSaving = false;
   String _errorMsg = '';
 
-  void _onNext() {
+  void _onNext() async {
     if (!_isConfirming) {
       if (_pinController.text.length < 4) {
         setState(() => _errorMsg = 'PIN must be at least 4 digits');
@@ -33,11 +33,15 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
         setState(() => _errorMsg = 'PINs do not match');
         return;
       }
-      ref.read(authControllerProvider.notifier).setupPin(_pinController.text).then((_) {
+      setState(() => _isSaving = true);
+      try {
+        await ref.read(authControllerProvider.notifier).setupPin(_pinController.text);
         if (mounted) {
-          context.goNamed(RouteNames.dashboard);
+          context.go('/');
         }
-      });
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -81,28 +85,39 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
               ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _onNext,
-              child: Text(_isConfirming ? 'Save PIN' : 'Next'),
+              onPressed: _isSaving ? null : _onNext,
+              child: _isSaving
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(_isConfirming ? 'Save PIN' : 'Next'),
             ),
             if (!_isConfirming)
               TextButton(
-                onPressed: () {
-                  ref.read(authControllerProvider.notifier).skipPinSetup().then((_) {
-                    if (!context.mounted) return;
-                    context.goNamed(RouteNames.dashboard);
-                  });
-                },
+                onPressed: _isSaving
+                    ? null
+                    : () async {
+                        setState(() => _isSaving = true);
+                        try {
+                          await ref.read(authControllerProvider.notifier).skipPinSetup();
+                          if (context.mounted) {
+                            context.go('/');
+                          }
+                        } finally {
+                          if (mounted) setState(() => _isSaving = false);
+                        }
+                      },
                 child: const Text('Skip'),
               ),
             if (_isConfirming)
               TextButton(
-                onPressed: () {
-                  setState(() {
-                    _isConfirming = false;
-                    _confirmPinController.clear();
-                    _errorMsg = '';
-                  });
-                },
+                onPressed: _isSaving
+                    ? null
+                    : () {
+                        setState(() {
+                          _isConfirming = false;
+                          _confirmPinController.clear();
+                          _errorMsg = '';
+                        });
+                      },
                 child: const Text('Back'),
               ),
           ],

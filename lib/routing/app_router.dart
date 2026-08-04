@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/providers/initial_route_provider.dart';
 import '../core/security/app_lock_controller.dart';
 import '../core/security/pin_service.dart';
 import '../features/auth/presentation/screens/pin_lock_screen.dart';
@@ -30,28 +31,23 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) => Sha
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
+  final initialLocation = ref.watch(initialRouteProvider);
   final isLocked = ref.watch(appLockControllerProvider);
   
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: initialLocation,
     redirect: (context, state) async {
       final prefs = await ref.read(sharedPreferencesProvider.future);
-      final isOnboardingComplete = (prefs.getBool('hasCompletedOnboarding') ?? prefs.getBool('onboarding_complete')) ?? false;
-      final isPinSetupComplete = prefs.getBool('pin_setup_complete') ?? false;
+      final isPinSetupComplete = (prefs.getBool('pin_setup_complete') ?? prefs.getBool('pinSetupComplete')) ?? false;
+      final hasSkippedPin = (prefs.getBool('hasSkippedPinSetup') ?? prefs.getBool('has_skipped_pin')) ?? false;
 
       final pinService = ref.read(pinServiceProvider);
       final hasPin = await pinService.hasPin();
 
       final isLockPath = state.matchedLocation == '/pin-lock';
       final isSetupPath = state.matchedLocation == '/pin-setup';
-      final isOnboardingPath = state.matchedLocation == '/onboarding';
 
-      if (!isOnboardingComplete) {
-        if (isOnboardingPath) return null;
-        return '/onboarding';
-      }
-
-      if (!isPinSetupComplete) {
+      if (!isPinSetupComplete && !hasSkippedPin) {
         if (isSetupPath) return null;
         return '/pin-setup';
       }
@@ -61,7 +57,7 @@ GoRouter appRouter(AppRouterRef ref) {
         return '/pin-lock';
       }
 
-      if (isLockPath || isSetupPath || isOnboardingPath) {
+      if (isLockPath || isSetupPath) {
         return '/';
       }
 

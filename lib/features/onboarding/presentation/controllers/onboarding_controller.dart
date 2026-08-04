@@ -14,6 +14,8 @@ class OnboardingController extends _$OnboardingController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', true);
       await prefs.setBool('onboarding_complete', true);
+      await prefs.setInt('onboardingCompletedAt', DateTime.now().millisecondsSinceEpoch);
+      await prefs.reload();
     });
   }
 
@@ -23,6 +25,7 @@ class OnboardingController extends _$OnboardingController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', false);
       await prefs.setBool('onboarding_complete', false);
+      await prefs.reload();
     });
   }
 }

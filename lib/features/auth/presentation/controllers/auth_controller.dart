@@ -20,6 +20,10 @@ class AuthController extends _$AuthController {
       
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('pin_setup_complete', true);
+      await prefs.setBool('pinSetupComplete', true);
+      await prefs.setBool('hasSkippedPinSetup', false);
+      await prefs.setBool('has_skipped_pin', false);
+      await prefs.reload();
     });
   }
 
@@ -28,6 +32,10 @@ class AuthController extends _$AuthController {
     state = await AsyncValue.guard(() async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('pin_setup_complete', true);
+      await prefs.setBool('pinSetupComplete', true);
+      await prefs.setBool('hasSkippedPinSetup', true);
+      await prefs.setBool('has_skipped_pin', true);
+      await prefs.reload();
     });
   }
 

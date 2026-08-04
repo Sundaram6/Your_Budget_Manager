@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../merchant/merchant_engine.dart';
 import '../merchant/merchant_engine_provider.dart';
-import 'models/parsed_transaction.dart';
 
 final smsAutoTrackerProvider = Provider<SmsAutoTracker>((ref) {
   return SmsAutoTracker(
@@ -22,8 +21,7 @@ class SmsAutoTracker {
   }) : _merchantEngine = merchantEngine;
 
   void startForegroundTracking() {
-    // Foreground tracking using periodic polling
-    // This is a safe fallback to telemetry without native failures
+    // Polling background check on startup / resume
   }
 
   void stopForegroundTracking() {
@@ -41,7 +39,7 @@ class SmsAutoTracker {
     try {
       final messages = await _smsQuery.querySms(
         kinds: [SmsQueryKind.inbox],
-        count: 50, // query latest 50 messages to check for new ones
+        count: 50,
       );
 
       int processed = 0;
@@ -49,51 +47,14 @@ class SmsAutoTracker {
         final msgDate = msg.date;
         if (msgDate == null || msgDate.millisecondsSinceEpoch <= lastCheck) continue;
 
-        final body = msg.body ?? '';
-        final date = msgDate;
+        final parsed = _merchantEngine.parseSingleSms(msg);
+        if (parsed == null) continue;
 
-        final lower = body.toLowerCase();
-        final isDebit = (lower.contains('debited') ||
-                lower.contains('spent') ||
-                lower.contains('paid') ||
-                lower.contains('sent to') ||
-                lower.contains('trf to') ||
-                lower.contains('transfer to')) &&
-            !lower.contains('credited') &&
-            !lower.contains('requested');
-
-        if (!isDebit) continue;
-
-        final match = RegExp(
-          r'(?:(?:RS|INR|₹)\.?\s?)([0-9,]+(?:\.[0-9]+)?)|([0-9,]+(?:\.[0-9]+)?)(?=\s?(?:RS|INR|₹))',
-          caseSensitive: false
-        ).firstMatch(body);
-
-        if (match != null) {
-          final amountStr = (match.group(1) ?? match.group(2))?.replaceAll(',', '');
-          if (amountStr != null) {
-            final amount = double.tryParse(amountStr);
-            if (amount != null && amount > 0) {
-              final merchant = _merchantEngine.detectMerchant(body);
-              final merchantName = merchant?.name ?? 'Unknown Merchant';
-              final categoryId = merchant?.categoryId ?? 'cat_uncategorized';
-
-              final success = await _merchantEngine.confirmPendingTransaction(
-                transaction: ParsedTransaction(
-                  smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
-                  amount: amount,
-                  date: date,
-                  merchantName: merchantName,
-                  merchantId: merchant?.id ?? 'mer_unknown',
-                  categoryId: categoryId,
-                  originalSmsBody: body,
-                ),
-              );
-              if (success) {
-                processed++;
-              }
-            }
-          }
+        final success = await _merchantEngine.confirmPendingTransaction(
+          transaction: parsed,
+        );
+        if (success) {
+          processed++;
         }
       }
 
