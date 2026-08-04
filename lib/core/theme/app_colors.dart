@@ -34,6 +34,13 @@ class AppColors {
   static const Color accentAlert = Color(0xFFFF6B9D);
 
   // Legacy/Standard Semantic Fallbacks for backwards compatibility during transition
+  static const Color darkGoldPrimary = darkHeroAccentText;
+  static const Color darkGoldLight = Color(0xFFFFD57A);
+  static const Color darkGoldDark = Color(0xFFFFB71B);
+  static const Color darkGoldGlow = Color(0x33FFC64B);
+  static const Color darkSurface3 = Color(0xFF32324A);
+  static const Color darkBorderMedium = Color(0x3DFFFFFF);
+  static const Color darkTextTertiary = Color(0xFF6E6E82);
   static const Color darkIncome = accentSavings;
   static const Color darkExpense = accentAlert;
   static const Color lightIncome = accentSavings;
