@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/buttons/primary_button.dart';
@@ -77,8 +78,8 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Rescan Inbox',
-            onPressed: () => _showScanDialog(context, controller),
+            tooltip: 'Scan Options',
+            onPressed: () => _showScanOptions(context, controller),
           ),
         ],
       ),
@@ -104,8 +105,8 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
                       ),
                       const SizedBox(height: 16),
                       PrimaryButton(
-                        label: 'Grant Permission & Scan',
-                        onPressed: () => _showScanDialog(context, controller),
+                        label: 'Choose Scan Mode',
+                        onPressed: () => _showScanOptions(context, controller),
                       ),
                     ],
                   ),
@@ -123,7 +124,7 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
                           const SizedBox(height: 24),
                           PrimaryButton(
                             label: 'Scan SMS Inbox',
-                            onPressed: () => _showScanDialog(context, controller),
+                            onPressed: () => _showScanOptions(context, controller),
                           ),
                         ],
                       ),
@@ -135,7 +136,7 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
                           color: context.colorScheme.surfaceContainerHighest,
                           width: double.infinity,
                           child: Text(
-                            'Scanned ${state.scannedSmsCount} historical SMS messages — ${state.transactions.length} pending transactions detected',
+                            'Scanned ${state.scannedSmsCount} transactions — ${state.transactions.length} pending transactions detected',
                             style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
@@ -204,32 +205,116 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
     );
   }
 
-  void _showScanDialog(BuildContext context, PendingTransactionsController controller) {
-    showDialog(
+  void _showScanOptions(BuildContext context, PendingTransactionsController controller) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF171A23),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Scan Inbox',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Select which transactions to import',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.calendar_today, color: Color(0xFFF5D395)),
+                title: const Text('This Month', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                subtitle: Text('Scan transactions from ${DateFormat('MMMM yyyy').format(DateTime.now())}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(context);
+                  controller.scanByMonth(DateTime.now().year, DateTime.now().month);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_month, color: Color(0xFFF5D395)),
+                title: const Text('Last Month', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                subtitle: Text('Scan transactions from ${DateFormat('MMMM yyyy').format(DateTime(DateTime.now().year, DateTime.now().month - 1))}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(context);
+                  final now = DateTime.now();
+                  final lastMonth = DateTime(now.year, now.month - 1);
+                  controller.scanByMonth(lastMonth.year, lastMonth.month);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.date_range, color: Color(0xFFF5D395)),
+                title: const Text('Choose Month', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Pick a specific month to scan', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picked = await _showMonthPicker(context);
+                  if (picked != null) {
+                    controller.scanByMonth(picked.year, picked.month);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.all_inclusive, color: Color(0xFFF5D395)),
+                title: const Text('All Time', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Scan all historical SMS messages', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(context);
+                  controller.scanAllTime();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<DateTime?> _showMonthPicker(BuildContext context) async {
+    final now = DateTime.now();
+    DateTime selectedDate = DateTime(now.year, now.month);
+
+    return showDialog<DateTime>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Scan Inbox'),
-        content: const Text(
-          'Select scan mode:\n\n'
-          '• Fast Scan: Scans latest 1,000 SMS messages.\n'
-          '• Full Historical Scan: Scans all inbox messages.',
+        backgroundColor: const Color(0xFF171A23),
+        title: const Text('Select Month', style: TextStyle(color: Colors.white)),
+        content: SizedBox(
+          width: 300,
+          height: 200,
+          child: YearPicker(
+            firstDate: DateTime(now.year - 5),
+            lastDate: now,
+            selectedDate: selectedDate,
+            onChanged: (selectedYearDateTime) async {
+              final selectedYear = selectedYearDateTime.year;
+              final month = await showDialog<int>(
+                context: context,
+                builder: (context) => SimpleDialog(
+                  backgroundColor: const Color(0xFF171A23),
+                  title: const Text('Select Month', style: TextStyle(color: Colors.white)),
+                  children: List.generate(12, (i) => SimpleDialogOption(
+                    onPressed: () => Navigator.pop(context, i + 1),
+                    child: Text(
+                      DateFormat('MMMM').format(DateTime(selectedYear, i + 1)),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  )),
+                ),
+              );
+              if (month != null && context.mounted) {
+                Navigator.pop(context, DateTime(selectedYear, month));
+              }
+            },
+          ),
         ),
-        actions: [
-          TextButton(
-            child: const Text('Scan Last 1,000'),
-            onPressed: () {
-              Navigator.pop(context);
-              controller.requestPermissionAndScan(limit: 1000);
-            },
-          ),
-          ElevatedButton(
-            child: const Text('Full Historical Scan'),
-            onPressed: () {
-              Navigator.pop(context);
-              controller.requestPermissionAndScan(limit: null);
-            },
-          ),
-        ],
       ),
     );
   }

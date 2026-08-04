@@ -1,5 +1,6 @@
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/enums.dart';
 import '../../../../engines/merchant/merchant_engine_provider.dart';
@@ -42,16 +43,16 @@ class PendingTransactionsController extends _$PendingTransactionsController {
     return const PendingTransactionsState();
   }
 
-  Future<void> requestPermissionAndScan({int? limit}) async {
+  Future<void> scanByMonth(int year, int month) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final status = await Permission.sms.request();
       if (status.isGranted) {
         final engine = ref.read(merchantEngineProvider);
-        final transactions = await engine.scanInbox(count: limit);
+        final transactions = await engine.scanInbox(count: 2000, year: year, month: month);
         state = state.copyWith(
           transactions: transactions,
-          scannedSmsCount: limit ?? transactions.length,
+          scannedSmsCount: transactions.length,
           isLoading: false,
         );
       } else {
@@ -65,6 +66,60 @@ class PendingTransactionsController extends _$PendingTransactionsController {
         isLoading: false,
         error: e.toString(),
       );
+    }
+  }
+
+  Future<void> scanAllTime() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final status = await Permission.sms.request();
+      if (status.isGranted) {
+        final engine = ref.read(merchantEngineProvider);
+        final transactions = await engine.scanInbox(count: null);
+        state = state.copyWith(
+          transactions: transactions,
+          scannedSmsCount: transactions.length,
+          isLoading: false,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'SMS permission denied',
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<int> scanSinceLastCheck() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastCheck = prefs.getInt('sms_last_check_timestamp') ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    try {
+      final status = await Permission.sms.status;
+      if (!status.isGranted) return 0;
+
+      final engine = ref.read(merchantEngineProvider);
+      final transactions = await engine.scanInbox(count: 100);
+      
+      final newTxs = transactions.where((tx) => tx.date.millisecondsSinceEpoch > lastCheck).toList();
+      int autoSaved = 0;
+      for (final tx in newTxs) {
+        final success = await engine.confirmPendingTransaction(transaction: tx);
+        if (success) {
+          autoSaved++;
+        }
+      }
+
+      await prefs.setInt('sms_last_check_timestamp', now);
+      return autoSaved;
+    } catch (e) {
+      return 0;
     }
   }
 
@@ -90,7 +145,6 @@ class PendingTransactionsController extends _$PendingTransactionsController {
         throw StateError('Failed to confirm transaction ${transaction.merchantName}');
       }
     } catch (e) {
-      // Propagate exception to UI layer for error display
       rethrow;
     }
   }

@@ -20,7 +20,7 @@ class MerchantEngine {
       caseSensitive: false);
 
   /// Parse inbox messages with full historical scan support or count limits.
-  Future<List<ParsedTransaction>> scanInbox({int? count}) async {
+  Future<List<ParsedTransaction>> scanInbox({int? count, int? year, int? month}) async {
     if (!PlatformGuard.isSmsSupported) {
       _logger.w('SMS parsing is only supported on Android.');
       return [];
@@ -37,6 +37,10 @@ class MerchantEngine {
       for (final msg in messages) {
         final body = msg.body ?? '';
         final date = msg.date ?? DateTime.now();
+
+        if (year != null && month != null) {
+          if (date.year != year || date.month != month) continue;
+        }
 
         if (!_isDebitTransaction(body)) continue;
 
