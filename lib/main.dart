@@ -12,12 +12,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();
-  final hasCompletedOnboarding = (prefs.getBool('hasCompletedOnboarding') ?? prefs.getBool('onboarding_complete')) ?? false;
+
+  // Dual-flag check: BOTH the boolean AND a timestamp must be present for
+  // onboarding to be considered truly complete. This prevents stale prefs
+  // from a previous debug session without a timestamp from silently skipping
+  // onboarding on a fresh install of the same APK.
+  final hasCompleted = prefs.getBool('hasCompletedOnboarding') ?? false;
+  final completedAt = prefs.getInt('onboardingCompletedAt');
+  final isOnboardingTrulyComplete = hasCompleted && completedAt != null;
 
   final container = ProviderContainer(
     overrides: [
       initialRouteProvider.overrideWithValue(
-        hasCompletedOnboarding ? '/' : '/onboarding',
+        isOnboardingTrulyComplete ? '/' : '/onboarding',
       ),
     ],
   );

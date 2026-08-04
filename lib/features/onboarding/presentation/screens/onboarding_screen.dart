@@ -9,7 +9,6 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../engines/budget/budget_engine_provider.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
-import '../controllers/onboarding_controller.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -31,7 +30,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // Page 4 State
   bool _smsAutoTrack = false;
-  bool _isLoading = false;
+  bool _isFinishing = false;
 
   @override
   void initState() {
@@ -57,15 +56,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  /// Write completion flags directly to prefs (no intermediate controller),
+  /// then navigate. A 200ms delay lets the flush propagate before GoRouter
+  /// evaluates any redirect on the next frame.
   Future<void> _finishOnboarding() async {
-    setState(() => _isLoading = true);
+    if (_isFinishing) return;
+    setState(() => _isFinishing = true);
+
     try {
-      await ref.read(onboardingControllerProvider.notifier).completeOnboarding();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('hasCompletedOnboarding', true);
+      await prefs.setBool('onboarding_complete', true);
+      await prefs.setInt(
+        'onboardingCompletedAt',
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      // Force flush to disk before navigation
+      await prefs.reload();
+
+      // Small delay so the prefs write propagates before any frame checks
+      await Future.delayed(const Duration(milliseconds: 200));
+
       if (mounted) {
         context.go('/');
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isFinishing = false);
     }
   }
 
@@ -119,7 +135,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('SMS Permission Required'),
-              content: const Text('SMS permission is required to automatically detect expenses from bank alerts.'),
+              content: const Text(
+                'SMS permission is required to automatically detect expenses from bank alerts.',
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -147,16 +165,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         elevation: 0,
         actions: [
           TextButton(
-            onPressed: _finishOnboarding,
+            onPressed: _isFinishing ? null : _finishOnboarding,
             child: const Text(
               'Skip Setup',
-              style: TextStyle(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: AppColors.darkGoldPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
       ),
       body: SafeArea(
-        child: _isLoading
+        child: _isFinishing
             ? const Center(child: CircularProgressIndicator())
             : Column(
                 children: [
@@ -175,7 +196,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                   // Progress Dots Indicator & Step Counter
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.space4,
+                      vertical: AppSpacing.space2,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -188,7 +212,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               width: _currentPage == index ? 24 : 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: _currentPage == index ? AppColors.darkGoldPrimary : AppColors.darkSurface3,
+                                color: _currentPage == index
+                                    ? AppColors.darkGoldPrimary
+                                    : AppColors.darkSurface3,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             );
@@ -197,7 +223,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const SizedBox(height: 6),
                         Text(
                           'Step ${_currentPage + 1} of 4',
-                          style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 12),
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.darkTextSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -217,7 +246,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: AppSpacing.space4),
-          const Icon(Icons.account_balance_wallet_outlined, size: 80, color: AppColors.darkGoldPrimary),
+          const Icon(Icons.account_balance_wallet_outlined,
+              size: 80, color: AppColors.darkGoldPrimary),
           const SizedBox(height: AppSpacing.space6),
           Text(
             'Take control of your money',
@@ -227,7 +257,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: AppSpacing.space3),
           Text(
             'Set your budget, track expenses, and save smarter.',
-            style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 16),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.darkTextSecondary,
+              fontSize: 16,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.space6),
@@ -241,7 +274,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: _nextPage,
-              child: const Text('Get Started', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Get Started',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -261,13 +297,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const Icon(Icons.calculate_outlined, size: 64, color: AppColors.darkGoldPrimary),
           const SizedBox(height: AppSpacing.space4),
           Text(
-            'What\'s your monthly budget?',
+            "What's your monthly budget?",
             style: AppTypography.heading2.copyWith(color: AppColors.darkTextPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.space2),
           Text(
-            'We\'ll help you stay within your limits.',
+            "We'll help you stay within your limits.",
             style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
             textAlign: TextAlign.center,
           ),
@@ -275,11 +311,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           TextField(
             controller: _budgetController,
             keyboardType: TextInputType.number,
-            style: const TextStyle(color: AppColors.darkTextPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: AppColors.darkTextPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
             decoration: InputDecoration(
               labelText: 'Monthly Budget Amount',
               prefixText: '₹ ',
-              prefixStyle: const TextStyle(color: AppColors.darkGoldPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+              prefixStyle: const TextStyle(
+                color: AppColors.darkGoldPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
@@ -300,7 +344,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: AppSpacing.space3),
           TextButton(
             onPressed: _nextPage,
-            child: const Text('Skip for now', style: TextStyle(color: AppColors.darkTextSecondary)),
+            child: const Text('Skip for now',
+                style: TextStyle(color: AppColors.darkTextSecondary)),
           ),
         ],
       ),
@@ -368,7 +413,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: AppSpacing.space3),
           TextButton(
             onPressed: _nextPage,
-            child: const Text('Skip for now', style: TextStyle(color: AppColors.darkTextSecondary)),
+            child: const Text('Skip for now',
+                style: TextStyle(color: AppColors.darkTextSecondary)),
           ),
         ],
       ),
@@ -393,7 +439,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: AppSpacing.space2),
           Text(
-            'We\'ll scan your messages for Swiggy, Uber, Amazon, and bank alerts.',
+            "We'll scan your messages for Swiggy, Uber, Amazon, and bank alerts.",
             style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
             textAlign: TextAlign.center,
           ),
@@ -420,13 +466,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: _finishOnboarding,
-              child: const Text('Finish', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              onPressed: _isFinishing ? null : _finishOnboarding,
+              child: _isFinishing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                    )
+                  : const Text(
+                      'Finish',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
             ),
           ),
           const SizedBox(height: AppSpacing.space3),
           TextButton(
-            onPressed: _finishOnboarding,
+            onPressed: _isFinishing ? null : _finishOnboarding,
             child: const Text('Skip', style: TextStyle(color: AppColors.darkTextSecondary)),
           ),
         ],

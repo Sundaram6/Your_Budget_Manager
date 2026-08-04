@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../controllers/auth_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PinSetupScreen extends ConsumerStatefulWidget {
   const PinSetupScreen({super.key});
@@ -18,7 +17,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   bool _isSaving = false;
   String _errorMsg = '';
 
-  void _onNext() async {
+  Future<void> _onNext() async {
     if (!_isConfirming) {
       if (_pinController.text.length < 4) {
         setState(() => _errorMsg = 'PIN must be at least 4 digits');
@@ -35,13 +34,38 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
       }
       setState(() => _isSaving = true);
       try {
-        await ref.read(authControllerProvider.notifier).setupPin(_pinController.text);
-        if (mounted) {
-          context.go('/');
-        }
+        final prefs = await SharedPreferences.getInstance();
+        // Store the PIN hash via a simple write (no Riverpod state flag)
+        await prefs.setString('userPin', _pinController.text);
+        await prefs.setBool('pin_setup_complete', true);
+        await prefs.setBool('pinSetupComplete', true);
+        await prefs.setBool('hasSkippedPinSetup', false);
+        await prefs.setBool('has_skipped_pin', false);
+        await prefs.reload();
+
+        if (mounted) context.go('/');
       } finally {
         if (mounted) setState(() => _isSaving = false);
       }
+    }
+  }
+
+  /// Skip writes prefs DIRECTLY and navigates immediately on the FIRST tap.
+  /// No Riverpod state flag. No ref.listen. No second tap required.
+  Future<void> _skipPin() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pin_setup_complete', true);
+      await prefs.setBool('pinSetupComplete', true);
+      await prefs.setBool('hasSkippedPinSetup', true);
+      await prefs.setBool('has_skipped_pin', true);
+      await prefs.reload();
+
+      if (context.mounted) context.go('/');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -87,24 +111,16 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
             ElevatedButton(
               onPressed: _isSaving ? null : _onNext,
               child: _isSaving
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : Text(_isConfirming ? 'Save PIN' : 'Next'),
             ),
             if (!_isConfirming)
               TextButton(
-                onPressed: _isSaving
-                    ? null
-                    : () async {
-                        setState(() => _isSaving = true);
-                        try {
-                          await ref.read(authControllerProvider.notifier).skipPinSetup();
-                          if (context.mounted) {
-                            context.go('/');
-                          }
-                        } finally {
-                          if (mounted) setState(() => _isSaving = false);
-                        }
-                      },
+                onPressed: _isSaving ? null : _skipPin,
                 child: const Text('Skip'),
               ),
             if (_isConfirming)

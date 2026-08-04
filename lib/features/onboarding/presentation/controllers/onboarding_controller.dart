@@ -25,6 +25,7 @@ class OnboardingController extends _$OnboardingController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', false);
       await prefs.setBool('onboarding_complete', false);
+      await prefs.remove('onboardingCompletedAt');
       await prefs.reload();
     });
   }

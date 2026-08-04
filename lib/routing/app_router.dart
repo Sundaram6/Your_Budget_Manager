@@ -26,26 +26,39 @@ import 'route_names.dart';
 
 part 'app_router.g.dart';
 
-// Provides shared preferences to the router
-final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) => SharedPreferences.getInstance());
+// Provides shared preferences to the router (used by PIN lock redirect only)
+final sharedPreferencesProvider = FutureProvider<SharedPreferences>(
+  (ref) => SharedPreferences.getInstance(),
+);
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
+  // initialLocation is set synchronously in main.dart before the app starts.
+  // The router NEVER re-evaluates onboarding state reactively — that was the
+  // source of the infinite redirect loop.
   final initialLocation = ref.watch(initialRouteProvider);
   final isLocked = ref.watch(appLockControllerProvider);
-  
+
   return GoRouter(
     initialLocation: initialLocation,
+    // ── REDIRECT: PIN lock only. Onboarding is NOT guarded here. ──────────
     redirect: (context, state) async {
       final prefs = await ref.read(sharedPreferencesProvider.future);
-      final isPinSetupComplete = (prefs.getBool('pin_setup_complete') ?? prefs.getBool('pinSetupComplete')) ?? false;
-      final hasSkippedPin = (prefs.getBool('hasSkippedPinSetup') ?? prefs.getBool('has_skipped_pin')) ?? false;
+      final isPinSetupComplete =
+          (prefs.getBool('pin_setup_complete') ?? prefs.getBool('pinSetupComplete')) ?? false;
+      final hasSkippedPin =
+          (prefs.getBool('hasSkippedPinSetup') ?? prefs.getBool('has_skipped_pin')) ?? false;
 
       final pinService = ref.read(pinServiceProvider);
       final hasPin = await pinService.hasPin();
 
-      final isLockPath = state.matchedLocation == '/pin-lock';
-      final isSetupPath = state.matchedLocation == '/pin-setup';
+      final loc = state.matchedLocation;
+      final isLockPath = loc == '/pin-lock';
+      final isSetupPath = loc == '/pin-setup';
+      // Onboarding path must pass through without any redirect interference
+      final isOnboardingPath = loc == '/onboarding';
+
+      if (isOnboardingPath) return null;
 
       if (!isPinSetupComplete && !hasSkippedPin) {
         if (isSetupPath) return null;
@@ -84,9 +97,7 @@ GoRouter appRouter(AppRouterRef ref) {
         builder: (context, state) => const InsightsScreen(),
       ),
       ShellRoute(
-        builder: (context, state, child) {
-          return child;
-        },
+        builder: (context, state, child) => child,
         routes: [
           GoRoute(
             path: '/',
@@ -113,7 +124,6 @@ GoRouter appRouter(AppRouterRef ref) {
             name: RouteNames.budgets,
             builder: (context, state) => const BudgetSettingsScreen(),
           ),
-
           GoRoute(
             path: '/budgets/:id',
             name: RouteNames.budgetDetail,
@@ -139,7 +149,6 @@ GoRouter appRouter(AppRouterRef ref) {
         name: RouteNames.smsConsent,
         builder: (context, state) => const PendingTransactionsScreen(),
       ),
-
       GoRoute(
         path: '/sms-settings',
         name: RouteNames.smsSettings,
