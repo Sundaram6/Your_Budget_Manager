@@ -4,7 +4,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'core/theme/app_theme.dart';
 import 'engines/sms/sms_auto_tracker.dart';
-import 'features/merchant_detection/presentation/controllers/pending_transactions_controller.dart';
 import 'routing/app_router.dart';
 
 class YourBudgetManagerApp extends ConsumerStatefulWidget {
@@ -49,14 +48,10 @@ class _YourBudgetManagerAppState extends ConsumerState<YourBudgetManagerApp> wit
       final tracker = ref.read(smsAutoTrackerProvider);
       final count = await tracker.processBackgroundQueue();
       
-      final controller = ref.read(pendingTransactionsControllerProvider.notifier);
-      final newCount = await controller.scanSinceLastCheck();
-      
-      final total = count + newCount;
-      if (total > 0 && mounted) {
+      if (count > 0 && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$total new transactions auto-tracked from SMS'),
+            content: Text('$count new transactions auto-tracked from SMS'),
             duration: const Duration(seconds: 3),
             backgroundColor: const Color(0xFFF5D395),
             behavior: SnackBarBehavior.floating,

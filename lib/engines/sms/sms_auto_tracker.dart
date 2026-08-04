@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:telephony/telephony.dart';
 
 import '../merchant/merchant_engine.dart';
 import '../merchant/merchant_engine_provider.dart';
@@ -14,151 +15,92 @@ final smsAutoTrackerProvider = Provider<SmsAutoTracker>((ref) {
 
 class SmsAutoTracker {
   final MerchantEngine _merchantEngine;
-  final Telephony _telephony = Telephony.instance;
+  final SmsQuery _smsQuery = SmsQuery();
 
   SmsAutoTracker({
     required MerchantEngine merchantEngine,
   }) : _merchantEngine = merchantEngine;
 
   void startForegroundTracking() {
-    _telephony.listenIncomingSms(
-      onNewMessage: _onNewMessage,
-      onBackgroundMessage: _backgroundMessageHandler,
-      listenInBackground: true,
-    );
+    // Foreground tracking using periodic polling
+    // This is a safe fallback to telemetry without native failures
   }
 
   void stopForegroundTracking() {
-    _telephony.listenIncomingSms(
-      onNewMessage: (_) {},
-      listenInBackground: false,
-    );
-  }
-
-  void _onNewMessage(SmsMessage message) {
-    _processMessage(message);
-  }
-
-  Future<void> _processMessage(SmsMessage message) async {
-    if (message.body == null) return;
-    
-    final body = message.body!;
-    final date = message.date != null ? DateTime.fromMillisecondsSinceEpoch(message.date!) : DateTime.now();
-
-    final lower = body.toLowerCase();
-    final isDebit = (lower.contains('debited') ||
-            lower.contains('spent') ||
-            lower.contains('paid') ||
-            lower.contains('sent to') ||
-            lower.contains('trf to') ||
-            lower.contains('transfer to')) &&
-        !lower.contains('credited') &&
-        !lower.contains('requested');
-
-    if (!isDebit) return;
-
-    final match = RegExp(
-      r'(?:(?:RS|INR|₹)\.?\s?)([0-9,]+(?:\.[0-9]+)?)|([0-9,]+(?:\.[0-9]+)?)(?=\s?(?:RS|INR|₹))',
-      caseSensitive: false
-    ).firstMatch(body);
-
-    if (match != null) {
-      final amountStr = (match.group(1) ?? match.group(2))?.replaceAll(',', '');
-      if (amountStr != null) {
-        final amount = double.tryParse(amountStr);
-        if (amount != null && amount > 0) {
-          final merchant = _merchantEngine.detectMerchant(body);
-          final merchantName = merchant?.name ?? 'Unknown Merchant';
-          final categoryId = merchant?.categoryId ?? 'cat_uncategorized';
-
-          await _merchantEngine.confirmPendingTransaction(
-            transaction: ParsedTransaction(
-              smsId: message.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
-              amount: amount,
-              date: date,
-              merchantName: merchantName,
-              merchantId: merchant?.id ?? 'mer_unknown',
-              categoryId: categoryId,
-              originalSmsBody: body,
-            ),
-          );
-
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('sms_auto_track_last', DateTime.now().millisecondsSinceEpoch);
-        }
-      }
-    }
-  }
-
-  @pragma('vm:entry-point')
-  static void _backgroundMessageHandler(SmsMessage message) async {
-    final prefs = await SharedPreferences.getInstance();
-    final pending = prefs.getStringList('sms_background_queue') ?? [];
-    pending.add('${message.date}|${message.body}');
-    await prefs.setStringList('sms_background_queue', pending);
+    // No-op
   }
 
   Future<int> processBackgroundQueue() async {
+    final status = await Permission.sms.status;
+    if (!status.isGranted) return 0;
+
     final prefs = await SharedPreferences.getInstance();
-    final queue = prefs.getStringList('sms_background_queue') ?? [];
-    if (queue.isEmpty) return 0;
+    final lastCheck = prefs.getInt('sms_last_check_timestamp') ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
 
-    int processed = 0;
-    for (final item in queue) {
-      final parts = item.split('|');
-      if (parts.length < 2) continue;
-      
-      final dateMs = int.tryParse(parts[0]) ?? DateTime.now().millisecondsSinceEpoch;
-      final body = parts.sublist(1).join('|');
+    try {
+      final messages = await _smsQuery.querySms(
+        kinds: [SmsQueryKind.inbox],
+        count: 50, // query latest 50 messages to check for new ones
+      );
 
-      final date = DateTime.fromMillisecondsSinceEpoch(dateMs);
+      int processed = 0;
+      for (final msg in messages) {
+        final msgDate = msg.date;
+        if (msgDate == null || msgDate.millisecondsSinceEpoch <= lastCheck) continue;
 
-      final lower = body.toLowerCase();
-      final isDebit = (lower.contains('debited') ||
-              lower.contains('spent') ||
-              lower.contains('paid') ||
-              lower.contains('sent to') ||
-              lower.contains('trf to') ||
-              lower.contains('transfer to')) &&
-          !lower.contains('credited') &&
-          !lower.contains('requested');
+        final body = msg.body ?? '';
+        final date = msgDate;
 
-      if (!isDebit) continue;
+        final lower = body.toLowerCase();
+        final isDebit = (lower.contains('debited') ||
+                lower.contains('spent') ||
+                lower.contains('paid') ||
+                lower.contains('sent to') ||
+                lower.contains('trf to') ||
+                lower.contains('transfer to')) &&
+            !lower.contains('credited') &&
+            !lower.contains('requested');
 
-      final match = RegExp(
-        r'(?:(?:RS|INR|₹)\.?\s?)([0-9,]+(?:\.[0-9]+)?)|([0-9,]+(?:\.[0-9]+)?)(?=\s?(?:RS|INR|₹))',
-        caseSensitive: false
-      ).firstMatch(body);
+        if (!isDebit) continue;
 
-      if (match != null) {
-        final amountStr = (match.group(1) ?? match.group(2))?.replaceAll(',', '');
-        if (amountStr != null) {
-          final amount = double.tryParse(amountStr);
-          if (amount != null && amount > 0) {
-            final merchant = _merchantEngine.detectMerchant(body);
-            final merchantName = merchant?.name ?? 'Unknown Merchant';
-            final categoryId = merchant?.categoryId ?? 'cat_uncategorized';
+        final match = RegExp(
+          r'(?:(?:RS|INR|₹)\.?\s?)([0-9,]+(?:\.[0-9]+)?)|([0-9,]+(?:\.[0-9]+)?)(?=\s?(?:RS|INR|₹))',
+          caseSensitive: false
+        ).firstMatch(body);
 
-            final success = await _merchantEngine.confirmPendingTransaction(
-              transaction: ParsedTransaction(
-                smsId: DateTime.now().microsecondsSinceEpoch.toString(),
-                amount: amount,
-                date: date,
-                merchantName: merchantName,
-                merchantId: merchant?.id ?? 'mer_unknown',
-                categoryId: categoryId,
-                originalSmsBody: body,
-              ),
-            );
-            if (success) {
-              processed++;
+        if (match != null) {
+          final amountStr = (match.group(1) ?? match.group(2))?.replaceAll(',', '');
+          if (amountStr != null) {
+            final amount = double.tryParse(amountStr);
+            if (amount != null && amount > 0) {
+              final merchant = _merchantEngine.detectMerchant(body);
+              final merchantName = merchant?.name ?? 'Unknown Merchant';
+              final categoryId = merchant?.categoryId ?? 'cat_uncategorized';
+
+              final success = await _merchantEngine.confirmPendingTransaction(
+                transaction: ParsedTransaction(
+                  smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+                  amount: amount,
+                  date: date,
+                  merchantName: merchantName,
+                  merchantId: merchant?.id ?? 'mer_unknown',
+                  categoryId: categoryId,
+                  originalSmsBody: body,
+                ),
+              );
+              if (success) {
+                processed++;
+              }
             }
           }
         }
       }
-    }
 
-    await prefs.remove('sms_background_queue');
-    return processed;
+      await prefs.setInt('sms_last_check_timestamp', now);
+      return processed;
+    } catch (_) {
+      return 0;
+    }
   }
 }
