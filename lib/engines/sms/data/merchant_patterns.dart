@@ -18,58 +18,9 @@ class MerchantPattern {
 }
 
 /// Comprehensive Indian Bank, UPI, and Merchant SMS Patterns
+/// Note: Specific merchants (Food, Shopping, Travel, Groceries) are listed BEFORE
+/// payment providers/banks so that merchant detection is prioritized.
 final List<MerchantPattern> kIndianMerchantPatterns = [
-  // Banks & UPI Payments
-  MerchantPattern(
-    id: 'mer_hdfc',
-    name: 'HDFC Bank',
-    regex: RegExp(r'hdfc|hdfcbank', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance',
-  ),
-  MerchantPattern(
-    id: 'mer_icici',
-    name: 'ICICI Bank',
-    regex: RegExp(r'icici|icicibank', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance',
-  ),
-  MerchantPattern(
-    id: 'mer_sbi',
-    name: 'SBI Bank',
-    regex: RegExp(r'sbi|state bank|sbicard', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance',
-  ),
-  MerchantPattern(
-    id: 'mer_axis',
-    name: 'Axis Bank',
-    regex: RegExp(r'axis|axisbank', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance',
-  ),
-  MerchantPattern(
-    id: 'mer_paytm',
-    name: 'Paytm',
-    regex: RegExp(r'paytm', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance_wallet',
-  ),
-  MerchantPattern(
-    id: 'mer_phonepe',
-    name: 'PhonePe',
-    regex: RegExp(r'phonepe', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance_wallet',
-  ),
-  MerchantPattern(
-    id: 'mer_gpay',
-    name: 'Google Pay',
-    regex: RegExp(r'gpay|google pay', caseSensitive: false),
-    categoryId: CategoryEngine.catUtilities,
-    iconName: 'account_balance_wallet',
-  ),
-
   // Food & Dining
   MerchantPattern(
     id: 'mer_swiggy',
@@ -84,6 +35,36 @@ final List<MerchantPattern> kIndianMerchantPatterns = [
     regex: RegExp(r'zomato', caseSensitive: false),
     categoryId: CategoryEngine.catFood,
     iconName: 'restaurant',
+  ),
+
+  // Groceries & Quick Commerce
+  MerchantPattern(
+    id: 'mer_blinkit',
+    name: 'Blinkit',
+    regex: RegExp(r'blinkit|grofers', caseSensitive: false),
+    categoryId: CategoryEngine.catGroceries,
+    iconName: 'local_grocery_store',
+  ),
+  MerchantPattern(
+    id: 'mer_zepto',
+    name: 'Zepto',
+    regex: RegExp(r'zepto', caseSensitive: false),
+    categoryId: CategoryEngine.catGroceries,
+    iconName: 'shopping_basket',
+  ),
+  MerchantPattern(
+    id: 'mer_instamart',
+    name: 'Instamart',
+    regex: RegExp(r'instamart', caseSensitive: false),
+    categoryId: CategoryEngine.catGroceries,
+    iconName: 'storefront',
+  ),
+  MerchantPattern(
+    id: 'mer_bigbasket',
+    name: 'BigBasket',
+    regex: RegExp(r'bigbasket', caseSensitive: false),
+    categoryId: CategoryEngine.catGroceries,
+    iconName: 'shopping_cart',
   ),
 
   // Transport & Travel
@@ -123,36 +104,6 @@ final List<MerchantPattern> kIndianMerchantPatterns = [
     regex: RegExp(r'myntra', caseSensitive: false),
     categoryId: CategoryEngine.catShopping,
     iconName: 'checkroom',
-  ),
-
-  // Groceries & Quick Commerce
-  MerchantPattern(
-    id: 'mer_blinkit',
-    name: 'Blinkit',
-    regex: RegExp(r'blinkit|grofers', caseSensitive: false),
-    categoryId: CategoryEngine.catGroceries,
-    iconName: 'local_grocery_store',
-  ),
-  MerchantPattern(
-    id: 'mer_zepto',
-    name: 'Zepto',
-    regex: RegExp(r'zepto', caseSensitive: false),
-    categoryId: CategoryEngine.catGroceries,
-    iconName: 'shopping_basket',
-  ),
-  MerchantPattern(
-    id: 'mer_instamart',
-    name: 'Instamart',
-    regex: RegExp(r'instamart', caseSensitive: false),
-    categoryId: CategoryEngine.catGroceries,
-    iconName: 'storefront',
-  ),
-  MerchantPattern(
-    id: 'mer_bigbasket',
-    name: 'BigBasket',
-    regex: RegExp(r'bigbasket', caseSensitive: false),
-    categoryId: CategoryEngine.catGroceries,
-    iconName: 'shopping_cart',
   ),
 
   // Entertainment & Subscriptions
@@ -199,5 +150,58 @@ final List<MerchantPattern> kIndianMerchantPatterns = [
     regex: RegExp(r'bescom|electricity', caseSensitive: false),
     categoryId: CategoryEngine.catUtilities,
     iconName: 'bolt',
+  ),
+
+  // Payment Wallets & Apps
+  MerchantPattern(
+    id: 'mer_paytm',
+    name: 'Paytm',
+    regex: RegExp(r'paytm', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance_wallet',
+  ),
+  MerchantPattern(
+    id: 'mer_phonepe',
+    name: 'PhonePe',
+    regex: RegExp(r'phonepe', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance_wallet',
+  ),
+  MerchantPattern(
+    id: 'mer_gpay',
+    name: 'Google Pay',
+    regex: RegExp(r'gpay|google pay', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance_wallet',
+  ),
+
+  // Banks & Financial Institutions
+  MerchantPattern(
+    id: 'mer_hdfc',
+    name: 'HDFC Bank',
+    regex: RegExp(r'hdfc|hdfcbank', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance',
+  ),
+  MerchantPattern(
+    id: 'mer_icici',
+    name: 'ICICI Bank',
+    regex: RegExp(r'icici|icicibank', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance',
+  ),
+  MerchantPattern(
+    id: 'mer_sbi',
+    name: 'SBI Bank',
+    regex: RegExp(r'sbi|state bank|sbicard', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance',
+  ),
+  MerchantPattern(
+    id: 'mer_axis',
+    name: 'Axis Bank',
+    regex: RegExp(r'axis|axisbank', caseSensitive: false),
+    categoryId: CategoryEngine.catUtilities,
+    iconName: 'account_balance',
   ),
 ];

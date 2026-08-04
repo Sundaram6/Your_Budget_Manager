@@ -309,15 +309,16 @@ class MerchantEngine {
 
     String merchant = walletName;
 
-    final merchantMatch = RegExp(
-      r'(?:to|at|for|merchant|paid to)[:\s]+([a-zA-Z0-9\s\.\-]{2,30}?)(?:\s+order|\s+txn|\s+ref|\s+upi|\n|$)',
+    final merchantMatches = RegExp(
+      r'(?:for|to|at|merchant|paid to)\s+([a-zA-Z0-9\s\.\-]{2,30}?)(?:\s+order|\s+txn|\s+ref|\s+upi|\n|$)',
       caseSensitive: false,
-    ).firstMatch(body);
+    ).allMatches(body);
 
-    if (merchantMatch != null) {
-      final m = merchantMatch.group(1)?.trim();
-      if (m != null && m.length > 2 && !m.toLowerCase().contains('rs')) {
-        merchant = '$walletName - $m';
+    for (final match in merchantMatches) {
+      final val = match.group(1)?.trim();
+      if (val != null && val.length > 2 && !val.toLowerCase().contains('rs') && !wallets.containsKey(val.toLowerCase())) {
+        merchant = '$walletName - $val';
+        break;
       }
     }
 
@@ -453,11 +454,16 @@ class MerchantEngine {
   }
 
   String _cleanMerchant(String raw) {
-    return raw
+    String cleaned = raw
         .replaceAll(RegExp(r'\s+'), ' ')
         .replaceAll(RegExp(r'[^\w\s\.\-&]'), '')
-        .trim()
-        .toUpperCase();
+        .trim();
+
+    cleaned = cleaned.replaceAll(RegExp(r'\s+ON\s+\d{1,2}[A-Za-z]{3}\d{0,4}$', caseSensitive: false), '');
+    cleaned = cleaned.replaceAll(RegExp(r'\s+ON\s+\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]?\d{0,4}$', caseSensitive: false), '');
+    cleaned = cleaned.replaceAll(RegExp(r'\s+(?:TRXN|TXN|REF|ORDER|UPI)\s.*$', caseSensitive: false), '');
+
+    return cleaned.trim();
   }
 
   String _categorize(String merchant) {
