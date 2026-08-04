@@ -288,4 +288,151 @@ class IntelligenceEngine {
     insights.sort((a, b) => a.priority.compareTo(b.priority));
     return insights;
   }
+
+  /// Generate deterministic insights for a specific past month.
+  Future<List<AiInsight>> generateInsightsForMonth(int year, int month) async {
+    if (_transactionDao == null) return [];
+    final insights = <AiInsight>[];
+    final generatedAt = DateTime(year, month, 1);
+    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    final startOfMonth = DateTime(year, month, 1);
+    final endOfMonth = DateTime(year, month + 1, 0, 23, 59, 59, 999);
+    final transactions = await _transactionDao!.getTransactionsByDateRange(startOfMonth, endOfMonth);
+
+    if (transactions.isEmpty) return [];
+
+    final expenses = transactions.where((t) => t.type == 'expense').toList();
+    final incomes = transactions.where((t) => t.type == 'income').toList();
+    final totalExpense = expenses.fold<double>(0.0, (s, t) => s + t.amount);
+    final totalIncome = incomes.fold<double>(0.0, (s, t) => s + t.amount);
+
+    // 1. Category breakdown insight
+    if (expenses.isNotEmpty) {
+      final catMap = <String, double>{};
+      for (final t in expenses) {
+        catMap[t.categoryId] = (catMap[t.categoryId] ?? 0.0) + t.amount;
+      }
+      final sorted = catMap.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+      final top = sorted.first;
+      final category = _categoryDao != null ? await _categoryDao.getCategoryById(top.key) : null;
+      final catName = category?.name ?? CategoryEngine.getDisplayName(top.key);
+      final pct = (top.value / totalExpense * 100).round();
+      final potentialSaving = (top.value * 0.2).round();
+      insights.add(AiInsight(
+        id: 'month_cat_${year}_$month',
+        title: '$catName was your top expense',
+        description:
+            'You spent ${currencyFormat.format(top.value)} on $catName ($pct% of total). '
+            'Cutting 20% here could save ~${currencyFormat.format(potentialSaving)}.',
+        type: pct >= 40 ? InsightType.warning : InsightType.tip,
+        generatedAt: generatedAt,
+        priority: 0,
+      ));
+    }
+
+    // 2. Top spending day insight
+    final dailyMap = <int, double>{};
+    for (final t in expenses) {
+      final d = DateTime.fromMillisecondsSinceEpoch(t.date).day;
+      dailyMap[d] = (dailyMap[d] ?? 0.0) + t.amount;
+    }
+    if (dailyMap.isNotEmpty) {
+      final topDay = dailyMap.entries.reduce((a, b) => a.value >= b.value ? a : b);
+      final topDate = DateTime(year, month, topDay.key);
+      insights.add(AiInsight(
+        id: 'month_topday_${year}_$month',
+        title: 'Top spending day: ${DateFormat('d MMM').format(topDate)}',
+        description:
+            'You spent ${currencyFormat.format(topDay.value)} on ${DateFormat('d MMM').format(topDate)}. '
+            'Consider spreading purchases to avoid single-day spikes.',
+        type: InsightType.tip,
+        generatedAt: generatedAt,
+        priority: 1,
+      ));
+    }
+
+    // 3. Savings comparison to previous month
+    if (totalIncome > 0) {
+      final savedAmount = totalIncome - totalExpense;
+      final savePct = (savedAmount / totalIncome * 100).clamp(-100.0, 100.0).round();
+      final prevMonth = month - 1 == 0 ? 12 : month - 1;
+      final prevYear = month - 1 == 0 ? year - 1 : year;
+      final prevStart = DateTime(prevYear, prevMonth, 1);
+      final prevEnd = DateTime(prevYear, prevMonth + 1, 0, 23, 59, 59, 999);
+      final prevTxs = await _transactionDao!.getTransactionsByDateRange(prevStart, prevEnd);
+      final prevExpense = prevTxs.where((t) => t.type == 'expense').fold<double>(0.0, (s, t) => s + t.amount);
+      final diff = totalExpense - prevExpense;
+      final isLess = diff < 0;
+
+      insights.add(AiInsight(
+        id: 'month_savings_${year}_$month',
+        title: savedAmount > 0 ? 'You saved ${currencyFormat.format(savedAmount)}' : 'Expenses exceeded income',
+        description: isLess
+            ? 'Great! You spent ${currencyFormat.format(diff.abs())} less than last month ($savePct% of income saved).'
+            : 'You spent ${currencyFormat.format(diff.abs())} more than last month. Review your expenses.',
+        type: savedAmount > 0 && isLess ? InsightType.achievement : InsightType.warning,
+        generatedAt: generatedAt,
+        priority: 2,
+      ));
+    }
+
+    // 4. Zero expense streak
+    final daysInMonth = endOfMonth.day;
+    int streak = 0;
+    for (int day = daysInMonth; day >= 1; day--) {
+      final dayExpenses = expenses.where((t) =>
+          DateTime.fromMillisecondsSinceEpoch(t.date).day == day).toList();
+      if (dayExpenses.isEmpty) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    if (streak > 0) {
+      insights.add(AiInsight(
+        id: 'month_streak_${year}_$month',
+        title: '$streak-day zero spend streak!',
+        description: 'You had no expenses for $streak consecutive days at end of ${DateFormat('MMMM').format(generatedAt)}. Great discipline!',
+        type: InsightType.achievement,
+        generatedAt: generatedAt,
+        priority: 3,
+      ));
+    }
+
+    // 5. Transport/Food specific tip
+    final catMap2 = <String, double>{};
+    for (final t in expenses) {
+      catMap2[t.categoryId] = (catMap2[t.categoryId] ?? 0.0) + t.amount;
+    }
+    final transportSpend = catMap2['cat_transport'] ?? 0.0;
+    final foodSpend = catMap2['cat_food'] ?? 0.0;
+    if (totalExpense > 0 && transportSpend / totalExpense > 0.2) {
+      insights.add(AiInsight(
+        id: 'month_transport_${year}_$month',
+        title: 'High transport cost',
+        description:
+            'Transport was ${(transportSpend / totalExpense * 100).round()}% of expenses (${currencyFormat.format(transportSpend)}). '
+            'Using metro/bus on some trips could significantly reduce this.',
+        type: InsightType.tip,
+        generatedAt: generatedAt,
+        priority: 4,
+      ));
+    }
+    if (totalExpense > 0 && foodSpend / totalExpense > 0.3) {
+      insights.add(AiInsight(
+        id: 'month_food_${year}_$month',
+        title: 'Food spending is high',
+        description:
+            'Food & Dining was ${(foodSpend / totalExpense * 100).round()}% of expenses. '
+            'Cooking at home more often could save ~${currencyFormat.format((foodSpend * 0.25).round())}.',
+        type: InsightType.tip,
+        generatedAt: generatedAt,
+        priority: 4,
+      ));
+    }
+
+    insights.sort((a, b) => a.priority.compareTo(b.priority));
+    return insights;
+  }
 }

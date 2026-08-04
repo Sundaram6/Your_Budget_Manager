@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/enums.dart';
+import '../../../../database/database_helper.dart';
 import '../../../../engines/merchant/merchant_engine_provider.dart';
 import '../../../../engines/sms/models/parsed_transaction.dart';
 
@@ -149,20 +150,34 @@ class PendingTransactionsController extends _$PendingTransactionsController {
     }
   }
 
-  /// Confirms all pending transactions in bulk. Returns count of successfully confirmed transactions.
-  Future<int> confirmAllTransactions() async {
+  /// Confirms all pending transactions in bulk, skipping duplicates.
+  /// Returns a record of (imported, skipped) counts.
+  Future<({int imported, int skipped})> confirmAllTransactions() async {
     final engine = ref.read(merchantEngineProvider);
     final list = List<ParsedTransaction>.from(state.transactions);
-    int successCount = 0;
+    int imported = 0;
+    int skipped = 0;
     final remaining = <ParsedTransaction>[];
 
     for (final tx in list) {
       try {
+        // Duplicate check before inserting
+        final isDuplicate = await DatabaseHelper.instance.checkDuplicateTransaction(
+          amountValue: tx.amount,
+          date: tx.date,
+          snippet: tx.merchantName,
+        );
+
+        if (isDuplicate) {
+          skipped++;
+          continue; // Skip this transaction
+        }
+
         final success = await engine.confirmPendingTransaction(
           transaction: tx,
         );
         if (success) {
-          successCount++;
+          imported++;
         } else {
           remaining.add(tx);
         }
@@ -172,6 +187,6 @@ class PendingTransactionsController extends _$PendingTransactionsController {
     }
 
     state = state.copyWith(transactions: remaining);
-    return successCount;
+    return (imported: imported, skipped: skipped);
   }
 }

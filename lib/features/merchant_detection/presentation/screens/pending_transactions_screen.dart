@@ -37,14 +37,19 @@ class _PendingTransactionsScreenState extends ConsumerState<PendingTransactionsS
                         _isBulkConfirming = true;
                       });
                       try {
-                        final count = await controller.confirmAllTransactions();
+                        final result = await controller.confirmAllTransactions();
                         if (!context.mounted) return;
                         final messenger = ScaffoldMessenger.of(context);
                         messenger.clearSnackBars();
+                        final skippedText = result.skipped > 0
+                            ? ', ${result.skipped} duplicates skipped'
+                            : '';
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text('$count transactions saved successfully'),
-                            backgroundColor: Colors.green,
+                            content: Text('${result.imported} imported$skippedText'),
+                            backgroundColor:
+                                result.skipped > 0 ? Colors.orange : Colors.green,
+                            duration: const Duration(seconds: 4),
                           ),
                         );
                       } catch (e) {

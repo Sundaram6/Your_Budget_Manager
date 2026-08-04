@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/cards/glass_card.dart';
 import '../../../../routing/route_names.dart';
+import '../../../../screens/analytics/ai_insights_screen.dart';
+import '../../../../screens/settings/pin_security_screen.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../categories/presentation/screens/category_management_screen.dart';
 import '../../../recurring/presentation/screens/recurring_transactions_screen.dart';
@@ -65,7 +67,9 @@ class SettingsScreen extends StatelessWidget {
                   title: const Text('AI Financial Insights', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('View full rule-based financial advice & score', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () => context.push('/insights'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AiInsightsScreen()),
+                  ),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(
@@ -74,6 +78,14 @@ class SettingsScreen extends StatelessWidget {
                   subtitle: const Text('Extract expenses from messages', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
                   onTap: () => context.pushNamed(RouteNames.smsSettings),
+                ),
+                const Divider(height: 1, color: AppColors.darkBorderGlass),
+                ListTile(
+                  leading: const Icon(Icons.notifications_active, color: AppColors.darkGoldPrimary),
+                  title: const Text('Payment Notifications', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Auto-track payments from UPI, wallets, and banks', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
+                  onTap: () => context.push('/notification-settings'),
                 ),
               ],
             ),
@@ -94,6 +106,15 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
+                _buildTile(
+                  context,
+                  icon: Icons.lock_outline,
+                  color: AppColors.darkGoldPrimary,
+                  title: 'PIN & Security',
+                  subtitle: 'Change PIN, biometric & app lock',
+                  screen: const PinSecurityScreen(),
+                ),
+                const Divider(height: 1, color: AppColors.darkBorderGlass),
                 _buildTile(
                   context,
                   icon: Icons.shield_outlined,

@@ -34,8 +34,10 @@ class DatabaseHealthCheck {
       (CategoryEngine.catTransport, 'Transport', 'directions_car', '4282086134'),
       (CategoryEngine.catUtilities, 'Utilities', 'bolt', '4284704500'),
       (CategoryEngine.catEntertainment, 'Entertainment', 'movie', '4293675161'),
+      (CategoryEngine.catHealth, 'Health & Medical', 'medical_services', '4293848132'),
       (CategoryEngine.catIncome, 'Income', 'attach_money', '4279286145'),
       (CategoryEngine.catUncategorized, 'Uncategorized', 'help_outline', '4288453551'),
+      (CategoryEngine.catMisc, 'Miscellaneous', 'category', '4285230208'),
     ];
 
     await _db.transaction(() async {

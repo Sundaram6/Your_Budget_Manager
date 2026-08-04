@@ -59,9 +59,15 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           await customStatement('DROP TABLE IF EXISTS recurring_transactions;');
           await m.createTable(recurringTransactionsTable);
-          await m.addColumn(transactionsTable, transactionsTable.isRecurring);
-          await m.addColumn(transactionsTable, transactionsTable.isAutoCaptured);
-          await m.addColumn(transactionsTable, transactionsTable.sourceApp);
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.isRecurring);
+          } catch (_) {}
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.isAutoCaptured);
+          } catch (_) {}
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.sourceApp);
+          } catch (_) {}
         }
       },
       beforeOpen: (details) async {

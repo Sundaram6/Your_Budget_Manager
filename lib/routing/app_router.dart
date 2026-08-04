@@ -14,12 +14,14 @@ import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/intelligence/presentation/screens/insights_screen.dart';
 import '../features/merchant_detection/presentation/screens/pending_transactions_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
-import '../features/recurring/presentation/screens/recurring_transactions_screen.dart';
+import '../screens/recurring/create_recurring_screen.dart';
+import '../screens/recurring/recurring_list_screen.dart';
 import '../features/savings/presentation/screens/add_savings_goal_screen.dart';
 import '../features/savings/presentation/screens/savings_goal_detail_screen.dart';
 import '../features/savings/presentation/screens/savings_goals_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/settings/presentation/screens/sms_settings_screen.dart';
+import '../screens/settings/notification_settings_screen.dart';
 import '../features/transactions/presentation/screens/add_transaction_screen.dart';
 import '../features/transactions/presentation/screens/transaction_list_screen.dart';
 import 'route_names.dart';
@@ -65,7 +67,10 @@ GoRouter appRouter(AppRouterRef ref) {
         return '/pin-setup';
       }
 
-      if (hasPin && isLocked) {
+      final useBiometric = prefs.getBool('pref_use_biometric') ?? false;
+      final isSecurityActive = hasPin || useBiometric;
+
+      if (isSecurityActive && isLocked) {
         if (isLockPath) return null;
         return '/pin-lock';
       }
@@ -135,7 +140,11 @@ GoRouter appRouter(AppRouterRef ref) {
           GoRoute(
             path: '/recurring',
             name: RouteNames.recurring,
-            builder: (context, state) => const RecurringTransactionsScreen(),
+            builder: (context, state) => const RecurringListScreen(),
+          ),
+          GoRoute(
+            path: '/create-recurring',
+            builder: (context, state) => const CreateRecurringScreen(),
           ),
           GoRoute(
             path: '/backup',
@@ -153,6 +162,11 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/sms-settings',
         name: RouteNames.smsSettings,
         builder: (context, state) => const SmsSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/notification-settings',
+        name: RouteNames.notificationSettings,
+        builder: (context, state) => const NotificationSettingsScreen(),
       ),
       GoRoute(
         path: '/savings',

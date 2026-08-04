@@ -9,6 +9,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../engines/budget/budget_engine_provider.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
+import '../../../../screens/onboarding/notification_permission_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -190,6 +191,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         _buildPage2Budget(),
                         _buildPage3SavingsGoal(),
                         _buildPage4SmsAutoTrack(),
+                        NotificationPermissionScreen(onCompleted: _finishOnboarding),
                       ],
                     ),
                   ),
@@ -205,7 +207,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(4, (index) {
+                          children: List.generate(5, (index) {
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
                               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -222,7 +224,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Step ${_currentPage + 1} of 4',
+                          'Step ${_currentPage + 1} of 5',
                           style: AppTypography.caption.copyWith(
                             color: AppColors.darkTextSecondary,
                             fontSize: 12,
@@ -466,22 +468,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: _isFinishing ? null : _finishOnboarding,
-              child: _isFinishing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
-                    )
-                  : const Text(
-                      'Finish',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+              onPressed: _nextPage,
+              child: const Text(
+                'Next',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.space3),
           TextButton(
-            onPressed: _isFinishing ? null : _finishOnboarding,
+            onPressed: _nextPage,
             child: const Text('Skip', style: TextStyle(color: AppColors.darkTextSecondary)),
           ),
         ],

@@ -158,6 +158,33 @@ class DatabaseHelper {
     return 1;
   }
 
+  /// Returns true if a transaction with same amount, same calendar day, and
+  /// note/merchantName containing [snippet] already exists.
+  Future<bool> checkDuplicateTransaction({
+    required double amountValue,
+    required DateTime date,
+    required String snippet,
+  }) async {
+    final dbInstance = await db;
+    // Same day range in millis
+    final dayStart = DateTime(date.year, date.month, date.day).millisecondsSinceEpoch;
+    final dayEnd = DateTime(date.year, date.month, date.day, 23, 59, 59, 999).millisecondsSinceEpoch;
+    final likeSnippet = '%${snippet.isNotEmpty ? snippet.substring(0, snippet.length.clamp(0, 20)) : ''}%';
+
+    final rows = await dbInstance.customSelect(
+      'SELECT id FROM transactions WHERE amount = ? AND date >= ? AND date <= ? AND (note LIKE ? OR merchant_name LIKE ?) LIMIT 1',
+      variables: [
+        Variable.withReal(amountValue),
+        Variable.withInt(dayStart),
+        Variable.withInt(dayEnd),
+        Variable.withString(likeSnippet),
+        Variable.withString(likeSnippet),
+      ],
+    ).get();
+
+    return rows.isNotEmpty;
+  }
+
   Future<int> deleteRecurringTransaction(String id) async {
     final dbInstance = await db;
     await dbInstance.customStatement(

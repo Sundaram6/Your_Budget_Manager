@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/recurring_transaction.dart';
 import '../../repositories/recurring_repository.dart';
+import 'create_recurring_screen.dart';
 
 class RecurringListScreen extends StatelessWidget {
   final Stream<List<RecurringTransactionModel>>? stream;
@@ -19,18 +20,29 @@ class RecurringListScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'Recurring',
+          'Recurring Transactions',
           style: TextStyle(
             color: AppColors.darkTextPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, color: Color(0xFFD4AF37)),
+            tooltip: 'Add Recurring Payment',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CreateRecurringScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<List<RecurringTransactionModel>>(
         stream: stream ?? RecurringRepository.instance.watchAll(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37)));
           }
 
           if (snapshot.hasError) {
@@ -52,7 +64,7 @@ class RecurringListScreen extends StatelessWidget {
                   Icon(
                     Icons.repeat,
                     size: 64,
-                    color: AppColors.darkTextPrimary.withValues(alpha: 0.1),
+                    color: AppColors.darkTextPrimary.withValues(alpha: 0.15),
                   ),
                   const SizedBox(height: AppSpacing.space4),
                   const Text(
@@ -61,6 +73,25 @@ class RecurringListScreen extends StatelessWidget {
                       color: AppColors.darkTextSecondary,
                       fontSize: 16,
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.add),
+                    label: const Text(
+                      'Add Recurring Payment',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const CreateRecurringScreen()),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -77,14 +108,16 @@ class RecurringListScreen extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFFD4AF37),
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Recurring', style: TextStyle(fontWeight: FontWeight.bold)),
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create Recurring Transaction coming soon!')),
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const CreateRecurringScreen()),
           );
         },
-        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }

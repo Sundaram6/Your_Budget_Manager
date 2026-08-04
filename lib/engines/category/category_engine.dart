@@ -9,8 +9,10 @@ class CategoryEngine {
   static const String catTransport = 'cat_transport';
   static const String catUtilities = 'cat_utilities';
   static const String catEntertainment = 'cat_entertainment';
+  static const String catHealth = 'cat_health';
   static const String catIncome = 'cat_income';
   static const String catUncategorized = 'cat_uncategorized';
+  static const String catMisc = 'cat_misc';
 
   static const Map<String, String> legacyNameToFixedIdMap = {
     'Groceries': catGroceries,
@@ -19,8 +21,10 @@ class CategoryEngine {
     'Transport': catTransport,
     'Utilities': catUtilities,
     'Entertainment': catEntertainment,
+    'Health & Medical': catHealth,
     'Income': catIncome,
     'Uncategorized': catUncategorized,
+    'Miscellaneous': catMisc,
   };
 
   /// Resolves raw categoryId string to a clean human-readable Category Name.
@@ -45,10 +49,14 @@ class CategoryEngine {
         return 'Utilities';
       case catEntertainment:
         return 'Entertainment';
+      case catHealth:
+        return 'Health & Medical';
       case catIncome:
         return 'Income';
       case catUncategorized:
         return 'Uncategorized';
+      case catMisc:
+        return 'Miscellaneous';
       default:
         if (categoryId.startsWith('cat_')) {
           final raw = categoryId.substring(4);
@@ -133,6 +141,15 @@ class CategoryEngine {
         updatedAt: now,
       ),
       Category(
+        id: catHealth,
+        name: 'Health & Medical',
+        icon: 'medical_services',
+        color: int.parse('EF4444', radix: 16) | 0xFF000000,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Category(
         id: catIncome,
         name: 'Income',
         icon: 'attach_money',
@@ -146,6 +163,15 @@ class CategoryEngine {
         name: 'Uncategorized',
         icon: 'help_outline',
         color: int.parse('9CA3AF', radix: 16) | 0xFF000000,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Category(
+        id: catMisc,
+        name: 'Miscellaneous',
+        icon: 'category',
+        color: int.parse('6B7280', radix: 16) | 0xFF000000,
         isDefault: true,
         createdAt: now,
         updatedAt: now,
@@ -167,8 +193,10 @@ class CategoryEngine {
       catTransport,
       catUtilities,
       catEntertainment,
+      catHealth,
       catIncome,
       catUncategorized,
+      catMisc,
     ];
 
     for (final reqId in requiredIds) {

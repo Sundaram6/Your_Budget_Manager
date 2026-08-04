@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/extensions/number_extensions.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../engines/category/category_engine.dart';
@@ -18,7 +20,10 @@ class RecentTransactionsWidget extends ConsumerWidget {
     if (transactions.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.space4),
-        child: Text('No recent transactions.'),
+        child: Text(
+          'No recent transactions.',
+          style: TextStyle(color: AppColors.darkTextTertiary),
+        ),
       );
     }
 
@@ -48,6 +53,9 @@ class _TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<AppCustomTokens>()!;
+    final dateStr = DateFormat('dd MMM yyyy').format(transaction.date);
+    final hasNote = transaction.note != null && transaction.note!.trim().isNotEmpty;
+    final subtitleText = hasNote ? '$dateStr • ${transaction.note}' : dateStr;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.space2),
@@ -68,15 +76,17 @@ class _TransactionItem extends StatelessWidget {
                     categoryName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: AppColors.darkTextPrimary,
                         ),
                   ),
-                  if (transaction.note != null && transaction.note!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      transaction.note!,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitleText,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.darkTextTertiary,
+                          fontSize: 12,
+                        ),
+                  ),
                 ],
               ),
             ),

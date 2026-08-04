@@ -1,17 +1,24 @@
-# your_budget_manager
+# Your Budget Manager
 
-A new Flutter project.
+Your Budget Manager is a comprehensive Flutter application designed to help users track expenses, manage budgets, save for goals, and automatically categorize transactions.
+
+## Features
+- **Dashboard & Analytics**: View a quick summary of your spending, recent transactions, and budget progress.
+- **Smart Notifications**: Automatically capture transaction details from payment apps using notification reading.
+- **Recurring Transactions**: Set up, track, and manage recurring payments and subscriptions with automatic logging.
+- **Budget Management**: Set overall limits and category-specific constraints.
+- **Savings Goals**: Track savings goals with automated deductions.
+- **Biometric Security**: App lock with PIN and biometric support to keep your financial data secure.
+- **Custom Categories**: Map your expenses into predefined or custom categories.
+
+## Technologies Used
+- **Flutter & Dart**: For a cross-platform, responsive UI.
+- **Drift**: Local SQLite database for seamless offline data persistence.
+- **Riverpod**: State management.
+- **Local Auth**: Biometric authentication.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Clone the repository.
+2. Run `flutter pub get` to install dependencies.
+3. Run `flutter run` to launch the app on your connected device or emulator.

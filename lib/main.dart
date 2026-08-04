@@ -9,6 +9,20 @@ import 'core/providers/initial_route_provider.dart';
 import 'database/health/database_health_check.dart';
 import 'engine/recurring_engine.dart';
 import 'engines/category/category_engine_provider.dart';
+import 'services/notification_reader_service.dart';
+
+/*
+ * ============================================================================
+ * PHASE 4 TESTING CHECKLIST:
+ * ============================================================================
+ * 1. Create daily recurring with past date -> should generate on next app open
+ * 2. Background WorkManager fires every 6 hours
+ * 3. Real UPI payment triggers bottom sheet within 1-2 seconds
+ * 4. Tapping "Add to Budget" saves transaction with isAutoCaptured=1 and sourceApp populated
+ * 5. Unsupported app notifications are silently ignored
+ * 6. Onboarding page 5 sets hasCompletedOnboarding=true before dashboard navigation
+ * ============================================================================
+ */
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -50,23 +64,38 @@ void main() async {
   final db = container.read(appDatabaseProvider);
   await DatabaseHealthCheck(db).run();
 
-  // 2. Initialize Workmanager for background recurring check
+  // 2. Run RecurringEngine check on startup to process any due recurring transactions
   try {
-    Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+    final generatedCount = await RecurringEngine.processDueRecurring();
+    debugPrint('Cold-start RecurringEngine processed $generatedCount transactions.');
+  } catch (e) {
+    debugPrint('Cold-start RecurringEngine error: $e');
+  }
+
+  // 3. Initialize NotificationReaderService early in app lifecycle
+  try {
+    NotificationReaderService.instance.initialize();
+  } catch (e) {
+    debugPrint('NotificationReaderService init error: $e');
+  }
+
+  // 4. Initialize Workmanager for background recurring check
+  try {
+    Workmanager().initialize(callbackDispatcher);
     await Workmanager().registerPeriodicTask(
       'recurring-check-task',
       'recurring-check',
       frequency: const Duration(hours: 6),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
       constraints: Constraints(
-        networkType: NetworkType.not_required,
+        networkType: NetworkType.notRequired,
       ),
     );
   } catch (e) {
     debugPrint('Workmanager initialization error: $e');
   }
 
-  // 3. Run legacy category migration & default seeding
+  // 5. Run legacy category migration & default seeding
   await container.read(categoryEngineProvider).seedDefaults();
 
   runApp(

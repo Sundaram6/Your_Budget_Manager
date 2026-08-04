@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/security/app_lock_controller.dart';
 import '../../../../core/security/pin_service.dart';
+import '../../../../screens/settings/pin_security_screen.dart';
 
 class SecuritySettingsScreen extends ConsumerWidget {
   const SecuritySettingsScreen({super.key});
@@ -26,8 +27,8 @@ class SecuritySettingsScreen extends ConsumerWidget {
                 value: hasPin,
                 onChanged: (val) async {
                   if (val) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('PIN setup can be changed in auth settings.')),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const PinSecurityScreen()),
                     );
                   } else {
                     await pinService.removePin();
@@ -46,8 +47,8 @@ class SecuritySettingsScreen extends ConsumerWidget {
                 title: const Text('Change PIN'),
                 enabled: hasPin,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Go to Auth settings to update your PIN.')),
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PinSecurityScreen()),
                   );
                 },
               ),

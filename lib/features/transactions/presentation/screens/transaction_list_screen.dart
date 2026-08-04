@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../screens/analytics/monthly_analytics_screen.dart';
 import '../controllers/transaction_list_controller.dart';
 import '../widgets/transaction_timeline_card.dart';
 
@@ -16,6 +18,23 @@ class TransactionListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
+        actions: [
+          stateAsync.when(
+            data: (state) => IconButton(
+              icon: const Icon(Icons.bar_chart, color: AppColors.darkGoldPrimary),
+              tooltip: 'Monthly Analytics',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MonthlyAnalyticsScreen(
+                    initialMonth: state.selectedMonth,
+                  ),
+                ),
+              ),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: stateAsync.when(
         data: (state) {
@@ -73,3 +92,4 @@ class TransactionListScreen extends ConsumerWidget {
     );
   }
 }
+
