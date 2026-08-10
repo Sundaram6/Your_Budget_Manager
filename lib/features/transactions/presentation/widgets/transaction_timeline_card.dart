@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/transaction.dart';
+import 'transaction_detail_sheet.dart';
 import 'transaction_tile.dart';
 
 class TransactionTimelineCard extends StatelessWidget {
@@ -54,7 +55,17 @@ class TransactionTimelineCard extends StatelessWidget {
             itemCount: transactions.length,
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              return TransactionTile(transaction: transactions[index]);
+              return TransactionTile(
+                transaction: transactions[index],
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (ctx) => TransactionDetailSheet(transaction: transactions[index]),
+                  );
+                },
+              );
             },
           ),
         ],

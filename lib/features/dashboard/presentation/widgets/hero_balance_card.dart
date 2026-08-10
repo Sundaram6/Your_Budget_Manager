@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_custom_tokens.dart';
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../../routing/route_names.dart';
 
 class HeroBalanceCard extends StatelessWidget {
   final double totalBalance;
@@ -36,7 +39,7 @@ class HeroBalanceCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'TOTAL BALANCE',
+                'THIS MONTH\'S SPEND',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: tokens.heroTextColor.withOpacity(0.7),
                 ),
@@ -50,19 +53,18 @@ class HeroBalanceCard extends StatelessWidget {
           ),
           SizedBox(height: tokens.gridUnit),
           Text(
-            '\$${totalBalance.toStringAsFixed(2)}',
+            CurrencyFormatter.format(totalBalance),
             style: theme.textTheme.displayLarge?.copyWith(
               color: tokens.heroTextColor,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
           SizedBox(height: tokens.gridUnit * 2),
-          // We can put some quick actions or month indicator here if needed
           Row(
             children: [
-              _buildPillAction(context, Icons.add, 'Add Money', tokens),
+              _buildPillAction(context, Icons.add, 'Add Money', tokens, () => context.pushNamed(RouteNames.addTransaction)),
               SizedBox(width: tokens.gridUnit),
-              _buildPillAction(context, Icons.arrow_upward, 'Transfer', tokens),
+              _buildPillAction(context, Icons.arrow_upward, 'Transfer', tokens, () => context.pushNamed(RouteNames.addTransaction)),
             ],
           )
         ],
@@ -70,29 +72,36 @@ class HeroBalanceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPillAction(BuildContext context, IconData icon, String label, AppCustomTokens tokens) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: tokens.gridUnit * 1.5,
-        vertical: tokens.gridUnit,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+  Widget _buildPillAction(BuildContext context, IconData icon, String label, AppCustomTokens tokens, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(100),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: tokens.heroTextColor, size: 16),
-          SizedBox(width: tokens.gridUnit / 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: tokens.heroTextColor,
-              fontWeight: FontWeight.w600,
-            ),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: tokens.gridUnit * 1.5,
+            vertical: tokens.gridUnit,
           ),
-        ],
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: tokens.heroTextColor, size: 16),
+              SizedBox(width: tokens.gridUnit / 2),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: tokens.heroTextColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

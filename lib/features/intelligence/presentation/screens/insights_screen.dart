@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/charts/progress_donut_chart.dart';
 import '../../../../engines/analytics/analytics_engine_provider.dart';
 import '../../../../engines/analytics/models/analytics_models.dart';
@@ -202,7 +203,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                '\$${total.toStringAsFixed(0)}',
+                CurrencyFormatter.formatCompact(total),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -261,7 +262,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               ),
               const SizedBox(width: 4),
               Text(
-                '\$${cb.total.toStringAsFixed(0)}',
+                CurrencyFormatter.formatCompact(cb.total),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 ),

@@ -185,7 +185,7 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
 
                     // Amount Display
                     Text(
-                      '\$$_amountStr',
+                      '₹$_amountStr',
                       style: theme.textTheme.displayLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: _selectedType == 'expense' 

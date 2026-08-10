@@ -3,11 +3,11 @@ package com.ybm.your_budget_manager
 import android.content.Intent
 import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "com.ybm.your_budget_manager/notification_listener"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -19,8 +19,8 @@ class MainActivity : FlutterActivity() {
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "isNotificationAccessGranted" -> {
-                    val enabledPackages = NotificationManagerCompat.getEnabledListenerPackages(context)
-                    val isGranted = enabledPackages.contains(context.packageName)
+                    val enabledPackages = NotificationManagerCompat.getEnabledListenerPackages(this)
+                    val isGranted = enabledPackages.contains(packageName)
                     result.success(isGranted)
                 }
                 "openNotificationSettings" -> {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_custom_tokens.dart';
+import '../../utils/currency_formatter.dart';
 import 'merchant_sticker.dart';
 
 class TransactionRow extends StatelessWidget {
@@ -28,7 +29,9 @@ class TransactionRow extends StatelessWidget {
     final theme = Theme.of(context);
     final tokens = theme.extension<AppCustomTokens>()!;
     
-    final formattedAmount = '${isIncome ? '+' : '-'} \$${amount.toStringAsFixed(2)}';
+    final formattedAmount = isIncome
+        ? '+${CurrencyFormatter.format(amount)}'
+        : '-${CurrencyFormatter.format(amount)}';
     
     // In dark mode, text might be slightly different. We use onSurface for primary text.
     final primaryTextColor = theme.colorScheme.onSurface;

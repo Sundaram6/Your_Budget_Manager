@@ -18,6 +18,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: entity.categoryId,
       type: TransactionType.values.firstWhere((e) => e.name == entity.type),
       note: entity.note,
+      sourceApp: entity.sourceApp,
     );
   }
 
@@ -29,8 +30,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: entity.categoryId,
       date: entity.date.millisecondsSinceEpoch,
       note: entity.note,
+      sourceApp: entity.sourceApp,
       isRecurring: false,
-      isAutoCaptured: false,
+      isAutoCaptured: entity.sourceApp != null,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
     );

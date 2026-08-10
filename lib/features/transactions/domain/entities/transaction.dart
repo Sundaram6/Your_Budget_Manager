@@ -24,6 +24,7 @@ class Transaction with _$Transaction {
     required String categoryId,
     required TransactionType type,
     String? note,
+    String? sourceApp,
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

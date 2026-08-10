@@ -7,7 +7,7 @@ part of 'pending_transactions_controller.dart';
 // **************************************************************************
 
 String _$pendingTransactionsControllerHash() =>
-    r'6ded9008777f792ba8a5111df5427ad0425b5063';
+    r'15e4e52d70bc77f597a24528b2f265bcdc8e3ba5';
 
 /// See also [PendingTransactionsController].
 @ProviderFor(PendingTransactionsController)

@@ -4,15 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/enums.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/layout/section_header.dart';
 import '../../../../core/widgets/charts/progress_donut_chart.dart';
 import '../../../../core/widgets/cards/status_tile.dart';
 import '../../../../core/widgets/cards/transaction_row.dart';
-import '../../../../database/database_helper.dart';
-import '../../../../models/recurring_transaction.dart';
+import '../../../../features/categories/domain/entities/category.dart';
+import '../../../../features/transactions/presentation/widgets/category_picker.dart';
 import '../../../../routing/route_names.dart';
 import '../../../../services/notification_reader_service.dart';
 import '../../../../services/notification_router.dart';
@@ -20,6 +21,7 @@ import '../../../../widgets/notification_transaction_sheet.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/hero_balance_card.dart';
 import '../widgets/quick_add_fab.dart';
+import '../widgets/recent_transactions.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -95,7 +97,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     onActionPressed: () => context.pushNamed('transactionList'),
                   ),
                   const SizedBox(height: AppSpacing.space3),
-                  _buildRecentTransactions(context, data.recentTransactions),
+                  RecentTransactionsWidget(transactions: data.recentTransactions),
                   const SizedBox(height: 80), // Padding for FAB
                 ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, end: 0, duration: 300.ms, curve: Curves.easeOutQuad),
               ),
@@ -150,70 +152,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildAccountsStrip(BuildContext context, AppCustomTokens tokens) {
-    return SizedBox(
-      height: 60,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        children: [
-          _buildAccountPill(context, tokens, 'Main Account', 12450.00, true),
-          const SizedBox(width: 12),
-          _buildAccountPill(context, tokens, 'Cash Wallet', 450.00, false),
-          const SizedBox(width: 12),
-          _buildAddAccountPill(context, tokens),
-        ],
-      ),
-    );
+    // This strip shows account summaries. Currently placeholder — real wallet balance
+    // would come from a dedicated accounts/wallet feature.
+    return const SizedBox.shrink();
   }
 
-  Widget _buildAccountPill(BuildContext context, AppCustomTokens tokens, String name, double balance, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: active ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(tokens.cardBorderRadius / 2),
-        border: Border.all(
-          color: active ? tokens.heroSurfaceColor.withOpacity(0.2) : Colors.transparent,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            name,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '\$${balance.toStringAsFixed(2)}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddAccountPill(BuildContext context, AppCustomTokens tokens) {
-    return Container(
-      width: 60,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(tokens.cardBorderRadius / 2),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-        ),
-      ),
-    );
-  }
+  // Account pill helpers removed — using real data only, no hardcoded placeholders
 
   Widget _buildStatusTiles(BuildContext context, AppCustomTokens tokens, int healthScore, String insight) {
     final isHealthy = healthScore > 70;
@@ -225,6 +169,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             title: isHealthy ? 'Safe to spend' : 'Watch spending',
             subtitle: 'Health: $healthScore',
             statusColor: isHealthy ? tokens.accentSavings : tokens.accentAlert,
+            onTap: () => context.push('/insights'),
           ),
         ),
         const SizedBox(width: AppSpacing.space3),
@@ -234,6 +179,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             title: 'Insight',
             subtitle: insight,
             statusColor: tokens.accentBills,
+            onTap: () => context.push('/insights'),
           ),
         ),
       ],
@@ -248,89 +194,63 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     };
     final percentage = (spent / budget) * 100;
     
-    return Container(
-      padding: EdgeInsets.all(tokens.gridUnit * 3),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: ProgressDonutChart(
-              data: data,
-              colors: [
-                percentage > 90 ? tokens.accentAlert : tokens.accentTransport,
-                Theme.of(context).scaffoldBackgroundColor, // Empty part of donut
-              ],
-              strokeWidth: 16,
-              centerRadius: 40,
-              centerWidget: Text(
-                '${percentage.toStringAsFixed(0)}%',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.space4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Monthly Budget',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: () => context.pushNamed(RouteNames.budgets),
+      child: Container(
+        padding: EdgeInsets.all(tokens.gridUnit * 3),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: ProgressDonutChart(
+                data: data,
+                colors: [
+                  percentage > 90 ? tokens.accentAlert : tokens.accentTransport,
+                  Theme.of(context).scaffoldBackgroundColor, // Empty part of donut
+                ],
+                strokeWidth: 16,
+                centerRadius: 40,
+                centerWidget: Text(
+                  '${percentage.toStringAsFixed(0)}%',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '\$${spent.toStringAsFixed(0)} of \$${budget.toStringAsFixed(0)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: AppSpacing.space4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Monthly Budget',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${CurrencyFormatter.formatCompact(spent)} of ${CurrencyFormatter.formatCompact(budget)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context, List<dynamic> transactions) {
-    if (transactions.isEmpty) {
-      return const Center(child: Text('No transactions yet.'));
-    }
-    
-    return Column(
-      children: transactions.map((tx) {
-        // Need to parse category color from tx.category if possible, 
-        // for now just use a fallback or determine by isIncome
-        final color = tx.isIncome 
-            ? Theme.of(context).extension<AppCustomTokens>()!.accentSavings 
-            : Theme.of(context).extension<AppCustomTokens>()!.accentShopping;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: TransactionRow(
-            merchantName: tx.title,
-            category: tx.category,
-            amount: tx.amount,
-            date: tx.date,
-            isIncome: tx.isIncome,
-            categoryColor: color,
-            onTap: () {
-              // Navigate to details if needed
-            },
-          ),
-        );
-      }).toList(),
-    );
-  }
 
   void _showAddOptionsSheet(BuildContext context) {
     // Keep original logic or style to match v2

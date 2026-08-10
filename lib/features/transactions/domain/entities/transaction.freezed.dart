@@ -28,6 +28,7 @@ mixin _$Transaction {
   String get categoryId => throw _privateConstructorUsedError;
   TransactionType get type => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
+  String? get sourceApp => throw _privateConstructorUsedError;
 
   /// Serializes this Transaction to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,6 +54,7 @@ abstract class $TransactionCopyWith<$Res> {
     String categoryId,
     TransactionType type,
     String? note,
+    String? sourceApp,
   });
 
   $AmountCopyWith<$Res> get amount;
@@ -79,6 +81,7 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
     Object? categoryId = null,
     Object? type = null,
     Object? note = freezed,
+    Object? sourceApp = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -105,6 +108,10 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
             note: freezed == note
                 ? _value.note
                 : note // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            sourceApp: freezed == sourceApp
+                ? _value.sourceApp
+                : sourceApp // ignore: cast_nullable_to_non_nullable
                       as String?,
           )
           as $Val,
@@ -138,6 +145,7 @@ abstract class _$$TransactionImplCopyWith<$Res>
     String categoryId,
     TransactionType type,
     String? note,
+    String? sourceApp,
   });
 
   @override
@@ -164,6 +172,7 @@ class __$$TransactionImplCopyWithImpl<$Res>
     Object? categoryId = null,
     Object? type = null,
     Object? note = freezed,
+    Object? sourceApp = freezed,
   }) {
     return _then(
       _$TransactionImpl(
@@ -191,6 +200,10 @@ class __$$TransactionImplCopyWithImpl<$Res>
             ? _value.note
             : note // ignore: cast_nullable_to_non_nullable
                   as String?,
+        sourceApp: freezed == sourceApp
+            ? _value.sourceApp
+            : sourceApp // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -206,6 +219,7 @@ class _$TransactionImpl implements _Transaction {
     required this.categoryId,
     required this.type,
     this.note,
+    this.sourceApp,
   });
 
   factory _$TransactionImpl.fromJson(Map<String, dynamic> json) =>
@@ -224,10 +238,12 @@ class _$TransactionImpl implements _Transaction {
   final TransactionType type;
   @override
   final String? note;
+  @override
+  final String? sourceApp;
 
   @override
   String toString() {
-    return 'Transaction(id: $id, amount: $amount, date: $date, categoryId: $categoryId, type: $type, note: $note)';
+    return 'Transaction(id: $id, amount: $amount, date: $date, categoryId: $categoryId, type: $type, note: $note, sourceApp: $sourceApp)';
   }
 
   @override
@@ -241,13 +257,23 @@ class _$TransactionImpl implements _Transaction {
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
             (identical(other.type, type) || other.type == type) &&
-            (identical(other.note, note) || other.note == note));
+            (identical(other.note, note) || other.note == note) &&
+            (identical(other.sourceApp, sourceApp) ||
+                other.sourceApp == sourceApp));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, amount, date, categoryId, type, note);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    amount,
+    date,
+    categoryId,
+    type,
+    note,
+    sourceApp,
+  );
 
   /// Create a copy of Transaction
   /// with the given fields replaced by the non-null parameter values.
@@ -271,6 +297,7 @@ abstract class _Transaction implements Transaction {
     required final String categoryId,
     required final TransactionType type,
     final String? note,
+    final String? sourceApp,
   }) = _$TransactionImpl;
 
   factory _Transaction.fromJson(Map<String, dynamic> json) =
@@ -289,6 +316,8 @@ abstract class _Transaction implements Transaction {
   TransactionType get type;
   @override
   String? get note;
+  @override
+  String? get sourceApp;
 
   /// Create a copy of Transaction
   /// with the given fields replaced by the non-null parameter values.

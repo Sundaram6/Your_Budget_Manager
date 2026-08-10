@@ -14,6 +14,7 @@ _$TransactionImpl _$$TransactionImplFromJson(Map<String, dynamic> json) =>
       categoryId: json['categoryId'] as String,
       type: $enumDecode(_$TransactionTypeEnumMap, json['type']),
       note: json['note'] as String?,
+      sourceApp: json['sourceApp'] as String?,
     );
 
 Map<String, dynamic> _$$TransactionImplToJson(_$TransactionImpl instance) =>
@@ -24,6 +25,7 @@ Map<String, dynamic> _$$TransactionImplToJson(_$TransactionImpl instance) =>
       'categoryId': instance.categoryId,
       'type': _$TransactionTypeEnumMap[instance.type]!,
       'note': instance.note,
+      'sourceApp': instance.sourceApp,
     };
 
 const _$TransactionTypeEnumMap = {

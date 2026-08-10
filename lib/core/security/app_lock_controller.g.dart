@@ -6,7 +6,7 @@ part of 'app_lock_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appLockControllerHash() => r'537d516d334a9e19c45216b41cd18acd273c2b6c';
+String _$appLockControllerHash() => r'bcfd20024d32d9a7cb2c93a2751fc7e4ec052d8f';
 
 /// See also [AppLockController].
 @ProviderFor(AppLockController)

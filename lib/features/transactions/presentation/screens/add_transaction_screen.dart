@@ -115,7 +115,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     
                     // Amount Display
                     Text(
-                      '\$$_amountStr',
+                      '₹$_amountStr',
                       style: theme.textTheme.displayLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: state.type == TransactionType.expense 

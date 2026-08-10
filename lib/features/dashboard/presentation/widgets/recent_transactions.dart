@@ -9,6 +9,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../engines/category/category_engine.dart';
 import '../../../transactions/domain/entities/transaction.dart';
 import '../../../transactions/presentation/widgets/category_picker.dart';
+import '../../../transactions/presentation/widgets/transaction_detail_sheet.dart';
 
 class RecentTransactionsWidget extends ConsumerWidget {
   final List<Transaction> transactions;
@@ -59,7 +60,16 @@ class _TransactionItem extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.space2),
-      child: Container(
+      child: GestureDetector(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (ctx) => TransactionDetailSheet(transaction: transaction),
+          );
+        },
+        child: Container(
         padding: const EdgeInsets.all(AppSpacing.space3),
         decoration: BoxDecoration(
           color: tokens.surfaceGlass,
@@ -99,6 +109,7 @@ class _TransactionItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
