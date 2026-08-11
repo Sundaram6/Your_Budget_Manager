@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../database/app_database.dart';
 import '../../database/daos/savings_goal_dao.dart';
+import '../../database/database_helper.dart';
 import '../../features/budgets/data/repositories/budget_repository_impl.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
@@ -22,13 +23,18 @@ part 'database_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 AppDatabase appDatabase(AppDatabaseRef ref) {
-  return AppDatabase(
+  final db = AppDatabase(
     LazyDatabase(() async {
       final dbFolder = await getApplicationDocumentsDirectory();
       final file = File(p.join(dbFolder.path, 'ybm_data.sqlite'));
       return NativeDatabase.createInBackground(file);
     }),
   );
+  DatabaseHelper.instance.setDatabase(db);
+  ref.onDispose(() {
+    db.close();
+  });
+  return db;
 }
 
 @Riverpod(keepAlive: true)
