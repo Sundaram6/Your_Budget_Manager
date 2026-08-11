@@ -6,6 +6,7 @@ import 'package:workmanager/workmanager.dart';
 import 'app.dart';
 import 'core/providers/database_providers.dart';
 import 'core/providers/initial_route_provider.dart';
+import 'database/database_helper.dart';
 import 'database/health/database_health_check.dart';
 import 'engine/recurring_engine.dart';
 import 'engines/category/category_engine_provider.dart';
@@ -29,6 +30,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
       WidgetsFlutterBinding.ensureInitialized();
+      await DatabaseHelper.initForBackgroundIsolate();
       final count = await RecurringEngine.processDueRecurring();
       debugPrint('Background recurring check generated $count transactions.');
       return Future.value(true);

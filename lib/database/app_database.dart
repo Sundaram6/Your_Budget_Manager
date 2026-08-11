@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 
 import 'daos/budget_dao.dart';
 import 'daos/category_dao.dart';
@@ -218,17 +215,5 @@ class AppDatabase extends _$AppDatabase {
       'SELECT COUNT(*) AS c FROM "$tableName"',
     ).get();
     return rows.first.read<int>('c');
-  }
-
-  static AppDatabase openEncrypted(String dbPath, String encryptionKey) {
-    final file = File(dbPath);
-    return AppDatabase(
-      NativeDatabase.createInBackground(
-        file,
-        setup: (db) {
-          db.execute('PRAGMA key = "$encryptionKey";');
-        },
-      ),
-    );
   }
 }

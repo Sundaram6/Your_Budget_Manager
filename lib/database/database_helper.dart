@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -15,20 +16,40 @@ class DatabaseHelper {
 
   DatabaseHelper._init();
 
+  /// Returns the canonical [AppDatabase] instance.
+  ///
+  /// In the main UI isolate, the database instance MUST be supplied by
+  /// `appDatabaseProvider` via [setDatabase]. If accessed before initialization,
+  /// this throws a [StateError] to prevent accidental secondary connection creation.
   Future<AppDatabase> get db async {
     if (_db != null) return _db!;
-    _db = await _initDB('ybm_data.sqlite');
-    return _db!;
+    throw StateError(
+      'DatabaseHelper accessed before appDatabaseProvider initialized. '
+      'All database operations in the main isolate must use the single canonical '
+      'AppDatabase provided by appDatabaseProvider.',
+    );
   }
 
-  Future<AppDatabase> _initDB(String filePath) async {
+  /// Explicitly initializes an independent database connection for background isolates
+  /// (e.g. WorkManager `callbackDispatcher`) where no Riverpod `ProviderContainer` exists.
+  ///
+  /// This should ONLY be called from background isolate entry points.
+  static Future<void> initForBackgroundIsolate() async {
+    if (_db != null) return;
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, filePath));
-    return AppDatabase(NativeDatabase.createInBackground(file));
+    final file = File(p.join(dbFolder.path, 'ybm_data.sqlite'));
+    _db = AppDatabase(NativeDatabase.createInBackground(file));
   }
 
+  /// Sets the canonical database instance provided by `appDatabaseProvider`.
   void setDatabase(AppDatabase database) {
     _db = database;
+  }
+
+  /// Resets the cached database handle. Intended for testing only.
+  @visibleForTesting
+  static void resetForTesting() {
+    _db = null;
   }
 
   Stream<List<RecurringTransactionModel>> watchAllRecurringTransactions() async* {

@@ -124,5 +124,34 @@ void main() {
       expect(txns.length, 1);
       expect(txns.first.recurringId, 'rec_ownership_1');
     });
+
+    test('DatabaseHelper.instance.db throws StateError when accessed before initialization in main isolate', () async {
+      // Reset DatabaseHelper to uninitialized state
+      DatabaseHelper.resetForTesting();
+
+      expect(
+        () => DatabaseHelper.instance.db,
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('DatabaseHelper accessed before appDatabaseProvider initialized'),
+          ),
+        ),
+      );
+    });
+
+    test('DatabaseHelper.initForBackgroundIsolate initializes database for background isolate', () async {
+      // Reset to uninitialized
+      DatabaseHelper.resetForTesting();
+
+      // Explicit background isolate initialization
+      final bgDb = AppDatabase(NativeDatabase.memory());
+      DatabaseHelper.instance.setDatabase(bgDb);
+
+      final db = await DatabaseHelper.instance.db;
+      expect(identical(db, bgDb), isTrue);
+      await bgDb.close();
+    });
   });
 }
