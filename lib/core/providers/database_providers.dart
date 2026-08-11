@@ -12,12 +12,11 @@ import '../../features/budgets/data/repositories/budget_repository_impl.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
 import '../../features/categories/domain/repositories/category_repository.dart';
-import '../../features/recurring/data/repositories/recurring_repository_impl.dart';
-import '../../features/recurring/domain/repositories/recurring_repository.dart';
 import '../../features/savings/data/repositories/savings_goal_repository_impl.dart';
 import '../../features/savings/domain/repositories/savings_goal_repository.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
+import '../../repositories/recurring_repository.dart';
 
 part 'database_providers.g.dart';
 
@@ -57,8 +56,8 @@ BudgetRepository budgetRepository(BudgetRepositoryRef ref) {
 
 @Riverpod(keepAlive: true)
 RecurringRepository recurringRepository(RecurringRepositoryRef ref) {
-  final db = ref.watch(appDatabaseProvider);
-  return RecurringRepositoryImpl(db.recurringTransactionDao);
+  ref.watch(appDatabaseProvider);
+  return RecurringRepository.instance;
 }
 
 @Riverpod(keepAlive: true)

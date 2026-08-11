@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/core/providers/database_providers.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/database/database_helper.dart';
-import 'package:your_budget_manager/engine/recurring_engine.dart';
+import 'package:your_budget_manager/engines/recurring/recurring_engine.dart';
 import 'package:your_budget_manager/models/recurring_transaction.dart';
 
 void main() {

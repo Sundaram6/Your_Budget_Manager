@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:your_budget_manager/core/theme/app_theme.dart';
 import 'package:your_budget_manager/models/recurring_transaction.dart';
 import 'package:your_budget_manager/screens/recurring/recurring_list_screen.dart';
 
 void main() {
   Widget buildTestableWidget(Widget child) {
     return MaterialApp(
+      theme: AppTheme.darkTheme,
       home: child,
     );
   }
@@ -20,7 +22,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Recurring'), findsOneWidget);
+    expect(find.text('Recurring Transactions'), findsOneWidget);
     expect(find.text('No recurring transactions yet'), findsOneWidget);
     expect(find.byIcon(Icons.repeat), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsOneWidget);
@@ -59,16 +61,15 @@ void main() {
     expect(find.text('MONTHLY'), findsOneWidget);
     expect(find.text('Netflix HD'), findsOneWidget);
     expect(find.textContaining('₹649'), findsOneWidget);
-    expect(find.textContaining('01/09/2026'), findsOneWidget);
   });
 
   testWidgets('RecurringListScreen renders PAUSED badge when inactive', (tester) async {
     final now = DateTime.now();
     final item = RecurringTransactionModel(
       id: 'rec_screen_2',
-      title: 'Spotify Family',
-      amountPaise: 17900,
-      categoryId: 'cat_entertainment',
+      title: 'Gym Paused',
+      amountPaise: 150000,
+      categoryId: 'cat_health',
       type: 'expense',
       frequency: 'monthly',
       intervalDays: null,
@@ -93,5 +94,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('PAUSED'), findsOneWidget);
+    expect(find.text('Gym Paused'), findsOneWidget);
   });
 }

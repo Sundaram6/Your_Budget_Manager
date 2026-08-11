@@ -8,8 +8,8 @@ import 'core/providers/database_providers.dart';
 import 'core/providers/initial_route_provider.dart';
 import 'database/database_helper.dart';
 import 'database/health/database_health_check.dart';
-import 'engine/recurring_engine.dart';
 import 'engines/category/category_engine_provider.dart';
+import 'engines/recurring/recurring_engine.dart';
 import 'services/notification_reader_service.dart';
 
 /*

@@ -279,20 +279,20 @@ void _seedV1Data(sqlite3_lib.Database db) {
   // 2024-01-01 00:00:00 UTC = 1704067200000 ms
   // 2026-08-01 00:00:00 UTC = 1753920000000 ms
   db.execute(
-    "INSERT INTO recurring_transactions VALUES "
-    "('rec_rent','Rent',15000.0,'expense','cat_food','monthly',"
-    " 1704067200000,NULL,1753920000000,NULL,1,'Monthly rent payment',"
-    " 1704067200000,1704067200000),"
-    "('rec_salary','Salary',80000.0,'income','cat_food','monthly',"
-    " 1704067200000,NULL,1753920000000,NULL,1,NULL,"
-    " 1704067200000,1704067200000)",
+    'INSERT INTO recurring_transactions VALUES '
+    '(\'rec_rent\',\'Rent\',15000.0,\'expense\',\'cat_food\',\'monthly\','
+    ' 1704067200000,NULL,1753920000000,NULL,1,\'Monthly rent payment\','
+    ' 1704067200000,1704067200000),'
+    '(\'rec_salary\',\'Salary\',80000.0,\'income\',\'cat_food\',\'monthly\','
+    ' 1704067200000,NULL,1753920000000,NULL,1,NULL,'
+    ' 1704067200000,1704067200000)',
   );
 
   db.execute(
-    "INSERT INTO transactions VALUES "
-    "('txn_grocery',250.0,'expense','cat_food',1704067200000,'Grocery run','BigBazaar',NULL,NULL,1704067200000,1704067200000),"
-    "('txn_bus',50.0,'expense','cat_transport',1704153600000,NULL,NULL,NULL,NULL,1704153600000,1704153600000),"
-    "('txn_salary',80000.0,'income','cat_food',1704067200000,'January salary',NULL,NULL,'rec_salary',1704067200000,1704067200000)",
+    'INSERT INTO transactions VALUES '
+    '(\'txn_grocery\',250.0,\'expense\',\'cat_food\',1704067200000,\'Grocery run\',\'BigBazaar\',NULL,NULL,1704067200000,1704067200000),'
+    '(\'txn_bus\',50.0,\'expense\',\'cat_transport\',1704153600000,NULL,NULL,NULL,NULL,1704153600000,1704153600000),'
+    '(\'txn_salary\',80000.0,\'income\',\'cat_food\',1704067200000,\'January salary\',NULL,NULL,\'rec_salary\',1704067200000,1704067200000)',
   );
 
   db.execute(
@@ -336,16 +336,16 @@ void _seedV2Data(sqlite3_lib.Database db) {
 
   // 2025-01-15 00:00:00 UTC ≈ 1736899200000 ms
   db.execute(
-    "INSERT INTO recurring_transactions VALUES "
-    "('rec_netflix','Netflix',649.0,'expense','cat_food','monthly',"
-    " 1736899200000,NULL,1753920000000,NULL,1,NULL,"
-    " 1736899200000,1736899200000)",
+    'INSERT INTO recurring_transactions VALUES '
+    '(\'rec_netflix\',\'Netflix\',649.0,\'expense\',\'cat_food\',\'monthly\','
+    ' 1736899200000,NULL,1753920000000,NULL,1,NULL,'
+    ' 1736899200000,1736899200000)',
   );
 
   db.execute(
-    "INSERT INTO savings_goals VALUES "
-    "('goal_emergency','Emergency Fund',500000,50000,NULL,NULL,"
-    " 0,NULL,NULL,NULL,NULL,1704067200000,'active','savings','#FFD700',"
-    " NULL,1704067200000,1704067200000)",
+    'INSERT INTO savings_goals VALUES '
+    '(\'goal_emergency\',\'Emergency Fund\',500000,50000,NULL,NULL,'
+    ' 0,NULL,NULL,NULL,NULL,1704067200000,\'active\',\'savings\',\'#FFD700\','
+    ' NULL,1704067200000,1704067200000)',
   );
 }

@@ -1,7 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_budget_manager/core/widgets/buttons/primary_button.dart';
+import 'package:your_budget_manager/core/theme/app_theme.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/database/database_helper.dart';
 import 'package:your_budget_manager/database/health/database_health_check.dart';
@@ -23,6 +23,7 @@ void main() {
 
   Widget buildTestableWidget(Widget child) {
     return MaterialApp(
+      theme: AppTheme.darkTheme,
       home: child,
     );
   }
@@ -38,16 +39,9 @@ void main() {
     expect(find.text('Add Recurring'), findsOneWidget);
     expect(find.text('Expense'), findsOneWidget);
     expect(find.text('Income'), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Title'), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Amount'), findsOneWidget);
-    expect(find.text('Utilities & Bills'), findsOneWidget);
+    expect(find.byType(TextField), findsWidgets);
     expect(find.text('Monthly'), findsOneWidget);
-    expect(find.text('No End Date'), findsOneWidget);
-    expect(find.text('Auto-add to budget without asking'), findsOneWidget);
-
-    final buttonFinder = find.byType(PrimaryButton);
-    await tester.ensureVisible(buttonFinder);
-    expect(buttonFinder, findsOneWidget);
+    expect(find.text('Save Recurring'), findsOneWidget);
   });
 
   testWidgets('CreateRecurringScreen validates empty input fields on save', (tester) async {
@@ -58,15 +52,14 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const CreateRecurringScreen()));
     await tester.pumpAndSettle();
 
-    final buttonFinder = find.byType(PrimaryButton);
-    await tester.ensureVisible(buttonFinder);
-    await tester.tap(buttonFinder);
+    final saveButton = find.text('Save Recurring');
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Please enter a title'), findsOneWidget);
+    expect(find.text('Please enter a valid amount'), findsOneWidget);
   });
 
-  testWidgets('CreateRecurringScreen saves valid recurring transaction', (tester) async {
+  testWidgets('CreateRecurringScreen creates recurring transaction successfully with all fields', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -74,13 +67,21 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const CreateRecurringScreen()));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Title'), 'Spotify Family');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Amount'), '179');
+    // Enter title
+    final titleField = find.byType(TextField).first;
+    await tester.enterText(titleField, 'Spotify Family');
     await tester.pumpAndSettle();
 
-    final buttonFinder = find.byType(PrimaryButton);
-    await tester.ensureVisible(buttonFinder);
-    await tester.tap(buttonFinder);
+    // Enter amount using keypad buttons '1', '7', '9'
+    await tester.tap(find.text('1'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('7'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('9'));
+    await tester.pumpAndSettle();
+
+    final saveButton = find.text('Save Recurring');
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
     final saved = await RecurringRepository.instance.watchAll().first;

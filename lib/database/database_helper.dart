@@ -144,6 +144,7 @@ class DatabaseHelper {
       'UPDATE recurring_transactions SET next_due_date = ?, last_generated_date = ?, updated_at = ? WHERE id = ?',
       [nextDueDate, lastGeneratedDate, updatedAt, id],
     );
+    dbInstance.markTablesUpdated({dbInstance.recurringTransactionsTable});
   }
 
   Future<int> insertRecurringTransaction(RecurringTransactionModel rt) async {
@@ -176,6 +177,7 @@ class DatabaseHelper {
         json['updated_at'],
       ],
     );
+    dbInstance.markTablesUpdated({dbInstance.recurringTransactionsTable});
     return 1;
   }
 
@@ -208,10 +210,20 @@ class DatabaseHelper {
 
   Future<int> deleteRecurringTransaction(String id) async {
     final dbInstance = await db;
-    await dbInstance.customStatement(
-      'DELETE FROM recurring_transactions WHERE id = ?',
-      [id],
-    );
+    await dbInstance.transaction(() async {
+      await dbInstance.customStatement(
+        'UPDATE transactions SET recurring_id = NULL WHERE recurring_id = ?',
+        [id],
+      );
+      await dbInstance.customStatement(
+        'DELETE FROM recurring_transactions WHERE id = ?',
+        [id],
+      );
+    });
+    dbInstance.markTablesUpdated({
+      dbInstance.recurringTransactionsTable,
+      dbInstance.transactionsTable,
+    });
     return 1;
   }
 }
