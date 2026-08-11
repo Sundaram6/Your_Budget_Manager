@@ -23,6 +23,7 @@ class BackupEngine {
     final transactions = await _db.select(_db.transactionsTable).get();
     final budgets = await _db.select(_db.budgetsTable).get();
     final recurring = await _db.select(_db.recurringTransactionsTable).get();
+    final savingsGoals = await _db.select(_db.savingsGoalsTable).get();
     final settings = await _db.select(_db.appSettingsTable).get();
 
     final data = {
@@ -31,6 +32,7 @@ class BackupEngine {
       'transactions': transactions.map((e) => e.toJson()).toList(),
       'budgets': budgets.map((e) => e.toJson()).toList(),
       'recurringTransactions': recurring.map((e) => e.toJson()).toList(),
+      'savingsGoals': savingsGoals.map((e) => e.toJson()).toList(),
       'appSettings': settings.map((e) => e.toJson()).toList(),
     };
 
@@ -85,15 +87,16 @@ class BackupEngine {
     final data = payload['data'] as Map<String, dynamic>? ?? {};
 
     await _db.transaction(() async {
-      // Clear tables
-      await _db.delete(_db.categoriesTable).go();
-      await _db.delete(_db.merchantsTable).go();
+      // Clear tables in reverse dependency order
       await _db.delete(_db.transactionsTable).go();
-      await _db.delete(_db.budgetsTable).go();
+      await _db.delete(_db.savingsGoalsTable).go();
       await _db.delete(_db.recurringTransactionsTable).go();
+      await _db.delete(_db.merchantsTable).go();
+      await _db.delete(_db.budgetsTable).go();
+      await _db.delete(_db.categoriesTable).go();
       await _db.delete(_db.appSettingsTable).go();
 
-      // Insert data if present
+      // Insert data if present (parents before children)
       if (data.containsKey('categories')) {
         for (var item in (data['categories'] as List)) {
           await _db.into(_db.categoriesTable).insert(Category.fromJson(item as Map<String, dynamic>));
@@ -106,12 +109,6 @@ class BackupEngine {
         }
       }
 
-      if (data.containsKey('transactions')) {
-        for (var item in (data['transactions'] as List)) {
-          await _db.into(_db.transactionsTable).insert(Transaction.fromJson(item as Map<String, dynamic>));
-        }
-      }
-
       if (data.containsKey('budgets')) {
         for (var item in (data['budgets'] as List)) {
           await _db.into(_db.budgetsTable).insert(Budget.fromJson(item as Map<String, dynamic>));
@@ -121,6 +118,18 @@ class BackupEngine {
       if (data.containsKey('recurringTransactions')) {
         for (var item in (data['recurringTransactions'] as List)) {
           await _db.into(_db.recurringTransactionsTable).insert(RecurringTransactionData.fromJson(item as Map<String, dynamic>));
+        }
+      }
+
+      if (data.containsKey('savingsGoals')) {
+        for (var item in (data['savingsGoals'] as List)) {
+          await _db.into(_db.savingsGoalsTable).insert(SavingsGoal.fromJson(item as Map<String, dynamic>));
+        }
+      }
+
+      if (data.containsKey('transactions')) {
+        for (var item in (data['transactions'] as List)) {
+          await _db.into(_db.transactionsTable).insert(Transaction.fromJson(item as Map<String, dynamic>));
         }
       }
 
