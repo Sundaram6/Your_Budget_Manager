@@ -6,22 +6,46 @@ part of 'pin_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pinServiceHash() => r'48fa3ffcbc238b8bc0f4700f65f09eb531753712';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [pinService].
 @ProviderFor(pinService)
-final pinServiceProvider = AutoDisposeProvider<PinService>.internal(
-  pinService,
-  name: r'pinServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$pinServiceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final pinServiceProvider = PinServiceProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PinServiceRef = AutoDisposeProviderRef<PinService>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class PinServiceProvider
+    extends $FunctionalProvider<PinService, PinService, PinService>
+    with $Provider<PinService> {
+  PinServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pinServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pinServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<PinService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PinService create(Ref ref) {
+    return pinService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PinService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PinService>(value),
+    );
+  }
+}
+
+String _$pinServiceHash() => r'e7d9b863046ae4f74a103874a9ef7a2c23bdd277';

@@ -8,7 +8,7 @@ part 'budget.freezed.dart';
 part 'budget.g.dart';
 
 @freezed
-class Budget with _$Budget {
+abstract class Budget with _$Budget {
   const factory Budget({
     required String id,
     required String categoryId,

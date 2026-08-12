@@ -163,7 +163,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     final sortedBreakdown = List<CategoryBreakdown>.from(_categoryBreakdown)
       ..sort((a, b) => b.total.compareTo(a.total));
 
-    double total = 0;
+    int totalPaise = 0;
     final predefinedColors = [
       tokens.accentShopping,
       tokens.accentTransport,
@@ -174,8 +174,8 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
 
     for (int i = 0; i < sortedBreakdown.length; i++) {
       final cb = sortedBreakdown[i];
-      data[cb.categoryName] = cb.total;
-      total += cb.total;
+      data[cb.categoryName] = cb.total / 100.0;
+      totalPaise += cb.total;
       colors.add(predefinedColors[i % predefinedColors.length]);
     }
 
@@ -203,7 +203,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                CurrencyFormatter.formatCompact(total),
+                CurrencyFormatter.formatPaiseCompact(totalPaise),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -262,7 +262,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               ),
               const SizedBox(width: 4),
               Text(
-                CurrencyFormatter.formatCompact(cb.total),
+                CurrencyFormatter.formatPaiseCompact(cb.total),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 ),

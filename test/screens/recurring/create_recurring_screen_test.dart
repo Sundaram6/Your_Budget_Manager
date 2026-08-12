@@ -1,10 +1,13 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_budget_manager/core/theme/app_theme.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/database/database_helper.dart';
 import 'package:your_budget_manager/database/health/database_health_check.dart';
+import 'package:your_budget_manager/features/transactions/presentation/widgets/category_picker.dart'
+    show categoriesStreamProvider;
 import 'package:your_budget_manager/repositories/recurring_repository.dart';
 import 'package:your_budget_manager/screens/recurring/create_recurring_screen.dart';
 
@@ -21,10 +24,21 @@ void main() {
     await db.close();
   });
 
+  // CategoryPicker is a ConsumerWidget that watches a live Drift StreamProvider.
+  // A live stream keeps emitting events preventing pumpAndSettle from ever
+  // settling. Override it with a static empty-list stream that completes after
+  // one emission so the widget tree can settle normally.
   Widget buildTestableWidget(Widget child) {
-    return MaterialApp(
-      theme: AppTheme.darkTheme,
-      home: child,
+    return ProviderScope(
+      overrides: [
+        categoriesStreamProvider.overrideWith(
+          (ref) => Stream.value(const []),
+        ),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: child,
+      ),
     );
   }
 
@@ -84,11 +98,13 @@ void main() {
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
-    final saved = await RecurringRepository.instance.watchAll().first;
+    final saved = await db.customSelect('SELECT * FROM recurring_transactions').get();
     expect(saved.length, equals(1));
-    expect(saved.first.title, equals('Spotify Family'));
-    expect(saved.first.amountPaise, equals(17900));
-    expect(saved.first.type, equals('expense'));
-    expect(saved.first.frequency, equals('monthly'));
+    
+    final data = saved.first.data;
+    expect(data['title'], equals('Spotify Family'));
+    expect(data['amount_paise'], equals(17900));
+    expect(data['type'], equals('expense'));
+    expect(data['frequency'], equals('monthly'));
   });
 }

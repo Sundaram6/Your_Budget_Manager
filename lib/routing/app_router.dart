@@ -49,7 +49,7 @@ class RouterNotifier extends ChangeNotifier {
 final routerNotifierProvider = Provider((ref) => RouterNotifier(ref));
 
 @riverpod
-GoRouter appRouter(AppRouterRef ref) {
+GoRouter appRouter(Ref ref) {
   // initialLocation is set synchronously in main.dart before the app starts.
   // The router NEVER re-evaluates onboarding state reactively — that was the
   // source of the infinite redirect loop.

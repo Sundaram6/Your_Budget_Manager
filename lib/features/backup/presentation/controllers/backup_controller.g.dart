@@ -6,21 +6,57 @@ part of 'backup_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$backupControllerHash() => r'758ef245e37070e888dcd19191018c6fa261fa77';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [BackupController].
 @ProviderFor(BackupController)
-final backupControllerProvider =
-    AutoDisposeNotifierProvider<BackupController, void>.internal(
-      BackupController.new,
-      name: r'backupControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$backupControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final backupControllerProvider = BackupControllerProvider._();
 
-typedef _$BackupController = AutoDisposeNotifier<void>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class BackupControllerProvider
+    extends $NotifierProvider<BackupController, void> {
+  BackupControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'backupControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$backupControllerHash();
+
+  @$internal
+  @override
+  BackupController create() => BackupController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(void value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<void>(value),
+    );
+  }
+}
+
+String _$backupControllerHash() => r'6b42c097f8cecfcc7516984f7442dca174689487';
+
+abstract class _$BackupController extends $Notifier<void> {
+  void build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<void, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<void, void>,
+              void,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

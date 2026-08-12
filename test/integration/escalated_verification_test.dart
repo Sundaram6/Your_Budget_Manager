@@ -67,9 +67,10 @@ void main() {
       // 3. Confirm a pending transaction mapped to cat_groceries (Zepto/Blinkit)
       final pendingGroceriesTx = ParsedTransaction(
         smsId: 'sms-groceries-101',
-        amount: 450.0,
+        amount: 45000,
         merchantName: 'Zepto',
         merchantId: 'mer_zepto',
+        sourceApp: 'sms:unknown',
         categoryId: CategoryEngine.catGroceries,
         originalSmsBody: 'Paid Rs 450 to Zepto for groceries',
         date: DateTime.now(),
@@ -82,7 +83,7 @@ void main() {
       final allDbTx = await transactionDao.watchAllTransactions().first;
       expect(allDbTx.length, equals(1));
       expect(allDbTx.first.categoryId, equals(CategoryEngine.catGroceries));
-      expect(allDbTx.first.amount, equals(450.0));
+      expect(allDbTx.first.amount, equals(45000));
     });
 
     test('Existing/Stale Install Migration: remaps legacy dynamic UUID category foreign keys and inserts fixed IDs', () async {
@@ -105,7 +106,7 @@ void main() {
       await db.into(db.transactionsTable).insert(
         TransactionsTableCompanion.insert(
           id: 'legacy-tx-1',
-          amount: 250.0,
+          amount: 25000,
           type: 'expense',
           categoryId: oldLegacyUuid,
           date: DateTime.now().millisecondsSinceEpoch,

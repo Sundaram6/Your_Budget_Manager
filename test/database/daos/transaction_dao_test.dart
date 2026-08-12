@@ -35,7 +35,7 @@ void main() {
     await transactionDao.insertTransaction(
       TransactionsTableCompanion.insert(
         id: 'txn1',
-        amount: 100.0,
+        amount: 10000, // 10000 paise = ₹100
         type: 'expense',
         categoryId: 'cat1',
         date: 2000,
@@ -47,6 +47,6 @@ void main() {
     final transactions = await transactionDao.watchAllTransactions().first;
     expect(transactions.length, 1);
     expect(transactions.first.id, 'txn1');
-    expect(transactions.first.amount, 100.0);
+    expect(transactions.first.amount, 10000);
   });
 }

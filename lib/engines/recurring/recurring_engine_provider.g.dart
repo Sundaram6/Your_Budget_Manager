@@ -6,22 +6,47 @@ part of 'recurring_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$recurringEngineHash() => r'f152742e88edd5516b67dd9c0eab4b916de0c91f';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [recurringEngine].
 @ProviderFor(recurringEngine)
-final recurringEngineProvider = Provider<RecurringEngine>.internal(
-  recurringEngine,
-  name: r'recurringEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$recurringEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final recurringEngineProvider = RecurringEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef RecurringEngineRef = ProviderRef<RecurringEngine>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class RecurringEngineProvider
+    extends
+        $FunctionalProvider<RecurringEngine, RecurringEngine, RecurringEngine>
+    with $Provider<RecurringEngine> {
+  RecurringEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recurringEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recurringEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<RecurringEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  RecurringEngine create(Ref ref) {
+    return recurringEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RecurringEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RecurringEngine>(value),
+    );
+  }
+}
+
+String _$recurringEngineHash() => r'2c517b7c66d60c0c5b2042d37795fdde25fec962';

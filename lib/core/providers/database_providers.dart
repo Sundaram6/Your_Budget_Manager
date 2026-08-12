@@ -5,9 +5,11 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../core/security/database_key_service.dart';
 import '../../database/app_database.dart';
 import '../../database/daos/savings_goal_dao.dart';
 import '../../database/database_helper.dart';
+import '../../database/encryption_migration.dart';
 import '../../features/budgets/data/repositories/budget_repository_impl.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
@@ -21,12 +23,34 @@ import '../../repositories/recurring_repository.dart';
 part 'database_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-AppDatabase appDatabase(AppDatabaseRef ref) {
+AppDatabase appDatabase(Ref ref) {
   final db = AppDatabase(
     LazyDatabase(() async {
       final dbFolder = await getApplicationDocumentsDirectory();
-      final file = File(p.join(dbFolder.path, 'ybm_data.sqlite'));
-      return NativeDatabase.createInBackground(file);
+      final plainFile = File(p.join(dbFolder.path, 'ybm_data.sqlite'));
+      final cryptFile = File(p.join(dbFolder.path, 'ybm_data_enc.sqlite'));
+
+      final keyService = DatabaseKeyService();
+      final key = await keyService.getOrCreateDbKey();
+
+      await EncryptionMigration.encryptExistingDatabaseIfNeeded(
+        plaintextFile: plainFile,
+        encryptedFile: cryptFile,
+        key: key,
+      );
+
+      final escapedKey = EncryptionMigration.escapeSqlString(key);
+
+      return NativeDatabase.createInBackground(
+        cryptFile,
+        setup: (rawDb) {
+          assert(
+            EncryptionMigration.debugCheckHasCipher(rawDb),
+            'sqlite3mc encryption support missing — check build hooks',
+          );
+          rawDb.execute("PRAGMA key = '$escapedKey';");
+        },
+      );
     }),
   );
   DatabaseHelper.instance.setDatabase(db);
@@ -37,37 +61,38 @@ AppDatabase appDatabase(AppDatabaseRef ref) {
 }
 
 @Riverpod(keepAlive: true)
-CategoryRepository categoryRepository(CategoryRepositoryRef ref) {
+CategoryRepository categoryRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return CategoryRepositoryImpl(db.categoryDao);
 }
 
 @Riverpod(keepAlive: true)
-TransactionRepository transactionRepository(TransactionRepositoryRef ref) {
+TransactionRepository transactionRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return TransactionRepositoryImpl(db.transactionDao);
 }
 
 @Riverpod(keepAlive: true)
-BudgetRepository budgetRepository(BudgetRepositoryRef ref) {
+BudgetRepository budgetRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return BudgetRepositoryImpl(db.budgetDao);
 }
 
 @Riverpod(keepAlive: true)
-RecurringRepository recurringRepository(RecurringRepositoryRef ref) {
+RecurringRepository recurringRepository(Ref ref) {
   ref.watch(appDatabaseProvider);
   return RecurringRepository.instance;
 }
 
 @Riverpod(keepAlive: true)
-SavingsGoalDao savingsGoalDao(SavingsGoalDaoRef ref) {
+SavingsGoalDao savingsGoalDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return db.savingsGoalDao;
 }
 
 @Riverpod(keepAlive: true)
-SavingsGoalRepository savingsGoalRepository(SavingsGoalRepositoryRef ref) {
+SavingsGoalRepository savingsGoalRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return SavingsGoalRepositoryImpl(db.savingsGoalDao);
 }
+

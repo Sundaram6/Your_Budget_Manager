@@ -22,7 +22,7 @@ class SecureKeyStorage {
 }
 
 @riverpod
-SecureKeyStorage secureKeyStorage(SecureKeyStorageRef ref) {
+SecureKeyStorage secureKeyStorage(Ref ref) {
   const storage = FlutterSecureStorage();
   return SecureKeyStorage(storage);
 }

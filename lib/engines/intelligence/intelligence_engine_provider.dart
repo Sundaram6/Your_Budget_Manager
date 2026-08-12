@@ -9,7 +9,7 @@ import 'intelligence_engine.dart';
 part 'intelligence_engine_provider.g.dart';
 
 @riverpod
-IntelligenceEngine intelligenceEngine(IntelligenceEngineRef ref) {
+IntelligenceEngine intelligenceEngine(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   final budgetEngine = ref.watch(budgetEngineProvider);
   final savingsEngine = ref.watch(savingsEngineProvider);

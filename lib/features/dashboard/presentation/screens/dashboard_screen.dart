@@ -87,7 +87,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   if (data.overallMonthlyBudget != null) ...[
                     const SectionHeader(title: 'Budget Progress'),
                     const SizedBox(height: AppSpacing.space3),
-                    _buildBudgetDonut(context, tokens, data.overallMonthlyBudget!.amount / 100, data.monthlyTotal),
+                    _buildBudgetDonut(context, tokens, data.overallMonthlyBudget!.amount, data.monthlyTotal),
                     const SizedBox(height: AppSpacing.space4),
                   ],
 
@@ -186,13 +186,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildBudgetDonut(BuildContext context, AppCustomTokens tokens, double budget, double spent) {
-    final remaining = budget - spent;
+  Widget _buildBudgetDonut(BuildContext context, AppCustomTokens tokens, int budgetPaise, int spentPaise) {
+    final remainingPaise = budgetPaise - spentPaise;
     final data = {
-      'Spent': spent,
-      'Remaining': remaining > 0 ? remaining : 0.0,
+      'Spent': spentPaise / 100.0,
+      'Remaining': remainingPaise > 0 ? (remainingPaise / 100.0) : 0.0,
     };
-    final percentage = (spent / budget) * 100;
+    final percentage = budgetPaise > 0 ? (spentPaise / budgetPaise) * 100 : 0.0;
     
     return GestureDetector(
       onTap: () => context.pushNamed(RouteNames.budgets),
@@ -236,7 +236,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${CurrencyFormatter.formatCompact(spent)} of ${CurrencyFormatter.formatCompact(budget)}',
+                    '${CurrencyFormatter.formatPaiseCompact(spentPaise)} of ${CurrencyFormatter.formatPaiseCompact(budgetPaise)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                     ),

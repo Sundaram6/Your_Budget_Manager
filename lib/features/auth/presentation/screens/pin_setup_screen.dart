@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/security/biometric_service.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../controllers/auth_controller.dart';
+
 class PinSetupScreen extends ConsumerStatefulWidget {
   const PinSetupScreen({super.key});
 
@@ -15,6 +19,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   final TextEditingController _confirmPinController = TextEditingController();
   bool _isConfirming = false;
   bool _isSaving = false;
+  bool _showBiometricPrompt = false;
   String _errorMsg = '';
 
   Future<void> _onNext() async {
@@ -34,34 +39,57 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
       }
       setState(() => _isSaving = true);
       try {
-        final prefs = await SharedPreferences.getInstance();
-        // Store the PIN hash via a simple write (no Riverpod state flag)
-        await prefs.setString('userPin', _pinController.text);
-        await prefs.setBool('pin_setup_complete', true);
-        await prefs.setBool('pinSetupComplete', true);
-        await prefs.setBool('hasSkippedPinSetup', false);
-        await prefs.setBool('has_skipped_pin', false);
-        await prefs.reload();
+        final authController = ref.read(authControllerProvider.notifier);
+        await authController.setupPin(_pinController.text.trim());
+
+        final biometricService = ref.read(biometricServiceProvider);
+        final isBiometricAvailable = await biometricService.isBiometricAvailable();
+
+        if (isBiometricAvailable && mounted) {
+          setState(() {
+            _showBiometricPrompt = true;
+            _isSaving = false;
+          });
+          return;
+        }
 
         if (mounted) context.go('/');
       } finally {
-        if (mounted) setState(() => _isSaving = false);
+        if (mounted && !_showBiometricPrompt) {
+          setState(() => _isSaving = false);
+        }
       }
     }
   }
 
+  Future<void> _enableBiometric() async {
+    setState(() => _isSaving = true);
+    try {
+      final biometricService = ref.read(biometricServiceProvider);
+      final confirmed = await biometricService.authenticate('Confirm biometric enrollment');
+      if (confirmed) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('pref_use_biometric', true);
+        await prefs.setBool('pref_app_lock', true);
+        await prefs.reload();
+      }
+      if (mounted) context.go('/');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _skipBiometric() {
+    context.go('/');
+  }
+
   /// Skip writes prefs DIRECTLY and navigates immediately on the FIRST tap.
-  /// No Riverpod state flag. No ref.listen. No second tap required.
   Future<void> _skipPin() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('pin_setup_complete', true);
-      await prefs.setBool('pinSetupComplete', true);
-      await prefs.setBool('hasSkippedPinSetup', true);
-      await prefs.setBool('has_skipped_pin', true);
-      await prefs.reload();
+      final authController = ref.read(authControllerProvider.notifier);
+      await authController.skipPinSetup();
 
       if (context.mounted) context.go('/');
     } finally {
@@ -78,65 +106,213 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showBiometricPrompt) {
+      return Scaffold(
+        backgroundColor: AppColors.darkCanvas,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: const Text('Biometric Security'),
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1A1A1A),
+                    shape: BoxShape.circle,
+                    border: Border(
+                      top: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                      bottom: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                      left: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                      right: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.fingerprint,
+                    size: 56,
+                    color: AppColors.darkGoldPrimary,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Enable Biometric Unlock?',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: AppColors.darkTextPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Use Fingerprint or Face ID for faster, secure access to your budget manager.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.darkTextSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 36),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.darkGoldPrimary,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: _isSaving ? null : _enableBiometric,
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        : const Text(
+                            'Enable Biometrics',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: _isSaving ? null : _skipBiometric,
+                  child: const Text(
+                    'Skip for now',
+                    style: TextStyle(color: AppColors.darkTextTertiary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Setup PIN')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _isConfirming ? 'Confirm your PIN' : 'Create a PIN',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _isConfirming ? _confirmPinController : _pinController,
-              keyboardType: TextInputType.number,
-              obscureText: true,
-              maxLength: 6,
-              textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: '****',
+      backgroundColor: AppColors.darkCanvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Setup PIN'),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _isConfirming ? 'Confirm your PIN' : 'Create a PIN',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: AppColors.darkTextPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-              onChanged: (_) => setState(() => _errorMsg = ''),
-            ),
-            if (_errorMsg.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(_errorMsg, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _isConfirming ? _confirmPinController : _pinController,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  letterSpacing: 8,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  hintText: '••••',
+                  hintStyle: const TextStyle(
+                    color: AppColors.darkTextTertiary,
+                    letterSpacing: 8,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.darkSurface2,
+                ),
+                onChanged: (_) => setState(() => _errorMsg = ''),
               ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isSaving ? null : _onNext,
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_isConfirming ? 'Save PIN' : 'Next'),
-            ),
-            if (!_isConfirming)
-              TextButton(
-                onPressed: _isSaving ? null : _skipPin,
-                child: const Text('Skip'),
+              if (_errorMsg.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    _errorMsg,
+                    style: const TextStyle(color: Colors.redAccent),
+                  ),
+                ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.darkGoldPrimary,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: _isSaving ? null : _onNext,
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black,
+                          ),
+                        )
+                      : Text(
+                          _isConfirming ? 'Save PIN' : 'Next',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
               ),
-            if (_isConfirming)
-              TextButton(
-                onPressed: _isSaving
-                    ? null
-                    : () {
-                        setState(() {
-                          _isConfirming = false;
-                          _confirmPinController.clear();
-                          _errorMsg = '';
-                        });
-                      },
-                child: const Text('Back'),
-              ),
-          ],
+              if (!_isConfirming)
+                TextButton(
+                  onPressed: _isSaving ? null : _skipPin,
+                  child: const Text(
+                    'Skip',
+                    style: TextStyle(color: AppColors.darkTextTertiary),
+                  ),
+                ),
+              if (_isConfirming)
+                TextButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () {
+                          setState(() {
+                            _isConfirming = false;
+                            _confirmPinController.clear();
+                            _errorMsg = '';
+                          });
+                        },
+                  child: const Text(
+                    'Back',
+                    style: TextStyle(color: AppColors.darkTextTertiary),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

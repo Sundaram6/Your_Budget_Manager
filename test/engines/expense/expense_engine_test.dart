@@ -20,7 +20,7 @@ void main() {
     registerFallbackValue(
       Transaction(
         id: '1',
-        amount: const Amount(10),
+        amount: const Amount(1000),
         date: DateTime.now(),
         categoryId: 'cat1',
         type: TransactionType.expense,
@@ -48,7 +48,7 @@ void main() {
       
       expect(
         () => engine.addTransaction(
-          amount: -5,
+          amount: -500,
           date: DateTime.now(),
           categoryId: 'cat1',
           type: TransactionType.expense,
@@ -64,14 +64,14 @@ void main() {
 
       final date = DateTime.now();
       final result = await engine.addTransaction(
-        amount: 100,
+        amount: 10000,
         date: date,
         categoryId: 'cat1',
         type: TransactionType.expense,
       );
 
       expect(result.id, generatedUuid);
-      expect(result.amount.value, 100);
+      expect(result.amount.value, 10000);
       expect(result.date, date);
       expect(result.categoryId, 'cat1');
       expect(result.type, TransactionType.expense);
@@ -97,7 +97,7 @@ void main() {
     test('updateTransaction delegates to repository', () async {
       final transaction = Transaction(
         id: '1',
-        amount: const Amount(10),
+        amount: const Amount(1000),
         date: DateTime.now(),
         categoryId: 'cat1',
         type: TransactionType.expense,
@@ -113,7 +113,7 @@ void main() {
     test('deleteTransaction delegates to repository', () async {
       final transaction = Transaction(
         id: '1',
-        amount: const Amount(10),
+        amount: const Amount(1000),
         date: DateTime.now(),
         categoryId: 'cat1',
         type: TransactionType.expense,
@@ -129,7 +129,7 @@ void main() {
     test('getTransactionById returns matching transaction', () async {
       final transaction = Transaction(
         id: 'target-id',
-        amount: const Amount(10),
+        amount: const Amount(1000),
         date: DateTime.now(),
         categoryId: 'cat1',
         type: TransactionType.expense,
@@ -139,7 +139,7 @@ void main() {
         (_) => Stream.value([
           Transaction(
             id: 'other-id',
-            amount: const Amount(5),
+            amount: const Amount(500),
             date: DateTime.now(),
             categoryId: 'cat2',
             type: TransactionType.income,
@@ -165,28 +165,28 @@ void main() {
       verify(() => repository.watchTransactionsByDateRange(expectedStart, expectedEnd)).called(1);
     });
 
-    test('getMonthlyTotal sums correctly with or without filtering', () async {
+    test('getMonthlyTotal sums correctly with or without filtering in paise', () async {
       final month = DateTime(2023, 10, 15);
       final expectedStart = DateTime(2023, 10, 1);
       final expectedEnd = DateTime(2023, 11, 0, 23, 59, 59, 999);
       
       final transactions = [
-        Transaction(id: '1', amount: const Amount(100), date: month, categoryId: 'cat1', type: TransactionType.expense),
-        Transaction(id: '2', amount: const Amount(50), date: month, categoryId: 'cat2', type: TransactionType.income),
-        Transaction(id: '3', amount: const Amount(200), date: month, categoryId: 'cat3', type: TransactionType.expense),
+        Transaction(id: '1', amount: const Amount(10000), date: month, categoryId: 'cat1', type: TransactionType.expense),
+        Transaction(id: '2', amount: const Amount(5000), date: month, categoryId: 'cat2', type: TransactionType.income),
+        Transaction(id: '3', amount: const Amount(20000), date: month, categoryId: 'cat3', type: TransactionType.expense),
       ];
       
       when(() => repository.watchTransactionsByDateRange(expectedStart, expectedEnd))
           .thenAnswer((_) => Stream.value(transactions));
           
       final totalUnfiltered = await engine.getMonthlyTotal(month);
-      expect(totalUnfiltered, 350.0);
+      expect(totalUnfiltered, 35000);
       
       final totalExpense = await engine.getMonthlyTotal(month, type: TransactionType.expense);
-      expect(totalExpense, 300.0);
+      expect(totalExpense, 30000);
       
       final totalIncome = await engine.getMonthlyTotal(month, type: TransactionType.income);
-      expect(totalIncome, 50.0);
+      expect(totalIncome, 5000);
     });
   });
 }

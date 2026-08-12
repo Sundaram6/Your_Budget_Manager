@@ -8,7 +8,9 @@ import 'package:path_provider/path_provider.dart';
 
 import '../models/recurring_transaction.dart';
 import '../models/transaction.dart';
+import '../core/security/database_key_service.dart';
 import 'app_database.dart';
+import 'encryption_migration.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -37,8 +39,32 @@ class DatabaseHelper {
   static Future<void> initForBackgroundIsolate() async {
     if (_db != null) return;
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'ybm_data.sqlite'));
-    _db = AppDatabase(NativeDatabase.createInBackground(file));
+    final plainFile = File(p.join(dbFolder.path, 'ybm_data.sqlite'));
+    final cryptFile = File(p.join(dbFolder.path, 'ybm_data_enc.sqlite'));
+
+    final keyService = DatabaseKeyService();
+    final key = await keyService.getOrCreateDbKey();
+
+    await EncryptionMigration.encryptExistingDatabaseIfNeeded(
+      plaintextFile: plainFile,
+      encryptedFile: cryptFile,
+      key: key,
+    );
+
+    final escapedKey = EncryptionMigration.escapeSqlString(key);
+
+    _db = AppDatabase(
+      NativeDatabase.createInBackground(
+        cryptFile,
+        setup: (rawDb) {
+          assert(
+            EncryptionMigration.debugCheckHasCipher(rawDb),
+            'sqlite3mc encryption support missing in background isolate',
+          );
+          rawDb.execute("PRAGMA key = '$escapedKey';");
+        },
+      ),
+    );
   }
 
   /// Sets the canonical database instance provided by `appDatabaseProvider`.
@@ -116,7 +142,7 @@ class DatabaseHelper {
     await dbInstance.into(dbInstance.transactionsTable).insert(
           TransactionsTableCompanion.insert(
             id: tx.id,
-            amount: tx.amountPaise / 100.0,
+            amount: tx.amountPaise,
             type: tx.type,
             categoryId: tx.categoryId,
             date: dateMillis,
@@ -126,6 +152,8 @@ class DatabaseHelper {
             recurringId: Value(tx.recurringId),
             isAutoCaptured: Value(tx.isAutoCaptured),
             sourceApp: Value(tx.sourceApp),
+            paymentMethod: Value(tx.paymentMethod),
+            cardLast4: Value(tx.cardLast4),
             createdAt: nowMillis,
             updatedAt: nowMillis,
           ),
@@ -184,7 +212,7 @@ class DatabaseHelper {
   /// Returns true if a transaction with same amount, same calendar day, and
   /// note/merchantName containing [snippet] already exists.
   Future<bool> checkDuplicateTransaction({
-    required double amountValue,
+    required int amountValue,
     required DateTime date,
     required String snippet,
   }) async {
@@ -197,7 +225,7 @@ class DatabaseHelper {
     final rows = await dbInstance.customSelect(
       'SELECT id FROM transactions WHERE amount = ? AND date >= ? AND date <= ? AND (note LIKE ? OR merchant_name LIKE ?) LIMIT 1',
       variables: [
-        Variable.withReal(amountValue),
+        Variable.withInt(amountValue),
         Variable.withInt(dayStart),
         Variable.withInt(dayEnd),
         Variable.withString(likeSnippet),

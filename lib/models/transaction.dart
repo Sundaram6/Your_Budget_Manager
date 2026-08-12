@@ -29,7 +29,7 @@ class Iso8601Converter implements JsonConverter<DateTime, String> {
 }
 
 @freezed
-class TransactionModel with _$TransactionModel {
+abstract class TransactionModel with _$TransactionModel {
   const factory TransactionModel({
     required String id,
     String? title,
@@ -42,6 +42,8 @@ class TransactionModel with _$TransactionModel {
     @JsonKey(name: 'recurring_id') String? recurringId,
     @JsonKey(name: 'is_auto_captured') @Default(false) bool isAutoCaptured,
     @JsonKey(name: 'source_app') String? sourceApp,
+    @JsonKey(name: 'payment_method') String? paymentMethod,
+    @JsonKey(name: 'card_last_4') String? cardLast4,
     @Iso8601Converter() @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _TransactionModel;
 

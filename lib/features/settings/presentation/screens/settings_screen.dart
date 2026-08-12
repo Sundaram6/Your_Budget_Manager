@@ -6,10 +6,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/cards/glass_card.dart';
 import '../../../../routing/route_names.dart';
 import '../../../../screens/analytics/ai_insights_screen.dart';
+import '../../../../screens/recurring/recurring_list_screen.dart';
 import '../../../../screens/settings/pin_security_screen.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../categories/presentation/screens/category_management_screen.dart';
-import '../../../recurring/presentation/screens/recurring_transactions_screen.dart';
 import 'about_screen.dart';
 import 'appearance_screen.dart';
 import 'security_settings_screen.dart';
@@ -139,7 +139,7 @@ class SettingsScreen extends StatelessWidget {
                   color: Colors.blueAccent,
                   title: 'Recurring Transactions',
                   subtitle: 'Bills, subscriptions, and reminders',
-                  screen: const RecurringTransactionsScreen(),
+                  screen: const RecurringListScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(

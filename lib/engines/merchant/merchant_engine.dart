@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 
 import '../../core/enums.dart';
 import '../../core/utils/platform_guard.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../category/category_engine.dart';
 import '../expense/expense_engine.dart';
 import '../sms/data/merchant_patterns.dart';
@@ -70,14 +71,26 @@ class MerchantEngine {
     final finalMerchantName = patternMerchant?.name ?? parsed.merchantName;
     final finalCategory = patternMerchant?.categoryId ?? parsed.categoryId;
 
+    final finalMerchantId = patternMerchant?.id ?? parsed.merchantId;
+    String finalSourceApp = 'sms:unknown';
+    
+    if (finalMerchantId.startsWith('mer_')) {
+      finalSourceApp = 'sms:${finalMerchantId.substring(4)}';
+    }
+
+    final paymentEvidence = extractPaymentEvidence(body);
+
     return ParsedTransaction(
       smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
       amount: parsed.amount,
       date: parsed.date,
       merchantName: finalMerchantName,
-      merchantId: patternMerchant?.id ?? 'mer_unknown',
+      merchantId: finalMerchantId,
       categoryId: finalCategory,
       originalSmsBody: body,
+      sourceApp: finalSourceApp,
+      paymentMethod: paymentEvidence.method,
+      cardLast4: paymentEvidence.cardLast4,
     );
   }
 
@@ -90,17 +103,21 @@ class MerchantEngine {
     final targetCategoryId = categoryId ?? transaction.categoryId;
 
     try {
+      final amountPaise = transaction.amount;
       final savedTx = await _expenseEngine.addTransaction(
-        amount: transaction.amount,
+        amount: amountPaise,
         date: transaction.date,
         categoryId: targetCategoryId,
         type: type,
         note: 'Auto-tracked: ${transaction.merchantName}',
+        sourceApp: transaction.sourceApp,
+        paymentMethod: transaction.paymentMethod,
+        cardLast4: transaction.cardLast4,
       );
 
       final verifiedTx = await _expenseEngine.getTransactionById(savedTx.id);
 
-      if (verifiedTx != null && verifiedTx.id == savedTx.id && verifiedTx.amount.value == transaction.amount) {
+      if (verifiedTx != null && verifiedTx.id == savedTx.id && verifiedTx.amount.value == amountPaise) {
         _logger.i('Verified DB save for pending transaction ${savedTx.id}');
         return true;
       } else {
@@ -176,6 +193,7 @@ class MerchantEngine {
       merchantId: 'mer_upi',
       categoryId: _categorize(merchant),
       originalSmsBody: body,
+      sourceApp: 'sms:upi',
     );
   }
 
@@ -212,6 +230,7 @@ class MerchantEngine {
       merchantId: 'mer_card',
       categoryId: _categorize(merchant),
       originalSmsBody: body,
+      sourceApp: 'sms:card',
     );
   }
 
@@ -247,6 +266,7 @@ class MerchantEngine {
       merchantId: 'mer_imps',
       categoryId: CategoryEngine.catUtilities,
       originalSmsBody: body,
+      sourceApp: 'sms:imps',
     );
   }
 
@@ -280,6 +300,7 @@ class MerchantEngine {
       merchantId: 'mer_neft',
       categoryId: CategoryEngine.catUtilities,
       originalSmsBody: body,
+      sourceApp: 'sms:neft',
     );
   }
 
@@ -337,6 +358,7 @@ class MerchantEngine {
       merchantId: 'mer_wallet',
       categoryId: _categorize(merchant),
       originalSmsBody: body,
+      sourceApp: 'sms:wallet',
     );
   }
 
@@ -381,12 +403,13 @@ class MerchantEngine {
       merchantId: 'mer_bank',
       categoryId: _categorize(merchant),
       originalSmsBody: body,
+      sourceApp: 'sms:bank',
     );
   }
 
   // ─── HELPERS ───
 
-  double? _extractAmount(String text) {
+  int? _extractAmount(String text) {
     final patterns = [
       r'(?:rs\.?|inr|₹)\s*[\.,]?\s*([\d,]+\.?\d{0,2})',
       r'([\d,]+\.?\d{0,2})\s*(?:rs\.?|inr|₹)',
@@ -398,8 +421,8 @@ class MerchantEngine {
       if (match != null) {
         final clean = match.group(1)?.replaceAll(',', '');
         if (clean != null) {
-          final val = double.tryParse(clean);
-          if (val != null && val > 0 && val < 10000000) return val;
+          final val = CurrencyFormatter.parseRupeesToPaise(clean);
+          if (val != null && val > 0 && val < 1000000000) return val; // sanity check in paise
         }
       }
     }
@@ -517,6 +540,78 @@ class MerchantEngine {
         return merchant;
       }
     }
+    return null;
+  }
+
+  /// Extracts structured payment evidence strictly from the SMS body text.
+  /// Does NOT guess from sourceApp, merchantName, or bank name.
+  ({PaymentMethod method, String? cardLast4}) extractPaymentEvidence(String body) {
+    final lower = body.toLowerCase();
+
+    // 1. Check for Debit Card evidence
+    final isDebitCard = lower.contains('debit card') ||
+        RegExp(r'\bdc\s*(?:ending|no\.?|xx+|\*+|\#)', caseSensitive: false).hasMatch(body);
+
+    if (isDebitCard) {
+      final cardLast4 = _extractCardLast4(body, isDebit: true);
+      return (method: PaymentMethod.debit_card, cardLast4: cardLast4);
+    }
+
+    // 2. Check for Credit Card evidence
+    final isCreditCard = lower.contains('credit card') ||
+        lower.contains('sbicard') ||
+        RegExp(r'\bcc\s*(?:ending|no\.?|xx+|\*+|\#)', caseSensitive: false).hasMatch(body);
+
+    if (isCreditCard) {
+      final cardLast4 = _extractCardLast4(body, isCredit: true);
+      return (method: PaymentMethod.credit_card, cardLast4: cardLast4);
+    }
+
+    // 3. Check for UPI structured evidence
+    final isUpi = RegExp(
+      r'(?:upi\s*ref(?:\s*no\.?)?|upi[/\\]|vpa\b|upi\s*txn|via\s+upi|using\s+upi|paid\s+via\s+upi|upi\s*transaction|\bupi-|\bupi:)',
+      caseSensitive: false,
+    ).hasMatch(body);
+
+    if (isUpi) {
+      return (method: PaymentMethod.upi, cardLast4: null);
+    }
+
+    // 4. Check for Cash structured evidence
+    final isCash = RegExp(
+      r'(?:cash\s+withdrawal|paid\s+in\s+cash|paid\s+by\s+cash)',
+      caseSensitive: false,
+    ).hasMatch(body);
+
+    if (isCash) {
+      return (method: PaymentMethod.cash, cardLast4: null);
+    }
+
+    // 5. No structured evidence found -> unknown (do NOT guess from merchant/sourceApp)
+    return (method: PaymentMethod.unknown, cardLast4: null);
+  }
+
+  String? _extractCardLast4(String body, {bool isDebit = false, bool isCredit = false}) {
+    // Look specifically for card numbers (avoid matching A/c or Account numbers)
+    final patterns = [
+      // "debit card ending 1234", "credit card ending in 1234", "debit card no. 1234", "card ending 1234"
+      RegExp(r'(?:debit\s+card|credit\s+card|sbicard|card|dc|cc)\s*(?:ending(?:\s+(?:with|in|at))?|no\.?|number|xx+|\*+|\#)?\s*(\d{4})\b', caseSensitive: false),
+      // "ending with 1234" / "ending 1234"
+      RegExp(r'\bending(?:\s+(?:with|in|at))?\s*(\d{4})\b', caseSensitive: false),
+      // "Debit Card XX1234" / "Credit Card **1234" / "DC #1234"
+      RegExp(r'(?:debit\s+card|credit\s+card|sbicard|dc|cc)[^\d]*?(?:xx+|\*+|\#|\bno\.?\s*|\bending\s*)\s*(\d{4})\b', caseSensitive: false),
+    ];
+
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(body);
+      if (match != null) {
+        final digits = match.group(1);
+        if (digits != null && digits.length == 4) {
+          return digits;
+        }
+      }
+    }
+
     return null;
   }
 }

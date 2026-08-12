@@ -6,23 +6,53 @@ part of 'notification_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$notificationEngineHash() =>
-    r'532fbc7ecfd4c68323426497c9b38d8b98a4d18c';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [notificationEngine].
 @ProviderFor(notificationEngine)
-final notificationEngineProvider = Provider<NotificationEngine>.internal(
-  notificationEngine,
-  name: r'notificationEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$notificationEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final notificationEngineProvider = NotificationEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef NotificationEngineRef = ProviderRef<NotificationEngine>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class NotificationEngineProvider
+    extends
+        $FunctionalProvider<
+          NotificationEngine,
+          NotificationEngine,
+          NotificationEngine
+        >
+    with $Provider<NotificationEngine> {
+  NotificationEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'notificationEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$notificationEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<NotificationEngine> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NotificationEngine create(Ref ref) {
+    return notificationEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NotificationEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NotificationEngine>(value),
+    );
+  }
+}
+
+String _$notificationEngineHash() =>
+    r'd5cf47d45245b6b333628f4dfe2640ebeaebc84e';

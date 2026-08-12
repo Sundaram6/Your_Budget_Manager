@@ -7,7 +7,7 @@ import '../../../../core/security/pin_service.dart';
 
 part 'auth_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AuthController extends _$AuthController {
   @override
   FutureOr<void> build() {}
@@ -49,14 +49,23 @@ class AuthController extends _$AuthController {
   }
 
   Future<bool> authenticateBiometric(String reason) async {
-    final biometricService = ref.read(biometricServiceProvider);
-    final isAvailable = await biometricService.isBiometricAvailable();
-    if (!isAvailable) return false;
+    final appLockNotifier = ref.read(appLockControllerProvider.notifier);
+    appLockNotifier.setAuthenticating(true);
 
-    final success = await biometricService.authenticate(reason);
-    if (success) {
-      ref.read(appLockControllerProvider.notifier).unlock();
+    try {
+      final biometricService = ref.read(biometricServiceProvider);
+      final isAvailable = await biometricService.isBiometricAvailable();
+      if (!isAvailable) return false;
+
+      final success = await biometricService.authenticate(reason);
+      if (success) {
+        appLockNotifier.unlock();
+      }
+      return success;
+    } finally {
+      // Allow native OS prompt dismissal & window focus animations to settle
+      await Future.delayed(const Duration(milliseconds: 300));
+      appLockNotifier.setAuthenticating(false);
     }
-    return success;
   }
 }

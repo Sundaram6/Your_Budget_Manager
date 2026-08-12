@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../engines/analytics/analytics_engine.dart';
 import '../../engines/analytics/analytics_engine_provider.dart';
 import '../../engines/analytics/models/analytics_models.dart';
@@ -136,12 +137,12 @@ class _MonthlyAnalyticsScreenState
     return _AnalyticsData(
       breakdown: results[0] as List<CategoryBreakdown>,
       dailyTrends: results[1] as List<DailyTrend>,
-      totalExpense: results[2] as double,
-      totalIncome: results[3] as double,
+      totalExpense: results[2] as int,
+      totalIncome: results[3] as int,
       zeroExpenseDays: results[4] as int,
       streak: results[5] as int,
-      topSpendingDay: results[6] as (DateTime, double)?,
-      mostSpentCategory: results[7] as (String, double)?,
+      topSpendingDay: results[6] as (DateTime, int)?,
+      mostSpentCategory: results[7] as (String, int)?,
     );
   }
 
@@ -170,7 +171,6 @@ class _MonthlyAnalyticsScreenState
   }
 
   Widget _buildDonutCard(_AnalyticsData data) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +188,7 @@ class _MonthlyAnalyticsScreenState
                       final isTouched = _touchedIndex == e.key;
                       return PieChartSectionData(
                         color: _chartColors[e.key % _chartColors.length],
-                        value: e.value.total,
+                        value: e.value.total.toDouble(),
                         title: isTouched ? '${e.value.percentage.toStringAsFixed(1)}%' : '',
                         radius: isTouched ? 70 : 58,
                         titleStyle: const TextStyle(
@@ -206,8 +206,8 @@ class _MonthlyAnalyticsScreenState
                         });
                       },
                     ),
-                    centerSpaceRadius: 52,
-                    sectionsSpace: 3,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 60,
                   ),
                 ),
                 Column(
@@ -216,7 +216,7 @@ class _MonthlyAnalyticsScreenState
                     const Text('Total Spent',
                         style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 11)),
                     Text(
-                      currencyFmt.format(data.totalExpense),
+                      CurrencyFormatter.formatPaiseNoDecimals(data.totalExpense),
                       style: const TextStyle(
                         color: AppColors.darkGoldPrimary,
                         fontSize: 18,
@@ -263,7 +263,6 @@ class _MonthlyAnalyticsScreenState
   }
 
   Widget _buildStatsGrid(_AnalyticsData data) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final dayFmt = DateFormat('d MMM');
     return GridView.count(
       crossAxisCount: 2,
@@ -277,14 +276,14 @@ class _MonthlyAnalyticsScreenState
           icon: Icons.arrow_downward,
           iconColor: Colors.greenAccent,
           label: 'Total Credited',
-          value: currencyFmt.format(data.totalIncome),
+          value: CurrencyFormatter.formatPaiseNoDecimals(data.totalIncome),
         ),
         _statCard(
           icon: Icons.category,
           iconColor: AppColors.darkGoldPrimary,
           label: 'Most Spent On',
           value: data.mostSpentCategory != null
-              ? '${data.mostSpentCategory!.$1}\n${currencyFmt.format(data.mostSpentCategory!.$2)}'
+              ? '${data.mostSpentCategory!.$1}\n${CurrencyFormatter.formatPaiseNoDecimals(data.mostSpentCategory!.$2)}'
               : 'N/A',
         ),
         _statCard(
@@ -292,7 +291,7 @@ class _MonthlyAnalyticsScreenState
           iconColor: Colors.orangeAccent,
           label: 'Top Spending Day',
           value: data.topSpendingDay != null
-              ? '${dayFmt.format(data.topSpendingDay!.$1)}\n${currencyFmt.format(data.topSpendingDay!.$2)}'
+              ? '${dayFmt.format(data.topSpendingDay!.$1)}\n${CurrencyFormatter.formatPaiseNoDecimals(data.topSpendingDay!.$2)}'
               : 'N/A',
         ),
         _statCard(
@@ -348,7 +347,7 @@ class _MonthlyAnalyticsScreenState
   Widget _buildStreakCard(int streak) {
     String badge = '';
     Color borderColor = const Color(0xFF2A2A2A);
-    String subtitle = streak == 0
+    final subtitle = streak == 0
         ? 'Spend nothing today to start a streak!'
         : 'You had no expenses for $streak consecutive days. Keep it up!';
 
@@ -409,7 +408,7 @@ class _MonthlyAnalyticsScreenState
   Widget _buildHeatMap(List<DailyTrend> trends) {
     if (trends.isEmpty) return const SizedBox.shrink();
 
-    final maxSpend = trends.map((t) => t.total).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxSpend = trends.map((t) => t.total).fold<int>(0, (a, b) => a > b ? a : b);
 
     return _card(
       child: Column(
@@ -486,7 +485,6 @@ class _MonthlyAnalyticsScreenState
   }
 
   void _showDayTooltip(DailyTrend trend) {
-    final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
@@ -507,7 +505,7 @@ class _MonthlyAnalyticsScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                trend.total > 0 ? 'Spent: ${fmt.format(trend.total)}' : 'No expenses',
+                trend.total > 0 ? 'Spent: ${CurrencyFormatter.formatPaiseNoDecimals(trend.total)}' : 'No expenses',
                 style: TextStyle(
                   color: trend.total > 0 ? Colors.redAccent : Colors.greenAccent,
                   fontSize: 22,
@@ -569,12 +567,12 @@ class _MonthlyAnalyticsScreenState
 class _AnalyticsData {
   final List<CategoryBreakdown> breakdown;
   final List<DailyTrend> dailyTrends;
-  final double totalExpense;
-  final double totalIncome;
+  final int totalExpense;
+  final int totalIncome;
   final int zeroExpenseDays;
   final int streak;
-  final (DateTime, double)? topSpendingDay;
-  final (String, double)? mostSpentCategory;
+  final (DateTime, int)? topSpendingDay;
+  final (String, int)? mostSpentCategory;
 
   const _AnalyticsData({
     required this.breakdown,

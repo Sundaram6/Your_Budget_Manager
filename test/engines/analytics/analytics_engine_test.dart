@@ -31,39 +31,39 @@ void main() {
 
     final t1 = Transaction(
       id: 't1',
-      amount: const Amount(50),
+      amount: const Amount(5000), // 5000 paise = ₹50
       date: DateTime(2023, 10, 5),
       categoryId: 'c1',
       type: TransactionType.expense,
     );
     final t2 = Transaction(
       id: 't2',
-      amount: const Amount(150),
+      amount: const Amount(15000), // 15000 paise = ₹150
       date: DateTime(2023, 10, 15),
       categoryId: 'c2',
       type: TransactionType.expense,
     );
     final t3 = Transaction(
       id: 't3',
-      amount: const Amount(100),
+      amount: const Amount(10000), // 10000 paise = ₹100
       date: DateTime(2023, 10, 20),
       categoryId: 'c1',
       type: TransactionType.expense,
     );
     final tIncome = Transaction(
       id: 't4',
-      amount: const Amount(500),
+      amount: const Amount(50000), // 50000 paise = ₹500
       date: DateTime(2023, 10, 10),
       categoryId: 'c3',
       type: TransactionType.income,
     );
 
-    test('getMonthlyTotal should return sum of expenses only', () async {
+    test('getMonthlyTotal should return sum of expenses only in paise', () async {
       when(() => mockTransactionRepository.watchTransactionsByDateRange(any(), any()))
           .thenAnswer((_) => Stream.value([t1, t2, t3, tIncome]));
 
       final total = await analyticsEngine.getMonthlyTotal(2023, 10);
-      expect(total, 300.0);
+      expect(total, 30000); // 30000 paise
     });
 
     test('getCategoryBreakdown should return grouped expenses with percentages sorted by total descending', () async {
@@ -77,15 +77,15 @@ void main() {
       expect(breakdown.length, 2);
       
       expect(breakdown[0].categoryId, 'c1');
-      expect(breakdown[0].total, 150.0);
+      expect(breakdown[0].total, 15000);
       expect(breakdown[0].percentage, 50.0);
 
       expect(breakdown[1].categoryId, 'c2');
-      expect(breakdown[1].total, 150.0);
+      expect(breakdown[1].total, 15000);
       expect(breakdown[1].percentage, 50.0);
     });
 
-    test('getDailyTrend should return daily totals for expenses', () async {
+    test('getDailyTrend should return daily totals for expenses in paise', () async {
       when(() => mockTransactionRepository.watchTransactionsByDateRange(any(), any()))
           .thenAnswer((_) => Stream.value([t1, t2, t3, tIncome]));
 
@@ -93,10 +93,10 @@ void main() {
       
       expect(trend.length, 31);
       
-      expect(trend.firstWhere((e) => e.date.day == 5).total, 50.0);
-      expect(trend.firstWhere((e) => e.date.day == 15).total, 150.0);
-      expect(trend.firstWhere((e) => e.date.day == 20).total, 100.0);
-      expect(trend.firstWhere((e) => e.date.day == 10).total, 0.0); // Income is ignored
+      expect(trend.firstWhere((e) => e.date.day == 5).total, 5000);
+      expect(trend.firstWhere((e) => e.date.day == 15).total, 15000);
+      expect(trend.firstWhere((e) => e.date.day == 20).total, 10000);
+      expect(trend.firstWhere((e) => e.date.day == 10).total, 0); // Income is ignored
     });
 
     group('getMonthOverMonthComparison', () {
@@ -104,13 +104,13 @@ void main() {
         registerFallbackValue(DateTime(2000));
       });
 
-      test('calculates correct positive change', () async {
+      test('calculates correct positive change in paise', () async {
         // Mock current month (Oct)
         when(() => mockTransactionRepository.watchTransactionsByDateRange(
           DateTime(2023, 10, 1),
           DateTime(2023, 11, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_cur', amount: const Amount(200), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_cur', amount: const Amount(20000), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         // Mock prev month (Sep)
@@ -118,35 +118,35 @@ void main() {
           DateTime(2023, 9, 1),
           DateTime(2023, 10, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_prev', amount: const Amount(100), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_prev', amount: const Amount(10000), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         final comparison = await analyticsEngine.getMonthOverMonthComparison(2023, 10);
         
-        expect(comparison.currentTotal, 200.0);
-        expect(comparison.previousTotal, 100.0);
+        expect(comparison.currentTotal, 20000);
+        expect(comparison.previousTotal, 10000);
         expect(comparison.changePercent, 100.0);
       });
 
-      test('calculates correct negative change', () async {
+      test('calculates correct negative change in paise', () async {
         when(() => mockTransactionRepository.watchTransactionsByDateRange(
           DateTime(2023, 10, 1),
           DateTime(2023, 11, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_cur', amount: const Amount(50), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_cur', amount: const Amount(5000), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         when(() => mockTransactionRepository.watchTransactionsByDateRange(
           DateTime(2023, 9, 1),
           DateTime(2023, 10, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_prev', amount: const Amount(100), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_prev', amount: const Amount(10000), date: DateTime(2023, 9, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         final comparison = await analyticsEngine.getMonthOverMonthComparison(2023, 10);
         
-        expect(comparison.currentTotal, 50.0);
-        expect(comparison.previousTotal, 100.0);
+        expect(comparison.currentTotal, 5000);
+        expect(comparison.previousTotal, 10000);
         expect(comparison.changePercent, -50.0);
       });
 
@@ -155,7 +155,7 @@ void main() {
           DateTime(2023, 10, 1),
           DateTime(2023, 11, 0, 23, 59, 59, 999),
         )).thenAnswer((_) => Stream.value([
-          Transaction(id: 'tx_cur', amount: const Amount(100), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
+          Transaction(id: 'tx_cur', amount: const Amount(10000), date: DateTime(2023, 10, 1), categoryId: 'c1', type: TransactionType.expense)
         ]));
 
         when(() => mockTransactionRepository.watchTransactionsByDateRange(
@@ -165,8 +165,8 @@ void main() {
 
         final comparison = await analyticsEngine.getMonthOverMonthComparison(2023, 10);
         
-        expect(comparison.currentTotal, 100.0);
-        expect(comparison.previousTotal, 0.0);
+        expect(comparison.currentTotal, 10000);
+        expect(comparison.previousTotal, 0);
         expect(comparison.changePercent, 100.0);
       });
       
@@ -176,8 +176,8 @@ void main() {
 
         final comparison = await analyticsEngine.getMonthOverMonthComparison(2023, 10);
         
-        expect(comparison.currentTotal, 0.0);
-        expect(comparison.previousTotal, 0.0);
+        expect(comparison.currentTotal, 0);
+        expect(comparison.previousTotal, 0);
         expect(comparison.changePercent, 0.0);
       });
     });

@@ -17,9 +17,9 @@ part 'dashboard_controller.freezed.dart';
 part 'dashboard_controller.g.dart';
 
 @freezed
-class DashboardState with _$DashboardState {
+abstract class DashboardState with _$DashboardState {
   const factory DashboardState({
-    required double monthlyTotal,
+    required int monthlyTotal, // Integer paise
     DailyAllowance? dailyAllowance,
     Budget? overallMonthlyBudget,
     required List<CategoryBreakdown> categoryBreakdown,

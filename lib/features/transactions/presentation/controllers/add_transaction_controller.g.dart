@@ -6,25 +6,59 @@ part of 'add_transaction_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$addTransactionControllerHash() =>
-    r'8400ed5d8c5a0938beb6cd57d39afc267765c9b3';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [AddTransactionController].
 @ProviderFor(AddTransactionController)
-final addTransactionControllerProvider =
-    AutoDisposeNotifierProvider<
-      AddTransactionController,
-      AddTransactionState
-    >.internal(
-      AddTransactionController.new,
-      name: r'addTransactionControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$addTransactionControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final addTransactionControllerProvider = AddTransactionControllerProvider._();
 
-typedef _$AddTransactionController = AutoDisposeNotifier<AddTransactionState>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class AddTransactionControllerProvider
+    extends $NotifierProvider<AddTransactionController, AddTransactionState> {
+  AddTransactionControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'addTransactionControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$addTransactionControllerHash();
+
+  @$internal
+  @override
+  AddTransactionController create() => AddTransactionController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AddTransactionState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AddTransactionState>(value),
+    );
+  }
+}
+
+String _$addTransactionControllerHash() =>
+    r'659ab0a0e0cba1ec9a2efec880821aaa276c475c';
+
+abstract class _$AddTransactionController
+    extends $Notifier<AddTransactionState> {
+  AddTransactionState build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AddTransactionState, AddTransactionState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AddTransactionState, AddTransactionState>,
+              AddTransactionState,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

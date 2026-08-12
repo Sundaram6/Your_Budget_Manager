@@ -13,22 +13,30 @@ class BackupController extends _$BackupController {
   @override
   void build() {}
 
-  Future<void> exportData(String passphrase) async {
+  Future<bool> exportData(String passphrase) async {
     try {
       final encryptedData = await ref.read(backupEngineProvider).exportData(passphrase);
       await Share.share(encryptedData, subject: 'My Budget Backup');
+      return true;
     } catch (e) {
-      debugPrint(e.toString());
+      if (kDebugMode) {
+        debugPrint('Backup export failed: $e');
+      }
+      return false;
     }
   }
 
-  Future<void> importData(String path, String passphrase) async {
+  Future<bool> importData(String path, String passphrase) async {
     try {
       final file = File(path);
       final encryptedData = await file.readAsString();
       await ref.read(backupEngineProvider).importData(encryptedData, passphrase);
+      return true;
     } catch (e) {
-      debugPrint(e.toString());
+      if (kDebugMode) {
+        debugPrint('Backup import failed: $e');
+      }
+      return false;
     }
   }
 }

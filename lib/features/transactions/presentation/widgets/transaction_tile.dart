@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/enums.dart';
+import '../../../../core/extensions/number_extensions.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/transaction.dart';
 import 'category_picker.dart'; // To get categoriesStreamProvider
@@ -31,6 +32,20 @@ class TransactionTile extends ConsumerWidget {
         final amountColor = isExpense ? Colors.red : Colors.green;
         final amountPrefix = isExpense ? '-' : '+';
 
+        String? subtitle;
+        final hasMethod = transaction.paymentMethod != PaymentMethod.unknown;
+        final methodStr = hasMethod
+            ? (transaction.cardLast4 != null && transaction.cardLast4!.isNotEmpty
+                ? '${transaction.paymentMethod.displayName} •${transaction.cardLast4}'
+                : transaction.paymentMethod.displayName)
+            : null;
+
+        if (transaction.note != null && transaction.note!.isNotEmpty) {
+          subtitle = methodStr != null ? '$methodStr • ${transaction.note}' : transaction.note;
+        } else {
+          subtitle = methodStr;
+        }
+
         return ListTile(
           onTap: onTap,
           leading: CircleAvatar(
@@ -42,11 +57,11 @@ class TransactionTile extends ConsumerWidget {
             ),
           ),
           title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: transaction.note != null && transaction.note!.isNotEmpty 
-              ? Text(transaction.note!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          subtitle: subtitle != null
+              ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
               : null,
           trailing: Text(
-            '$amountPrefix${CurrencyFormatter.format(transaction.amount.value)}',
+            '$amountPrefix${transaction.amount.value.toCurrency()}',
             style: TextStyle(
               color: amountColor,
               fontWeight: FontWeight.bold,

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/enums.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/inputs/numeric_keypad.dart';
 import '../controllers/add_transaction_controller.dart';
 import '../widgets/category_picker.dart';
@@ -27,7 +28,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       final initialAmt = ref.read(addTransactionControllerProvider).amount;
       if (initialAmt > 0) {
         setState(() {
-          _amountStr = initialAmt.toString().replaceAll(RegExp(r'\.0$'), '');
+          _amountStr = (initialAmt / 100.0).toString().replaceAll(RegExp(r'\.0$'), '');
         });
       }
     });
@@ -64,8 +65,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   }
 
   void _updateControllerAmount() {
-    final val = double.tryParse(_amountStr) ?? 0.0;
-    ref.read(addTransactionControllerProvider.notifier).setAmount(val);
+    final paise = CurrencyFormatter.parseRupeesToPaise(_amountStr) ?? 0;
+    ref.read(addTransactionControllerProvider.notifier).setAmount(paise);
   }
 
   @override
@@ -177,6 +178,11 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                         onChanged: controller.setNote,
                       ),
                     ),
+
+                    const SizedBox(height: AppSpacing.space4),
+
+                    // Payment Method Selector
+                    _buildPaymentMethodSelector(context, state, controller, tokens),
 
                     const SizedBox(height: AppSpacing.space4),
 
@@ -295,7 +301,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         builder: (context) => AlertDialog(
           title: const Text('Budget Limit Reached'),
           content: Text(
-            'This ₹${overflow.projectedSpend.toStringAsFixed(2)} expense will exceed your ₹${overflow.budgetAmount.toStringAsFixed(2)} monthly budget. Remaining: ₹${overflow.remaining.toStringAsFixed(2)}.',
+            'This ${CurrencyFormatter.formatPaise(overflow.projectedSpendPaise)} expense will exceed your ${CurrencyFormatter.formatPaise(overflow.budgetAmountPaise)} monthly budget. Remaining: ${CurrencyFormatter.formatPaise(overflow.remainingPaise)}.',
           ),
           actions: [
             TextButton(
@@ -330,5 +336,66 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     if (success && context.mounted) {
       context.pop();
     }
+  }
+
+  Widget _buildPaymentMethodSelector(
+    BuildContext context,
+    AddTransactionState state,
+    AddTransactionController controller,
+    AppCustomTokens tokens,
+  ) {
+    final theme = Theme.of(context);
+    final methods = [
+      PaymentMethod.cash,
+      PaymentMethod.upi,
+      PaymentMethod.debit_card,
+      PaymentMethod.credit_card,
+      PaymentMethod.unknown,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Payment Method',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.space2),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: methods.map((method) {
+              final isSelected = state.paymentMethod == method;
+              return Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.space2),
+                child: ChoiceChip(
+                  label: Text(method.displayName),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
+                      controller.setPaymentMethod(method);
+                    }
+                  },
+                  selectedColor: tokens.accentTransport.withOpacity(0.25),
+                  labelStyle: TextStyle(
+                    color: isSelected ? tokens.accentTransport : theme.colorScheme.onSurface,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(tokens.cardBorderRadius / 2),
+                    side: BorderSide(
+                      color: isSelected ? tokens.accentTransport : theme.dividerColor.withOpacity(0.2),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
   }
 }

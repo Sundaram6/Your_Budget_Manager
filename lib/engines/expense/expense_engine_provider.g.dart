@@ -6,22 +6,46 @@ part of 'expense_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$expenseEngineHash() => r'b74de19b8ffe1bd856c6723e2e03bfe3e28e8fce';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [expenseEngine].
 @ProviderFor(expenseEngine)
-final expenseEngineProvider = Provider<ExpenseEngine>.internal(
-  expenseEngine,
-  name: r'expenseEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$expenseEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final expenseEngineProvider = ExpenseEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ExpenseEngineRef = ProviderRef<ExpenseEngine>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class ExpenseEngineProvider
+    extends $FunctionalProvider<ExpenseEngine, ExpenseEngine, ExpenseEngine>
+    with $Provider<ExpenseEngine> {
+  ExpenseEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'expenseEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$expenseEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<ExpenseEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ExpenseEngine create(Ref ref) {
+    return expenseEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ExpenseEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ExpenseEngine>(value),
+    );
+  }
+}
+
+String _$expenseEngineHash() => r'77054e1bf3a85e747ae15f2a0fc0cd55d14b9458';

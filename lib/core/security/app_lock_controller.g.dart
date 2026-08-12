@@ -6,21 +6,57 @@ part of 'app_lock_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appLockControllerHash() => r'bcfd20024d32d9a7cb2c93a2751fc7e4ec052d8f';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [AppLockController].
 @ProviderFor(AppLockController)
-final appLockControllerProvider =
-    NotifierProvider<AppLockController, bool>.internal(
-      AppLockController.new,
-      name: r'appLockControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$appLockControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final appLockControllerProvider = AppLockControllerProvider._();
 
-typedef _$AppLockController = Notifier<bool>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class AppLockControllerProvider
+    extends $NotifierProvider<AppLockController, bool> {
+  AppLockControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appLockControllerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appLockControllerHash();
+
+  @$internal
+  @override
+  AppLockController create() => AppLockController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$appLockControllerHash() => r'd9570356e5502795c084ad53c6966054e3dbcfb0';
+
+abstract class _$AppLockController extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

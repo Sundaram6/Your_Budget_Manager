@@ -59,7 +59,7 @@ void main() {
       final txs = await db.select(db.transactionsTable).get();
       expect(txs.length, equals(2));
       final generatedTx = txs.firstWhere((t) => t.recurringId == 'rec_daily_1');
-      expect(generatedTx.amount, equals(250.0));
+      expect(generatedTx.amount, equals(25000));
       expect(generatedTx.isRecurring, isTrue);
       expect(generatedTx.note, contains('[Auto-generated from recurring]'));
     });
@@ -365,7 +365,7 @@ void main() {
             ..where((t) => t.recurringId.equals('rec_force_manual')))
           .get();
       expect(txs.length, equals(1));
-      expect(txs.first.amount, equals(1200.0));
+      expect(txs.first.amount, equals(120000));
     });
 
     test('Instance methods of RecurringEngine work seamlessly for DI and Riverpod callers', () async {

@@ -10,4 +10,31 @@ mixin _$TransactionDaoMixin on DatabaseAccessor<AppDatabase> {
       attachedDatabase.recurringTransactionsTable;
   $TransactionsTableTable get transactionsTable =>
       attachedDatabase.transactionsTable;
+  TransactionDaoManager get managers => TransactionDaoManager(this);
+}
+
+class TransactionDaoManager {
+  final _$TransactionDaoMixin _db;
+  TransactionDaoManager(this._db);
+  $$CategoriesTableTableTableManager get categoriesTable =>
+      $$CategoriesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.categoriesTable,
+      );
+  $$MerchantsTableTableTableManager get merchantsTable =>
+      $$MerchantsTableTableTableManager(
+        _db.attachedDatabase,
+        _db.merchantsTable,
+      );
+  $$RecurringTransactionsTableTableTableManager
+  get recurringTransactionsTable =>
+      $$RecurringTransactionsTableTableTableManager(
+        _db.attachedDatabase,
+        _db.recurringTransactionsTable,
+      );
+  $$TransactionsTableTableTableManager get transactionsTable =>
+      $$TransactionsTableTableTableManager(
+        _db.attachedDatabase,
+        _db.transactionsTable,
+      );
 }

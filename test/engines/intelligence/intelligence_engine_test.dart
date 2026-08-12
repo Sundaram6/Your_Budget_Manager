@@ -76,7 +76,7 @@ void main() {
     final catId = 'cat_food';
 
     await expenseEngine.addTransaction(
-      amount: 6000.0,
+      amount: 600000, // ₹6,000 in paise
       date: now,
       categoryId: catId,
       type: TransactionType.expense,
@@ -91,14 +91,14 @@ void main() {
     final catId = 'cat_food';
 
     await expenseEngine.addTransaction(
-      amount: 5000.0,
+      amount: 500000,
       date: now,
       categoryId: catId,
       type: TransactionType.expense,
     );
 
     await expenseEngine.addTransaction(
-      amount: 5000.0,
+      amount: 500000,
       date: now,
       categoryId: catId,
       type: TransactionType.expense,
@@ -115,7 +115,7 @@ void main() {
     final catId = 'cat_shopping';
 
     await expenseEngine.addTransaction(
-      amount: 1500.0,
+      amount: 150000, // ₹1,500 in paise
       date: now,
       categoryId: catId,
       type: TransactionType.expense,

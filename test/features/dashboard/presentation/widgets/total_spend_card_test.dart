@@ -9,15 +9,12 @@ void main() {
       MaterialApp(
         theme: AppTheme.darkTheme,
         home: const Scaffold(
-          body: TotalSpendCard(totalSpend: 1500.0),
+          body: TotalSpendCard(totalSpend: 150000),
         ),
       ),
     );
 
     expect(find.text('Total Spend This Month'), findsOneWidget);
-    // 1500.0 formatted with currency might look like ₹1,500.00 depending on locale
-    // We just check if the widget exists without exact text match for the currency 
-    // unless we know the exact format.
     expect(find.byType(TotalSpendCard), findsOneWidget);
   });
 }

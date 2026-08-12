@@ -4,13 +4,13 @@ part 'analytics_models.freezed.dart';
 part 'analytics_models.g.dart';
 
 @freezed
-class CategoryBreakdown with _$CategoryBreakdown {
+abstract class CategoryBreakdown with _$CategoryBreakdown {
   const factory CategoryBreakdown({
     required String categoryId,
     required String categoryName,
     required int color,
     required String icon,
-    required double total,
+    required int total, // Integer paise
     required double percentage,
   }) = _CategoryBreakdown;
 
@@ -19,10 +19,10 @@ class CategoryBreakdown with _$CategoryBreakdown {
 }
 
 @freezed
-class DailyTrend with _$DailyTrend {
+abstract class DailyTrend with _$DailyTrend {
   const factory DailyTrend({
     required DateTime date,
-    required double total,
+    required int total, // Integer paise
   }) = _DailyTrend;
 
   factory DailyTrend.fromJson(Map<String, dynamic> json) =>
@@ -30,13 +30,14 @@ class DailyTrend with _$DailyTrend {
 }
 
 @freezed
-class MonthOverMonthComparison with _$MonthOverMonthComparison {
+abstract class MonthOverMonthComparison with _$MonthOverMonthComparison {
   const factory MonthOverMonthComparison({
-    required double currentTotal,
-    required double previousTotal,
+    required int currentTotal, // Integer paise
+    required int previousTotal, // Integer paise
     required double changePercent,
   }) = _MonthOverMonthComparison;
 
   factory MonthOverMonthComparison.fromJson(Map<String, dynamic> json) =>
       _$MonthOverMonthComparisonFromJson(json);
 }
+

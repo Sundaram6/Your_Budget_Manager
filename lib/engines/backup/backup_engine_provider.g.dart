@@ -6,22 +6,46 @@ part of 'backup_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$backupEngineHash() => r'11599cecbf4b41a22707dbec1dd4b482b6955299';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [backupEngine].
 @ProviderFor(backupEngine)
-final backupEngineProvider = Provider<BackupEngine>.internal(
-  backupEngine,
-  name: r'backupEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$backupEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final backupEngineProvider = BackupEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BackupEngineRef = ProviderRef<BackupEngine>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class BackupEngineProvider
+    extends $FunctionalProvider<BackupEngine, BackupEngine, BackupEngine>
+    with $Provider<BackupEngine> {
+  BackupEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'backupEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$backupEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<BackupEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  BackupEngine create(Ref ref) {
+    return backupEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BackupEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BackupEngine>(value),
+    );
+  }
+}
+
+String _$backupEngineHash() => r'4335cef33dab500c5ce2dad28fa0075208e456d3';

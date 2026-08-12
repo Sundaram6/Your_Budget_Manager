@@ -41,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -192,6 +192,141 @@ class AppDatabase extends _$AppDatabase {
           try {
             await m.addColumn(transactionsTable, transactionsTable.sourceApp);
           } catch (_) {}
+        }
+
+        // v4 → v5: transactions.amount normalized from REAL rupees to INTEGER paise.
+        if (from < 5) {
+          final hasOldTransactions = await _tableExists('transactions');
+          if (hasOldTransactions) {
+            final oldCount = await _rowCount('transactions');
+
+            // 1. Create staging table matching the new v5 schema (amount INTEGER).
+            await customStatement('''
+              CREATE TABLE IF NOT EXISTS transactions_v5 (
+                id TEXT NOT NULL PRIMARY KEY,
+                amount INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                category_id TEXT NOT NULL REFERENCES categories(id),
+                date INTEGER NOT NULL,
+                note TEXT,
+                merchant_name TEXT,
+                merchant_id TEXT REFERENCES merchants(id),
+                is_recurring INTEGER NOT NULL DEFAULT 0,
+                recurring_id TEXT REFERENCES recurring_transactions(id),
+                is_auto_captured INTEGER NOT NULL DEFAULT 0,
+                source_app TEXT,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+              )
+            ''');
+
+            // 2. Copy and transform all existing rows (REAL rupees → INTEGER paise).
+            await customStatement('''
+              INSERT OR IGNORE INTO transactions_v5 (
+                id, amount, type, category_id, date, note, merchant_name,
+                merchant_id, is_recurring, recurring_id, is_auto_captured,
+                source_app, created_at, updated_at
+              )
+              SELECT
+                id,
+                CAST(ROUND(amount * 100) AS INTEGER),
+                type,
+                category_id,
+                date,
+                note,
+                merchant_name,
+                merchant_id,
+                is_recurring,
+                recurring_id,
+                is_auto_captured,
+                source_app,
+                created_at,
+                updated_at
+              FROM transactions
+            ''');
+
+            // 3. Validate: row count check before drop.
+            final newCount = await _rowCount('transactions_v5');
+            if (newCount != oldCount) {
+              await customStatement('DROP TABLE IF EXISTS transactions_v5;');
+              throw StateError(
+                'Migration v5: transactions row count mismatch. '
+                'Expected $oldCount, migrated $newCount. '
+                'Old table preserved; aborting to prevent data loss.',
+              );
+            }
+
+            // 4. Drop old table & promote staging table.
+            await customStatement('DROP TABLE transactions;');
+            await customStatement(
+              'ALTER TABLE transactions_v5 RENAME TO transactions;',
+            );
+          } else {
+            await m.createTable(transactionsTable);
+          }
+        }
+        
+        // v5 → v6: backfill transactions.source_app based on is_auto_captured and merchant_id
+        if (from < 6) {
+          await customStatement('''
+            UPDATE transactions
+            SET source_app = 'manual'
+            WHERE is_auto_captured = 0 OR is_auto_captured IS NULL;
+          ''');
+
+          await customStatement('''
+            UPDATE transactions
+            SET source_app = 'sms:' || SUBSTR(merchant_id, 5)
+            WHERE is_auto_captured = 1 
+              AND source_app IS NULL 
+              AND merchant_id IN ('mer_hdfc', 'mer_icici', 'mer_sbi', 'mer_axis', 'mer_paytm', 'mer_phonepe', 'mer_gpay');
+          ''');
+          
+          await customStatement('''
+            UPDATE transactions
+            SET source_app = 'sms:unknown'
+            WHERE is_auto_captured = 1 
+              AND source_app IS NULL;
+          ''');
+        }
+
+        // v6 → v7: payment_method and card_last_4 columns added to transactions table.
+        // Backfill payment_method from structured evidence in note or default to 'unknown'.
+        if (from < 7) {
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.paymentMethod);
+          } catch (_) {}
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.cardLast4);
+          } catch (_) {}
+
+          await customStatement('''
+            UPDATE transactions
+            SET payment_method = 'upi'
+            WHERE payment_method IS NULL AND (
+              LOWER(note) LIKE '%upi ref%' OR 
+              LOWER(note) LIKE '%upi/%' OR 
+              LOWER(note) LIKE '%vpa%'
+            );
+          ''');
+
+          await customStatement('''
+            UPDATE transactions
+            SET payment_method = 'debit_card'
+            WHERE payment_method IS NULL AND LOWER(note) LIKE '%debit card%';
+          ''');
+
+          await customStatement('''
+            UPDATE transactions
+            SET payment_method = 'credit_card'
+            WHERE payment_method IS NULL AND LOWER(note) LIKE '%credit card%';
+          ''');
+
+          await customStatement('''
+            UPDATE transactions
+            SET payment_method = 'unknown'
+            WHERE payment_method IS NULL;
+          ''');
         }
       },
       beforeOpen: (details) async {

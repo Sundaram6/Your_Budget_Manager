@@ -32,7 +32,6 @@ void main() {
     budgetEngine = BudgetEngine(budgetRepo, expenseEngine);
   });
 
-
   tearDown(() async {
     await db.close();
   });
@@ -87,7 +86,7 @@ void main() {
 
       // Add ₹2,500 expense
       await expenseEngine.addTransaction(
-        amount: 2500.0,
+        amount: 250000, // 250000 paise
         date: now,
         categoryId: CategoryEngine.catGroceries,
         type: TransactionType.expense,
@@ -112,7 +111,7 @@ void main() {
 
       // Add ₹6,000 expense (exceeds budget by ₹1,000)
       await expenseEngine.addTransaction(
-        amount: 6000.0,
+        amount: 600000, // 600000 paise
         date: now,
         categoryId: CategoryEngine.catFood,
         type: TransactionType.expense,
@@ -122,7 +121,7 @@ void main() {
       expect(allowance, isNotNull);
       expect(allowance!.amount, equals(0));
       expect(allowance.isOverBudget, isTrue);
-      expect(allowance.message, contains('Budget exceeded by ₹1000.00'));
+      expect(allowance.message, contains('Budget exceeded by ₹1,000.00'));
     });
 
     test('6. getDailyAllowance NEVER returns a negative amount', () async {
@@ -134,7 +133,7 @@ void main() {
       );
 
       await expenseEngine.addTransaction(
-        amount: 15000.0, // ₹15,000 expense
+        amount: 1500000, // ₹15,000 expense in paise
         date: now,
         categoryId: CategoryEngine.catShopping,
         type: TransactionType.expense,
@@ -179,17 +178,17 @@ void main() {
       );
 
       await expenseEngine.addTransaction(
-        amount: 8000.0,
+        amount: 800000, // 800000 paise
         date: now,
         categoryId: CategoryEngine.catFood,
         type: TransactionType.expense,
       );
 
-      // Adding ₹3,000 expense (total projected 8000+3000 = 11000 > 10000)
+      // Adding ₹3,000 expense (total projected 800000 + 300000 = 1100000 > 1000000)
       final remainingPaise = await budgetEngine.getRemainingBudget(month: now.month, year: now.year);
       expect(remainingPaise, equals(200000)); // ₹2,000 remaining
-      final projectedSpend = 8000.0 + 3000.0;
-      expect(projectedSpend > 10000.0, isTrue);
+      final projectedSpendPaise = 800000 + 300000;
+      expect(projectedSpendPaise > 1000000, isTrue);
     });
   });
 }

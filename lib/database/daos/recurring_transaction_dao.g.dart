@@ -7,4 +7,22 @@ mixin _$RecurringTransactionDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoriesTableTable get categoriesTable => attachedDatabase.categoriesTable;
   $RecurringTransactionsTableTable get recurringTransactionsTable =>
       attachedDatabase.recurringTransactionsTable;
+  RecurringTransactionDaoManager get managers =>
+      RecurringTransactionDaoManager(this);
+}
+
+class RecurringTransactionDaoManager {
+  final _$RecurringTransactionDaoMixin _db;
+  RecurringTransactionDaoManager(this._db);
+  $$CategoriesTableTableTableManager get categoriesTable =>
+      $$CategoriesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.categoriesTable,
+      );
+  $$RecurringTransactionsTableTableTableManager
+  get recurringTransactionsTable =>
+      $$RecurringTransactionsTableTableTableManager(
+        _db.attachedDatabase,
+        _db.recurringTransactionsTable,
+      );
 }

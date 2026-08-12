@@ -64,7 +64,7 @@ void main() {
 
         final parsed = engine.parseSingleSms(sms);
         expect(parsed, isNotNull);
-        expect(parsed!.amount, equals(250.0));
+        expect(parsed!.amount, equals(25000));
         expect(parsed.merchantName.toLowerCase(), contains('swiggy'));
         expect(parsed.categoryId, equals(CategoryEngine.catFood));
       });
@@ -78,7 +78,7 @@ void main() {
 
         final parsed = engine.parseSingleSms(sms);
         expect(parsed, isNotNull);
-        expect(parsed!.amount, equals(508.0));
+        expect(parsed!.amount, equals(50800));
         expect(parsed.merchantName.toLowerCase(), equals('dmart'));
         expect(parsed.categoryId, equals(CategoryEngine.catGroceries));
       });
@@ -92,7 +92,7 @@ void main() {
 
         final parsed = engine.parseSingleSms(sms);
         expect(parsed, isNotNull);
-        expect(parsed!.amount, equals(180.0));
+        expect(parsed!.amount, equals(18000));
         expect(parsed.merchantName.toLowerCase(), contains('zomato'));
         expect(parsed.categoryId, equals(CategoryEngine.catFood));
       });
@@ -106,7 +106,7 @@ void main() {
 
         final parsed = engine.parseSingleSms(sms);
         expect(parsed, isNotNull);
-        expect(parsed!.amount, equals(1500.0));
+        expect(parsed!.amount, equals(150000));
         expect(parsed.merchantName.toLowerCase(), contains('uber'));
         expect(parsed.categoryId, equals(CategoryEngine.catTransport));
       });
@@ -120,7 +120,7 @@ void main() {
 
         final parsed = engine.parseSingleSms(sms);
         expect(parsed, isNotNull);
-        expect(parsed!.amount, equals(450.0));
+        expect(parsed!.amount, equals(45000));
         expect(parsed.merchantName.toLowerCase(), contains('jio'));
         expect(parsed.categoryId, equals(CategoryEngine.catUtilities));
       });

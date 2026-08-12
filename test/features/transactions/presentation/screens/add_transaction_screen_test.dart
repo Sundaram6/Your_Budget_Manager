@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:your_budget_manager/core/theme/app_theme.dart';
 import 'package:your_budget_manager/features/categories/domain/entities/category.dart';
 import 'package:your_budget_manager/features/transactions/presentation/screens/add_transaction_screen.dart';
 import 'package:your_budget_manager/features/transactions/presentation/widgets/category_picker.dart';
 
 void main() {
   testWidgets('AddTransactionScreen renders properly', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -22,8 +27,9 @@ void main() {
             )
           ])),
         ],
-        child: const MaterialApp(
-          home: AddTransactionScreen(),
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AddTransactionScreen(),
         ),
       ),
     );

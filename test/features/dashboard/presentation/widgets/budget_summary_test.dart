@@ -13,8 +13,8 @@ void main() {
           body: BudgetSummaryWidget(
             budgets: [
               BudgetProgress(
-                spent: 100.0,
-                limit: 500.0,
+                spent: 10000,
+                limit: 50000,
                 percentage: 20.0,
                 isOverBudget: false,
               ),

@@ -6,7 +6,7 @@ part 'savings_goal.g.dart';
 enum SavingsGoalStatus { active, completed, paused }
 
 @freezed
-class SavingsGoalModel with _$SavingsGoalModel {
+abstract class SavingsGoalModel with _$SavingsGoalModel {
   const factory SavingsGoalModel({
     required String id,
     required String name,

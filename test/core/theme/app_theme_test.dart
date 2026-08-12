@@ -28,6 +28,15 @@ void main() {
     
     test('AppCustomTokens copyWith works correctly', () {
       const tokens = AppCustomTokens(
+        heroSurfaceColor: Colors.black,
+        heroTextColor: Colors.white,
+        accentGroceries: Colors.green,
+        accentShopping: Colors.blue,
+        accentBills: Colors.orange,
+        accentTransport: Colors.amber,
+        accentSavings: Colors.teal,
+        accentAlert: Colors.red,
+        statusTileTintOpacity: 0.1,
         incomeColor: Colors.green,
         expenseColor: Colors.red,
         goldAccent: Colors.amber,
@@ -49,6 +58,15 @@ void main() {
 
     test('AppCustomTokens lerp works correctly', () {
       const tokens1 = AppCustomTokens(
+        heroSurfaceColor: Colors.black,
+        heroTextColor: Colors.black,
+        accentGroceries: Colors.black,
+        accentShopping: Colors.black,
+        accentBills: Colors.black,
+        accentTransport: Colors.black,
+        accentSavings: Colors.black,
+        accentAlert: Colors.black,
+        statusTileTintOpacity: 0.0,
         incomeColor: Colors.black,
         expenseColor: Colors.black,
         goldAccent: Colors.black,
@@ -62,6 +80,15 @@ void main() {
       );
       
       const tokens2 = AppCustomTokens(
+        heroSurfaceColor: Colors.white,
+        heroTextColor: Colors.white,
+        accentGroceries: Colors.white,
+        accentShopping: Colors.white,
+        accentBills: Colors.white,
+        accentTransport: Colors.white,
+        accentSavings: Colors.white,
+        accentAlert: Colors.white,
+        statusTileTintOpacity: 1.0,
         incomeColor: Colors.white,
         expenseColor: Colors.white,
         goldAccent: Colors.white,

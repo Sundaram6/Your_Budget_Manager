@@ -6,22 +6,51 @@ part of 'biometric_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$biometricServiceHash() => r'4292ea55646466120a3b9abde5dde45dcb04d0ea';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [biometricService].
 @ProviderFor(biometricService)
-final biometricServiceProvider = AutoDisposeProvider<BiometricService>.internal(
-  biometricService,
-  name: r'biometricServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$biometricServiceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final biometricServiceProvider = BiometricServiceProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BiometricServiceRef = AutoDisposeProviderRef<BiometricService>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class BiometricServiceProvider
+    extends
+        $FunctionalProvider<
+          BiometricService,
+          BiometricService,
+          BiometricService
+        >
+    with $Provider<BiometricService> {
+  BiometricServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'biometricServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$biometricServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<BiometricService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  BiometricService create(Ref ref) {
+    return biometricService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BiometricService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BiometricService>(value),
+    );
+  }
+}
+
+String _$biometricServiceHash() => r'59992703a138891340a3b1ccfd4917a4ef25d633';

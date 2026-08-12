@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/security/biometric_service.dart';
 import '../../core/security/pin_service.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -24,8 +24,6 @@ class _PinSecurityScreenState extends ConsumerState<PinSecurityScreen> {
   bool _hasPin = false;
   bool _isLoading = true;
   bool _isSavingPin = false;
-
-  final LocalAuthentication _auth = LocalAuthentication();
 
   @override
   void initState() {
@@ -59,27 +57,14 @@ class _PinSecurityScreenState extends ConsumerState<PinSecurityScreen> {
   Future<void> _toggleBiometric(bool value) async {
     if (value) {
       try {
-        final canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
-        final isDeviceSupported = await _auth.isDeviceSupported();
+        final biometricService = ref.read(biometricServiceProvider);
+        final isAvailable = await biometricService.isBiometricAvailable();
 
-        if (!canAuthenticateWithBiometrics || !isDeviceSupported) {
+        if (!isAvailable) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Biometric authentication is not available on this device'),
-                backgroundColor: Colors.redAccent,
-              ),
-            );
-          }
-          return;
-        }
-
-        final availableBiometrics = await _auth.getAvailableBiometrics();
-        if (availableBiometrics.isEmpty) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No biometrics enrolled on this device'),
+                content: Text('Biometric authentication is not available or enrolled on this device'),
                 backgroundColor: Colors.redAccent,
               ),
             );

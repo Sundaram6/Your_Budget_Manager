@@ -5,6 +5,6 @@ import 'recurring_engine.dart';
 part 'recurring_engine_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-RecurringEngine recurringEngine(RecurringEngineRef ref) {
+RecurringEngine recurringEngine(Ref ref) {
   return const RecurringEngine();
 }

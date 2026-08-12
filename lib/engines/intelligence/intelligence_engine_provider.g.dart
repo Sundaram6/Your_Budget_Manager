@@ -6,24 +6,53 @@ part of 'intelligence_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$intelligenceEngineHash() =>
-    r'a537b90acbec9739c23c34e87dc1a42ed99042e2';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [intelligenceEngine].
 @ProviderFor(intelligenceEngine)
-final intelligenceEngineProvider =
-    AutoDisposeProvider<IntelligenceEngine>.internal(
-      intelligenceEngine,
-      name: r'intelligenceEngineProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$intelligenceEngineHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final intelligenceEngineProvider = IntelligenceEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef IntelligenceEngineRef = AutoDisposeProviderRef<IntelligenceEngine>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class IntelligenceEngineProvider
+    extends
+        $FunctionalProvider<
+          IntelligenceEngine,
+          IntelligenceEngine,
+          IntelligenceEngine
+        >
+    with $Provider<IntelligenceEngine> {
+  IntelligenceEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'intelligenceEngineProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$intelligenceEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<IntelligenceEngine> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IntelligenceEngine create(Ref ref) {
+    return intelligenceEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IntelligenceEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IntelligenceEngine>(value),
+    );
+  }
+}
+
+String _$intelligenceEngineHash() =>
+    r'49eaadffbb4d3d6fa2cc5a8126573a3d87dd5875';

@@ -7,7 +7,7 @@ import 'models/daily_allowance.dart';
 part 'budget_engine_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-BudgetEngine budgetEngine(BudgetEngineRef ref) {
+BudgetEngine budgetEngine(Ref ref) {
   final budgetRepo = ref.watch(budgetRepositoryProvider);
   final expenseEng = ref.watch(expenseEngineProvider);
 
@@ -15,7 +15,7 @@ BudgetEngine budgetEngine(BudgetEngineRef ref) {
 }
 
 @Riverpod(keepAlive: true)
-Future<DailyAllowance?> dailyAllowance(DailyAllowanceRef ref) {
+Future<DailyAllowance?> dailyAllowance(Ref ref) {
   final engine = ref.watch(budgetEngineProvider);
   return engine.calculateDailyAllowance();
 }

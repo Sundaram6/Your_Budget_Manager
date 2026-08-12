@@ -8,7 +8,7 @@ import 'merchant_engine.dart';
 part 'merchant_engine_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-MerchantEngine merchantEngine(MerchantEngineRef ref) {
+MerchantEngine merchantEngine(Ref ref) {
   final smsQuery = SmsQuery();
   final logger = Logger();
   final expenseEngine = ref.watch(expenseEngineProvider);

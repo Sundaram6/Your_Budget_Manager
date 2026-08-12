@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../database/app_database.dart';
 
 class SavingsGoalCard extends StatelessWidget {
@@ -18,15 +18,9 @@ class SavingsGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
-
-    final currentRupees = goal.currentAmount / 100;
-    final targetRupees = goal.targetAmount / 100;
-    final ratio = targetRupees > 0 ? (currentRupees / targetRupees).clamp(0.0, 1.0) : 0.0;
+    final currentPaise = goal.currentAmount;
+    final targetPaise = goal.targetAmount;
+    final ratio = targetPaise > 0 ? (currentPaise / targetPaise).clamp(0.0, 1.0) : 0.0;
     final pct = (ratio * 100).round();
 
     int? daysLeft;
@@ -99,7 +93,7 @@ class SavingsGoalCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${currencyFormat.format(currentRupees)} / ${currencyFormat.format(targetRupees)}',
+                            '${CurrencyFormatter.formatPaiseNoDecimals(currentPaise)} / ${CurrencyFormatter.formatPaiseNoDecimals(targetPaise)}',
                             style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                           ),
                           if (daysLeft != null) ...[
@@ -122,7 +116,7 @@ class SavingsGoalCard extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Auto-deduct: ${currencyFormat.format(goal.autoDeductAmount! / 100)}/month',
+                      'Auto-deduct: ${CurrencyFormatter.formatPaiseNoDecimals(goal.autoDeductAmount!)}/month',
                       style: AppTypography.caption.copyWith(color: AppColors.darkIncome, fontSize: 11),
                     ),
                   ),

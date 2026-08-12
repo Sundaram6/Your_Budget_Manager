@@ -5,7 +5,7 @@ import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class TotalSpendCard extends StatelessWidget {
-  final double totalSpend;
+  final int totalSpend; // Integer paise
 
   const TotalSpendCard({super.key, required this.totalSpend});
 

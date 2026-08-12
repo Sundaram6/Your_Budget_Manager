@@ -1,28 +1,28 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../database/app_database.dart';
 
 class BudgetProgressCard extends StatelessWidget {
   final Budget budget;
-  final double spentAmount;
-  final double savingsAllocationsRupees;
+  final int spentAmount; // Integer paise
+  final int savingsAllocationsPaise; // Integer paise
 
   const BudgetProgressCard({
     super.key,
     required this.budget,
     required this.spentAmount,
-    this.savingsAllocationsRupees = 0.0,
+    this.savingsAllocationsPaise = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    final budgetAmountRupees = budget.amount / 100;
-    final ratio = budgetAmountRupees > 0 ? (spentAmount / budgetAmountRupees) : 0.0;
+    final budgetAmountPaise = budget.amount;
+    final ratio = budgetAmountPaise > 0 ? (spentAmount / budgetAmountPaise) : 0.0;
     final clampedRatio = ratio.clamp(0.0, 1.0);
 
     int percentage;
@@ -32,22 +32,10 @@ class BudgetProgressCard extends StatelessWidget {
       percentage = 0;
     }
 
-    final currencyFormat = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 2,
-    );
-
-    final currencyFormatNoDecimals = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
-
-    final isOverBudget = spentAmount > budgetAmountRupees;
-    final overAmountRupees = isOverBudget ? (spentAmount - budgetAmountRupees) : 0.0;
-    final remainingRupees = (budgetAmountRupees - spentAmount).clamp(0.0, double.infinity);
-    final spendableRupees = (budgetAmountRupees - savingsAllocationsRupees - spentAmount).clamp(0.0, double.infinity);
+    final isOverBudget = spentAmount > budgetAmountPaise;
+    final overAmountPaise = isOverBudget ? (spentAmount - budgetAmountPaise) : 0;
+    final remainingPaise = max(0, budgetAmountPaise - spentAmount);
+    final spendablePaise = max(0, budgetAmountPaise - savingsAllocationsPaise - spentAmount);
 
     final progressColor = _getProgressColor(ratio);
 
@@ -68,7 +56,7 @@ class BudgetProgressCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Monthly Budget: ${currencyFormatNoDecimals.format(budgetAmountRupees)}',
+                'Monthly Budget: ${CurrencyFormatter.formatPaiseNoDecimals(budgetAmountPaise)}',
                 style: AppTypography.heading3.copyWith(color: AppColors.darkTextPrimary),
               ),
               Text(
@@ -98,32 +86,32 @@ class BudgetProgressCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Spent: ${currencyFormat.format(spentAmount)}',
+                'Spent: ${CurrencyFormatter.formatPaise(spentAmount)}',
                 style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
               ),
               Text(
-                savingsAllocationsRupees > 0
-                    ? 'Spendable: ${currencyFormat.format(spendableRupees)}'
-                    : 'Remaining: ${currencyFormat.format(remainingRupees)}',
+                savingsAllocationsPaise > 0
+                    ? 'Spendable: ${CurrencyFormatter.formatPaise(spendablePaise)}'
+                    : 'Remaining: ${CurrencyFormatter.formatPaise(remainingPaise)}',
                 style: AppTypography.caption.copyWith(
-                  color: savingsAllocationsRupees > 0 ? AppColors.darkGoldPrimary : AppColors.darkTextSecondary,
-                  fontWeight: savingsAllocationsRupees > 0 ? FontWeight.bold : FontWeight.normal,
+                  color: savingsAllocationsPaise > 0 ? AppColors.darkGoldPrimary : AppColors.darkTextSecondary,
+                  fontWeight: savingsAllocationsPaise > 0 ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             ],
           ),
 
-          if (savingsAllocationsRupees > 0) ...[
+          if (savingsAllocationsPaise > 0) ...[
             const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Savings: ${currencyFormat.format(savingsAllocationsRupees)}',
+                  'Savings: ${CurrencyFormatter.formatPaise(savingsAllocationsPaise)}',
                   style: AppTypography.caption.copyWith(color: AppColors.darkIncome),
                 ),
                 Text(
-                  'Total Remaining: ${currencyFormat.format(remainingRupees)}',
+                  'Total Remaining: ${CurrencyFormatter.formatPaise(remainingPaise)}',
                   style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 11),
                 ),
               ],
@@ -140,7 +128,7 @@ class BudgetProgressCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'You\'ve exceeded your ${currencyFormatNoDecimals.format(budgetAmountRupees)} budget by ${currencyFormat.format(overAmountRupees)}',
+                'You\'ve exceeded your ${CurrencyFormatter.formatPaiseNoDecimals(budgetAmountPaise)} budget by ${CurrencyFormatter.formatPaise(overAmountPaise)}',
                 style: AppTypography.caption.copyWith(
                   color: AppColors.darkExpense,
                   fontWeight: FontWeight.bold,

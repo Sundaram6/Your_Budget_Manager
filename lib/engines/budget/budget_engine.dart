@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/enums.dart';
 import '../../core/errors/app_exception.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../database/app_database.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../expense/expense_engine.dart';
@@ -80,8 +81,7 @@ class BudgetEngine {
     final monthlyBudgetPaise = overallBudget.amount;
 
     // Get total expense spend for the month in paise
-    final monthlyTotalDouble = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-    final totalSpendThisMonthPaise = (monthlyTotalDouble * 100).round();
+    final totalSpendThisMonthPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
 
     final remainingPaise = monthlyBudgetPaise - totalSpendThisMonthPaise;
 
@@ -89,10 +89,10 @@ class BudgetEngine {
     final daysRemaining = max(1, lastDayOfMonth.day - now.day + 1);
 
     if (remainingPaise <= 0) {
-      final overBudgetRupees = (-remainingPaise / 100).toStringAsFixed(2);
+      final overBudgetFormatted = CurrencyFormatter.formatPaise(-remainingPaise);
       return DailyAllowance(
         amount: 0,
-        message: 'Budget exceeded by ₹$overBudgetRupees. Pause spending.',
+        message: 'Budget exceeded by $overBudgetFormatted. Pause spending.',
         isOverBudget: true,
         remaining: remainingPaise,
         daysLeft: daysRemaining,
@@ -100,11 +100,11 @@ class BudgetEngine {
     }
 
     final dailyPaise = remainingPaise ~/ daysRemaining;
-    final dailyRupees = (dailyPaise / 100).toStringAsFixed(2);
+    final dailyFormatted = CurrencyFormatter.formatPaise(dailyPaise);
 
     return DailyAllowance(
       amount: dailyPaise,
-      message: 'You can spend ₹$dailyRupees per day to stay in budget.',
+      message: 'You can spend $dailyFormatted per day to stay in budget.',
       isOverBudget: false,
       remaining: remainingPaise,
       daysLeft: daysRemaining,
@@ -148,8 +148,7 @@ class BudgetEngine {
     final overallBudget = await _budgetRepository.getOverallBudget(targetDate.month, targetDate.year);
     if (overallBudget == null) return null;
 
-    final monthlyTotalDouble = await _expenseEngine.getMonthlyTotal(targetDate, type: TransactionType.expense);
-    final spentPaise = (monthlyTotalDouble * 100).round();
+    final spentPaise = await _expenseEngine.getMonthlyTotal(targetDate, type: TransactionType.expense);
 
     return overallBudget.amount - spentPaise;
   }

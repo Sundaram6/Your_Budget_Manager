@@ -1,11 +1,12 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../database/app_database.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
 
@@ -37,9 +38,9 @@ class _SavingsGoalDetailScreenState extends ConsumerState<SavingsGoalDetailScree
       await engine.contributeToGoal(widget.id, amountPaise);
       _depositController.clear();
       if (mounted) {
-        final rupees = amountPaise / 100;
+        final formatted = CurrencyFormatter.formatPaiseNoDecimals(amountPaise);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Added ₹${rupees.toStringAsFixed(0)} to goal!')),
+          SnackBar(content: Text('Added $formatted to goal!')),
         );
       }
     } catch (e) {
@@ -94,12 +95,6 @@ class _SavingsGoalDetailScreenState extends ConsumerState<SavingsGoalDetailScree
   Widget build(BuildContext context) {
     final goalAsync = ref.watch(savingsGoalStreamProvider(widget.id));
 
-    final currencyFormat = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Goal Details'),
@@ -112,10 +107,10 @@ class _SavingsGoalDetailScreenState extends ConsumerState<SavingsGoalDetailScree
             return const Center(child: Text('Goal not found'));
           }
 
-          final currentRupees = goal.currentAmount / 100;
-          final targetRupees = goal.targetAmount / 100;
-          final remainingRupees = (targetRupees - currentRupees).clamp(0.0, double.infinity);
-          final ratio = targetRupees > 0 ? (currentRupees / targetRupees).clamp(0.0, 1.0) : 0.0;
+          final currentPaise = goal.currentAmount;
+          final targetPaise = goal.targetAmount;
+          final remainingPaise = max(0, targetPaise - currentPaise);
+          final ratio = targetPaise > 0 ? (currentPaise / targetPaise).clamp(0.0, 1.0) : 0.0;
           final pct = (ratio * 100).round();
 
           int? daysLeft;
@@ -185,13 +180,13 @@ class _SavingsGoalDetailScreenState extends ConsumerState<SavingsGoalDetailScree
                           ),
                           const SizedBox(height: AppSpacing.space2),
                           Text(
-                            '${currencyFormat.format(currentRupees)} saved of ${currencyFormat.format(targetRupees)}',
+                            '${CurrencyFormatter.formatPaiseNoDecimals(currentPaise)} saved of ${CurrencyFormatter.formatPaiseNoDecimals(targetPaise)}',
                             style: AppTypography.heading3.copyWith(color: AppColors.darkGoldPrimary),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppSpacing.space1),
                           Text(
-                            'Remaining: ${currencyFormat.format(remainingRupees)}',
+                            'Remaining: ${CurrencyFormatter.formatPaiseNoDecimals(remainingPaise)}',
                             style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                           ),
                           if (daysLeft != null) ...[
@@ -285,9 +280,9 @@ class _SavingsGoalDetailScreenState extends ConsumerState<SavingsGoalDetailScree
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           onPressed: () {
-                            final rupees = double.tryParse(_depositController.text.trim()) ?? 0.0;
-                            if (rupees > 0) {
-                              _contributeAmount((rupees * 100).round());
+                            final paise = CurrencyFormatter.parseRupeesToPaise(_depositController.text) ?? 0;
+                            if (paise > 0) {
+                              _contributeAmount(paise);
                             }
                           },
                           icon: const Icon(Icons.add_circle_outline),

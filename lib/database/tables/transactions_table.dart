@@ -9,7 +9,7 @@ class TransactionsTable extends Table {
   String get tableName => 'transactions';
 
   TextColumn get id => text()();
-  RealColumn get amount => real()();
+  IntColumn get amount => integer()(); // Normalized to integer paise (1 rupee = 100 paise)
   TextColumn get type => text()();
   TextColumn get categoryId => text().references(CategoriesTable, #id)();
   IntColumn get date => integer()();
@@ -20,6 +20,8 @@ class TransactionsTable extends Table {
   TextColumn get recurringId => text().nullable().references(RecurringTransactionsTable, #id)();
   BoolColumn get isAutoCaptured => boolean().withDefault(const Constant(false))();
   TextColumn get sourceApp => text().nullable()();
+  TextColumn get paymentMethod => text().nullable()();
+  TextColumn get cardLast4 => text().nullable()();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 

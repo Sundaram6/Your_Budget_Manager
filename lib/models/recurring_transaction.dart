@@ -48,7 +48,7 @@ class Iso8601Converter implements JsonConverter<DateTime, String> {
 }
 
 @freezed
-class RecurringTransactionModel with _$RecurringTransactionModel {
+abstract class RecurringTransactionModel with _$RecurringTransactionModel {
   const factory RecurringTransactionModel({
     required String id,
     required String title,

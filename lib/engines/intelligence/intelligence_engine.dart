@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 import '../../core/enums.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../database/daos/category_dao.dart';
 import '../../database/daos/transaction_dao.dart';
 import '../budget/budget_engine.dart';
@@ -45,8 +46,7 @@ class IntelligenceEngine {
     if (_budgetEngine != null && _expenseEngine != null) {
       final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
       if (overallBudget != null && overallBudget.amount > 0) {
-        final monthlySpendDouble = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-        final monthlySpendPaise = (monthlySpendDouble * 100).round();
+        final monthlySpendPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
         final budgetAmountPaise = overallBudget.amount;
 
         final isOverBudget = monthlySpendPaise > budgetAmountPaise;
@@ -80,19 +80,17 @@ class IntelligenceEngine {
   /// Rule 3: Daily Advice
   Future<String> getDailyAdvice() async {
     final now = DateTime.now();
-    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     if (_budgetEngine == null || _expenseEngine == null) {
-      return "Start tracking your expenses to build smart money habits.";
+      return 'Start tracking your expenses to build smart money habits.';
     }
 
     final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
     if (overallBudget == null || overallBudget.amount <= 0) {
-      return "Set a monthly budget to unlock daily allowance guidance.";
+      return 'Set a monthly budget to unlock daily allowance guidance.';
     }
 
-    final monthlySpendDouble = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-    final monthlySpendPaise = (monthlySpendDouble * 100).round();
+    final monthlySpendPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
     final budgetAmountPaise = overallBudget.amount;
     final remainingPaise = (budgetAmountPaise - monthlySpendPaise).clamp(0, budgetAmountPaise);
 
@@ -105,16 +103,16 @@ class IntelligenceEngine {
     final allowance = await _budgetEngine.calculateDailyAllowance(date: now);
 
     if (isOverBudget) {
-      return "Budget exceeded. Pause non-essential spending today.";
+      return 'Budget exceeded. Pause non-essential spending today.';
     } else if (daysRemaining == 1) {
-      return "Last day of the month — stay strong!";
+      return 'Last day of the month — stay strong!';
     } else if (allowance != null && allowance.amount < 30000) { // < ₹300/day
-      return "Tight budget today. Stick to essentials.";
+      return 'Tight budget today. Stick to essentials.';
     } else if (budgetProgress > 0.8) {
       return "You're at ${(budgetProgress * 100).round()}% of budget. Slow down.";
     } else {
-      final remainingRupees = remainingPaise / 100;
-      return "You're on track! ${currencyFormat.format(remainingRupees)} left to spend freely.";
+      final formattedRemaining = CurrencyFormatter.formatPaiseNoDecimals(remainingPaise);
+      return "You're on track! $formattedRemaining left to spend freely.";
     }
   }
 
@@ -127,12 +125,12 @@ class IntelligenceEngine {
       final startOfMonth = DateTime(now.year, now.month, 1);
       final transactions = await _transactionDao.getTransactionsByDateRange(startOfMonth, now);
       final expenses = transactions.where((t) => t.type == 'expense').toList();
-      final totalSpend = expenses.fold<double>(0.0, (sum, t) => sum + t.amount);
+      final totalSpend = expenses.fold<int>(0, (sum, t) => sum + t.amount);
 
       if (totalSpend > 0) {
-        final categoryMap = <String, double>{};
+        final categoryMap = <String, int>{};
         for (final t in expenses) {
-          categoryMap[t.categoryId] = (categoryMap[t.categoryId] ?? 0.0) + t.amount;
+          categoryMap[t.categoryId] = (categoryMap[t.categoryId] ?? 0) + t.amount;
         }
 
         final sortedCategories = categoryMap.entries.toList()
@@ -148,7 +146,7 @@ class IntelligenceEngine {
             insights.add(AiInsight(
               id: 'cat_warning_${entry.key}',
               title: '$catName spending is high',
-              description: 'You\'ve spent $pct% of your total spend on $catName this month.',
+              description: "You've spent $pct% of your total spend on $catName this month.",
               type: InsightType.warning,
               generatedAt: now,
               priority: 0,
@@ -178,14 +176,13 @@ class IntelligenceEngine {
     if (_budgetEngine != null && _expenseEngine != null) {
       final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
       if (overallBudget != null && overallBudget.amount > 0) {
-        final monthlySpendDouble = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-        final monthlySpendPaise = (monthlySpendDouble * 100).round();
+        final monthlySpendPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
 
         if (monthlySpendPaise > (overallBudget.amount * 0.9)) {
           insights.add(AiInsight(
             id: 'savings_pause_sub',
             title: 'Close to Budget Limit',
-            description: 'You\'re close to your budget limit. Consider pausing non-essential subscriptions.',
+            description: "You're close to your budget limit. Consider pausing non-essential subscriptions.",
             type: InsightType.warning,
             generatedAt: now,
             priority: 1,
@@ -294,7 +291,6 @@ class IntelligenceEngine {
     if (_transactionDao == null) return [];
     final insights = <AiInsight>[];
     final generatedAt = DateTime(year, month, 1);
-    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     final startOfMonth = DateTime(year, month, 1);
     final endOfMonth = DateTime(year, month + 1, 0, 23, 59, 59, 999);
@@ -304,27 +300,27 @@ class IntelligenceEngine {
 
     final expenses = transactions.where((t) => t.type == 'expense').toList();
     final incomes = transactions.where((t) => t.type == 'income').toList();
-    final totalExpense = expenses.fold<double>(0.0, (s, t) => s + t.amount);
-    final totalIncome = incomes.fold<double>(0.0, (s, t) => s + t.amount);
+    final totalExpense = expenses.fold<int>(0, (s, t) => s + t.amount);
+    final totalIncome = incomes.fold<int>(0, (s, t) => s + t.amount);
 
     // 1. Category breakdown insight
     if (expenses.isNotEmpty) {
-      final catMap = <String, double>{};
+      final catMap = <String, int>{};
       for (final t in expenses) {
-        catMap[t.categoryId] = (catMap[t.categoryId] ?? 0.0) + t.amount;
+        catMap[t.categoryId] = (catMap[t.categoryId] ?? 0) + t.amount;
       }
       final sorted = catMap.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
       final top = sorted.first;
       final category = _categoryDao != null ? await _categoryDao.getCategoryById(top.key) : null;
       final catName = category?.name ?? CategoryEngine.getDisplayName(top.key);
       final pct = (top.value / totalExpense * 100).round();
-      final potentialSaving = (top.value * 0.2).round();
+      final potentialSavingPaise = (top.value * 0.2).round();
       insights.add(AiInsight(
         id: 'month_cat_${year}_$month',
         title: '$catName was your top expense',
         description:
-            'You spent ${currencyFormat.format(top.value)} on $catName ($pct% of total). '
-            'Cutting 20% here could save ~${currencyFormat.format(potentialSaving)}.',
+            "You spent ${CurrencyFormatter.formatPaiseNoDecimals(top.value)} on $catName ($pct% of total). "
+            "Cutting 20% here could save ~${CurrencyFormatter.formatPaiseNoDecimals(potentialSavingPaise)}.",
         type: pct >= 40 ? InsightType.warning : InsightType.tip,
         generatedAt: generatedAt,
         priority: 0,
@@ -332,10 +328,10 @@ class IntelligenceEngine {
     }
 
     // 2. Top spending day insight
-    final dailyMap = <int, double>{};
+    final dailyMap = <int, int>{};
     for (final t in expenses) {
       final d = DateTime.fromMillisecondsSinceEpoch(t.date).day;
-      dailyMap[d] = (dailyMap[d] ?? 0.0) + t.amount;
+      dailyMap[d] = (dailyMap[d] ?? 0) + t.amount;
     }
     if (dailyMap.isNotEmpty) {
       final topDay = dailyMap.entries.reduce((a, b) => a.value >= b.value ? a : b);
@@ -344,8 +340,8 @@ class IntelligenceEngine {
         id: 'month_topday_${year}_$month',
         title: 'Top spending day: ${DateFormat('d MMM').format(topDate)}',
         description:
-            'You spent ${currencyFormat.format(topDay.value)} on ${DateFormat('d MMM').format(topDate)}. '
-            'Consider spreading purchases to avoid single-day spikes.',
+            "You spent ${CurrencyFormatter.formatPaiseNoDecimals(topDay.value)} on ${DateFormat('d MMM').format(topDate)}. "
+            "Consider spreading purchases to avoid single-day spikes.",
         type: InsightType.tip,
         generatedAt: generatedAt,
         priority: 1,
@@ -361,16 +357,16 @@ class IntelligenceEngine {
       final prevStart = DateTime(prevYear, prevMonth, 1);
       final prevEnd = DateTime(prevYear, prevMonth + 1, 0, 23, 59, 59, 999);
       final prevTxs = await _transactionDao!.getTransactionsByDateRange(prevStart, prevEnd);
-      final prevExpense = prevTxs.where((t) => t.type == 'expense').fold<double>(0.0, (s, t) => s + t.amount);
+      final prevExpense = prevTxs.where((t) => t.type == 'expense').fold<int>(0, (s, t) => s + t.amount);
       final diff = totalExpense - prevExpense;
       final isLess = diff < 0;
 
       insights.add(AiInsight(
         id: 'month_savings_${year}_$month',
-        title: savedAmount > 0 ? 'You saved ${currencyFormat.format(savedAmount)}' : 'Expenses exceeded income',
+        title: savedAmount > 0 ? "You saved ${CurrencyFormatter.formatPaiseNoDecimals(savedAmount)}" : "Expenses exceeded income",
         description: isLess
-            ? 'Great! You spent ${currencyFormat.format(diff.abs())} less than last month ($savePct% of income saved).'
-            : 'You spent ${currencyFormat.format(diff.abs())} more than last month. Review your expenses.',
+            ? "Great! You spent ${CurrencyFormatter.formatPaiseNoDecimals(diff.abs())} less than last month ($savePct% of income saved)."
+            : "You spent ${CurrencyFormatter.formatPaiseNoDecimals(diff.abs())} more than last month. Review your expenses.",
         type: savedAmount > 0 && isLess ? InsightType.achievement : InsightType.warning,
         generatedAt: generatedAt,
         priority: 2,
@@ -393,7 +389,7 @@ class IntelligenceEngine {
       insights.add(AiInsight(
         id: 'month_streak_${year}_$month',
         title: '$streak-day zero spend streak!',
-        description: 'You had no expenses for $streak consecutive days at end of ${DateFormat('MMMM').format(generatedAt)}. Great discipline!',
+        description: "You had no expenses for $streak consecutive days at end of ${DateFormat('MMMM').format(generatedAt)}. Great discipline!",
         type: InsightType.achievement,
         generatedAt: generatedAt,
         priority: 3,
@@ -401,18 +397,18 @@ class IntelligenceEngine {
     }
 
     // 5. Transport/Food specific tip
-    final catMap2 = <String, double>{};
+    final catMap2 = <String, int>{};
     for (final t in expenses) {
-      catMap2[t.categoryId] = (catMap2[t.categoryId] ?? 0.0) + t.amount;
+      catMap2[t.categoryId] = (catMap2[t.categoryId] ?? 0) + t.amount;
     }
-    final transportSpend = catMap2['cat_transport'] ?? 0.0;
-    final foodSpend = catMap2['cat_food'] ?? 0.0;
+    final transportSpend = catMap2['cat_transport'] ?? 0;
+    final foodSpend = catMap2['cat_food'] ?? 0;
     if (totalExpense > 0 && transportSpend / totalExpense > 0.2) {
       insights.add(AiInsight(
         id: 'month_transport_${year}_$month',
         title: 'High transport cost',
         description:
-            'Transport was ${(transportSpend / totalExpense * 100).round()}% of expenses (${currencyFormat.format(transportSpend)}). '
+            'Transport was ${(transportSpend / totalExpense * 100).round()}% of expenses (${CurrencyFormatter.formatPaiseNoDecimals(transportSpend)}). '
             'Using metro/bus on some trips could significantly reduce this.',
         type: InsightType.tip,
         generatedAt: generatedAt,
@@ -425,7 +421,7 @@ class IntelligenceEngine {
         title: 'Food spending is high',
         description:
             'Food & Dining was ${(foodSpend / totalExpense * 100).round()}% of expenses. '
-            'Cooking at home more often could save ~${currencyFormat.format((foodSpend * 0.25).round())}.',
+            'Cooking at home more often could save ~${CurrencyFormatter.formatPaiseNoDecimals((foodSpend * 0.25).round())}.',
         type: InsightType.tip,
         generatedAt: generatedAt,
         priority: 4,

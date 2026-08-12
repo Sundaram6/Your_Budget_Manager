@@ -6,39 +6,85 @@ part of 'budget_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$budgetEngineHash() => r'2644ae64895e61d642ce7ee8e51264802f221fc6';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [budgetEngine].
 @ProviderFor(budgetEngine)
-final budgetEngineProvider = Provider<BudgetEngine>.internal(
-  budgetEngine,
-  name: r'budgetEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$budgetEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final budgetEngineProvider = BudgetEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BudgetEngineRef = ProviderRef<BudgetEngine>;
-String _$dailyAllowanceHash() => r'8ff0bf2fa1f92f1c27435566b48b21fbfa785756';
+final class BudgetEngineProvider
+    extends $FunctionalProvider<BudgetEngine, BudgetEngine, BudgetEngine>
+    with $Provider<BudgetEngine> {
+  BudgetEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'budgetEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// See also [dailyAllowance].
+  @override
+  String debugGetCreateSourceHash() => _$budgetEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<BudgetEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  BudgetEngine create(Ref ref) {
+    return budgetEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BudgetEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BudgetEngine>(value),
+    );
+  }
+}
+
+String _$budgetEngineHash() => r'1afc0d37b8155c68a5de6437b4d3dfd68f8d5cfd';
+
 @ProviderFor(dailyAllowance)
-final dailyAllowanceProvider = FutureProvider<DailyAllowance?>.internal(
-  dailyAllowance,
-  name: r'dailyAllowanceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$dailyAllowanceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final dailyAllowanceProvider = DailyAllowanceProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DailyAllowanceRef = FutureProviderRef<DailyAllowance?>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class DailyAllowanceProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DailyAllowance?>,
+          DailyAllowance?,
+          FutureOr<DailyAllowance?>
+        >
+    with $FutureModifier<DailyAllowance?>, $FutureProvider<DailyAllowance?> {
+  DailyAllowanceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dailyAllowanceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dailyAllowanceHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DailyAllowance?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DailyAllowance?> create(Ref ref) {
+    return dailyAllowance(ref);
+  }
+}
+
+String _$dailyAllowanceHash() => r'f804388e2799db05393d6a7cba683ca8ee101869';

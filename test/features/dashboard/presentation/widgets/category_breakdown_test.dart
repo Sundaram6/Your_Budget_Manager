@@ -20,7 +20,7 @@ void main() {
                   categoryName: 'Food',
                   color: 0xFFFF0000,
                   icon: 'food',
-                  total: 100.0,
+                  total: 10000,
                   percentage: 100.0,
                 ),
               ],

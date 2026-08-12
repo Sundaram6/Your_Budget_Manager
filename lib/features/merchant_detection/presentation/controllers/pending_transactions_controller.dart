@@ -111,6 +111,14 @@ class PendingTransactionsController extends _$PendingTransactionsController {
       final newTxs = transactions.where((tx) => tx.date.millisecondsSinceEpoch > lastCheck).toList();
       int autoSaved = 0;
       for (final tx in newTxs) {
+        final isDuplicate = await DatabaseHelper.instance.checkDuplicateTransaction(
+          amountValue: tx.amount,
+          date: tx.date,
+          snippet: tx.merchantName,
+        );
+
+        if (isDuplicate) continue;
+
         final success = await engine.confirmPendingTransaction(transaction: tx);
         if (success) {
           autoSaved++;
@@ -131,6 +139,19 @@ class PendingTransactionsController extends _$PendingTransactionsController {
     TransactionType type = TransactionType.expense,
   }) async {
     try {
+      final isDuplicate = await DatabaseHelper.instance.checkDuplicateTransaction(
+        amountValue: transaction.amount,
+        date: transaction.date,
+        snippet: transaction.merchantName,
+      );
+
+      if (isDuplicate) {
+        // Automatically remove it from the list if it's a duplicate
+        final updatedList = state.transactions.where((t) => t.smsId != transaction.smsId).toList();
+        state = state.copyWith(transactions: updatedList);
+        return false;
+      }
+
       final engine = ref.read(merchantEngineProvider);
       final success = await engine.confirmPendingTransaction(
         transaction: transaction,

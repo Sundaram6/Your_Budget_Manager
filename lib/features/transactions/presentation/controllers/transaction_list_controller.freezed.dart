@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,194 +9,272 @@ part of 'transaction_list_controller.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$TransactionListState {
-  DateTime get selectedMonth => throw _privateConstructorUsedError;
-  Map<DateTime, List<Transaction>> get groupedTransactions =>
-      throw _privateConstructorUsedError;
 
-  /// Create a copy of TransactionListState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $TransactionListStateCopyWith<TransactionListState> get copyWith =>
-      throw _privateConstructorUsedError;
+ DateTime get selectedMonth; Map<DateTime, List<Transaction>> get groupedTransactions;
+/// Create a copy of TransactionListState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TransactionListStateCopyWith<TransactionListState> get copyWith => _$TransactionListStateCopyWithImpl<TransactionListState>(this as TransactionListState, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionListState&&(identical(other.selectedMonth, selectedMonth) || other.selectedMonth == selectedMonth)&&const DeepCollectionEquality().equals(other.groupedTransactions, groupedTransactions));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,selectedMonth,const DeepCollectionEquality().hash(groupedTransactions));
+
+@override
+String toString() {
+  return 'TransactionListState(selectedMonth: $selectedMonth, groupedTransactions: $groupedTransactions)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $TransactionListStateCopyWith<$Res> {
-  factory $TransactionListStateCopyWith(
-    TransactionListState value,
-    $Res Function(TransactionListState) then,
-  ) = _$TransactionListStateCopyWithImpl<$Res, TransactionListState>;
-  @useResult
-  $Res call({
-    DateTime selectedMonth,
-    Map<DateTime, List<Transaction>> groupedTransactions,
-  });
-}
+abstract mixin class $TransactionListStateCopyWith<$Res>  {
+  factory $TransactionListStateCopyWith(TransactionListState value, $Res Function(TransactionListState) _then) = _$TransactionListStateCopyWithImpl;
+@useResult
+$Res call({
+ DateTime selectedMonth, Map<DateTime, List<Transaction>> groupedTransactions
+});
 
+
+
+
+}
 /// @nodoc
-class _$TransactionListStateCopyWithImpl<
-  $Res,
-  $Val extends TransactionListState
->
+class _$TransactionListStateCopyWithImpl<$Res>
     implements $TransactionListStateCopyWith<$Res> {
-  _$TransactionListStateCopyWithImpl(this._value, this._then);
+  _$TransactionListStateCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final TransactionListState _self;
+  final $Res Function(TransactionListState) _then;
 
-  /// Create a copy of TransactionListState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? selectedMonth = null,
-    Object? groupedTransactions = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            selectedMonth: null == selectedMonth
-                ? _value.selectedMonth
-                : selectedMonth // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            groupedTransactions: null == groupedTransactions
-                ? _value.groupedTransactions
-                : groupedTransactions // ignore: cast_nullable_to_non_nullable
-                      as Map<DateTime, List<Transaction>>,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of TransactionListState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? selectedMonth = null,Object? groupedTransactions = null,}) {
+  return _then(_self.copyWith(
+selectedMonth: null == selectedMonth ? _self.selectedMonth : selectedMonth // ignore: cast_nullable_to_non_nullable
+as DateTime,groupedTransactions: null == groupedTransactions ? _self.groupedTransactions : groupedTransactions // ignore: cast_nullable_to_non_nullable
+as Map<DateTime, List<Transaction>>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [TransactionListState].
+extension TransactionListStatePatterns on TransactionListState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _TransactionListState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _TransactionListState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _TransactionListState value)  $default,){
+final _that = this;
+switch (_that) {
+case _TransactionListState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _TransactionListState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _TransactionListState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime selectedMonth,  Map<DateTime, List<Transaction>> groupedTransactions)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _TransactionListState() when $default != null:
+return $default(_that.selectedMonth,_that.groupedTransactions);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime selectedMonth,  Map<DateTime, List<Transaction>> groupedTransactions)  $default,) {final _that = this;
+switch (_that) {
+case _TransactionListState():
+return $default(_that.selectedMonth,_that.groupedTransactions);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime selectedMonth,  Map<DateTime, List<Transaction>> groupedTransactions)?  $default,) {final _that = this;
+switch (_that) {
+case _TransactionListState() when $default != null:
+return $default(_that.selectedMonth,_that.groupedTransactions);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
-abstract class _$$TransactionListStateImplCopyWith<$Res>
-    implements $TransactionListStateCopyWith<$Res> {
-  factory _$$TransactionListStateImplCopyWith(
-    _$TransactionListStateImpl value,
-    $Res Function(_$TransactionListStateImpl) then,
-  ) = __$$TransactionListStateImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    DateTime selectedMonth,
-    Map<DateTime, List<Transaction>> groupedTransactions,
-  });
+
+
+class _TransactionListState implements TransactionListState {
+  const _TransactionListState({required this.selectedMonth, required final  Map<DateTime, List<Transaction>> groupedTransactions}): _groupedTransactions = groupedTransactions;
+  
+
+@override final  DateTime selectedMonth;
+ final  Map<DateTime, List<Transaction>> _groupedTransactions;
+@override Map<DateTime, List<Transaction>> get groupedTransactions {
+  if (_groupedTransactions is EqualUnmodifiableMapView) return _groupedTransactions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_groupedTransactions);
+}
+
+
+/// Create a copy of TransactionListState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$TransactionListStateCopyWith<_TransactionListState> get copyWith => __$TransactionListStateCopyWithImpl<_TransactionListState>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionListState&&(identical(other.selectedMonth, selectedMonth) || other.selectedMonth == selectedMonth)&&const DeepCollectionEquality().equals(other._groupedTransactions, _groupedTransactions));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,selectedMonth,const DeepCollectionEquality().hash(_groupedTransactions));
+
+@override
+String toString() {
+  return 'TransactionListState(selectedMonth: $selectedMonth, groupedTransactions: $groupedTransactions)';
+}
+
+
 }
 
 /// @nodoc
-class __$$TransactionListStateImplCopyWithImpl<$Res>
-    extends _$TransactionListStateCopyWithImpl<$Res, _$TransactionListStateImpl>
-    implements _$$TransactionListStateImplCopyWith<$Res> {
-  __$$TransactionListStateImplCopyWithImpl(
-    _$TransactionListStateImpl _value,
-    $Res Function(_$TransactionListStateImpl) _then,
-  ) : super(_value, _then);
+abstract mixin class _$TransactionListStateCopyWith<$Res> implements $TransactionListStateCopyWith<$Res> {
+  factory _$TransactionListStateCopyWith(_TransactionListState value, $Res Function(_TransactionListState) _then) = __$TransactionListStateCopyWithImpl;
+@override @useResult
+$Res call({
+ DateTime selectedMonth, Map<DateTime, List<Transaction>> groupedTransactions
+});
 
-  /// Create a copy of TransactionListState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? selectedMonth = null,
-    Object? groupedTransactions = null,
-  }) {
-    return _then(
-      _$TransactionListStateImpl(
-        selectedMonth: null == selectedMonth
-            ? _value.selectedMonth
-            : selectedMonth // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        groupedTransactions: null == groupedTransactions
-            ? _value._groupedTransactions
-            : groupedTransactions // ignore: cast_nullable_to_non_nullable
-                  as Map<DateTime, List<Transaction>>,
-      ),
-    );
-  }
+
+
+
 }
-
 /// @nodoc
+class __$TransactionListStateCopyWithImpl<$Res>
+    implements _$TransactionListStateCopyWith<$Res> {
+  __$TransactionListStateCopyWithImpl(this._self, this._then);
 
-class _$TransactionListStateImpl implements _TransactionListState {
-  const _$TransactionListStateImpl({
-    required this.selectedMonth,
-    required final Map<DateTime, List<Transaction>> groupedTransactions,
-  }) : _groupedTransactions = groupedTransactions;
+  final _TransactionListState _self;
+  final $Res Function(_TransactionListState) _then;
 
-  @override
-  final DateTime selectedMonth;
-  final Map<DateTime, List<Transaction>> _groupedTransactions;
-  @override
-  Map<DateTime, List<Transaction>> get groupedTransactions {
-    if (_groupedTransactions is EqualUnmodifiableMapView)
-      return _groupedTransactions;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_groupedTransactions);
-  }
-
-  @override
-  String toString() {
-    return 'TransactionListState(selectedMonth: $selectedMonth, groupedTransactions: $groupedTransactions)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$TransactionListStateImpl &&
-            (identical(other.selectedMonth, selectedMonth) ||
-                other.selectedMonth == selectedMonth) &&
-            const DeepCollectionEquality().equals(
-              other._groupedTransactions,
-              _groupedTransactions,
-            ));
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    selectedMonth,
-    const DeepCollectionEquality().hash(_groupedTransactions),
-  );
-
-  /// Create a copy of TransactionListState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$TransactionListStateImplCopyWith<_$TransactionListStateImpl>
-  get copyWith =>
-      __$$TransactionListStateImplCopyWithImpl<_$TransactionListStateImpl>(
-        this,
-        _$identity,
-      );
+/// Create a copy of TransactionListState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? selectedMonth = null,Object? groupedTransactions = null,}) {
+  return _then(_TransactionListState(
+selectedMonth: null == selectedMonth ? _self.selectedMonth : selectedMonth // ignore: cast_nullable_to_non_nullable
+as DateTime,groupedTransactions: null == groupedTransactions ? _self._groupedTransactions : groupedTransactions // ignore: cast_nullable_to_non_nullable
+as Map<DateTime, List<Transaction>>,
+  ));
 }
 
-abstract class _TransactionListState implements TransactionListState {
-  const factory _TransactionListState({
-    required final DateTime selectedMonth,
-    required final Map<DateTime, List<Transaction>> groupedTransactions,
-  }) = _$TransactionListStateImpl;
 
-  @override
-  DateTime get selectedMonth;
-  @override
-  Map<DateTime, List<Transaction>> get groupedTransactions;
-
-  /// Create a copy of TransactionListState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$TransactionListStateImplCopyWith<_$TransactionListStateImpl>
-  get copyWith => throw _privateConstructorUsedError;
 }
+
+// dart format on

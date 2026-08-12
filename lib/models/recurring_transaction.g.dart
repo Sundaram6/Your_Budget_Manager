@@ -6,9 +6,9 @@ part of 'recurring_transaction.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$RecurringTransactionModelImpl _$$RecurringTransactionModelImplFromJson(
+_RecurringTransactionModel _$RecurringTransactionModelFromJson(
   Map<String, dynamic> json,
-) => _$RecurringTransactionModelImpl(
+) => _RecurringTransactionModel(
   id: json['id'] as String,
   title: json['title'] as String,
   amountPaise: (json['amount_paise'] as num).toInt(),
@@ -33,8 +33,8 @@ _$RecurringTransactionModelImpl _$$RecurringTransactionModelImplFromJson(
   updatedAt: const Iso8601Converter().fromJson(json['updated_at'] as String),
 );
 
-Map<String, dynamic> _$$RecurringTransactionModelImplToJson(
-  _$RecurringTransactionModelImpl instance,
+Map<String, dynamic> _$RecurringTransactionModelToJson(
+  _RecurringTransactionModel instance,
 ) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,

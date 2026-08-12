@@ -57,7 +57,7 @@ void main() {
       await db.into(db.transactionsTable).insert(
         TransactionsTableCompanion.insert(
           id: 'old-tx-101',
-          amount: 320.0,
+          amount: 32000,
           type: 'expense',
           categoryId: oldGroceriesUuid,
           date: DateTime.now().millisecondsSinceEpoch,
@@ -85,7 +85,7 @@ void main() {
 
       // 5. Test manual expense submission without selecting a category (auto-defaults to cat_uncategorized)
       final manualTx = await expenseEngine.addTransaction(
-        amount: 150.0,
+        amount: 15000,
         date: DateTime.now(),
         categoryId: CategoryEngine.catUncategorized,
         type: TransactionType.expense,

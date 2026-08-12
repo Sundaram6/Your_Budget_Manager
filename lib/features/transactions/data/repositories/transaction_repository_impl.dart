@@ -19,20 +19,24 @@ class TransactionRepositoryImpl implements TransactionRepository {
       type: TransactionType.values.firstWhere((e) => e.name == entity.type),
       note: entity.note,
       sourceApp: entity.sourceApp,
+      paymentMethod: PaymentMethod.fromString(entity.paymentMethod),
+      cardLast4: entity.cardLast4,
     );
   }
 
   db.Transaction _mapToDrift(domain.Transaction entity) {
     return db.Transaction(
       id: entity.id,
-      amount: entity.amount.value.toDouble(),
+      amount: entity.amount.value,
       type: entity.type.name,
       categoryId: entity.categoryId,
       date: entity.date.millisecondsSinceEpoch,
       note: entity.note,
       sourceApp: entity.sourceApp,
+      paymentMethod: entity.paymentMethod.name,
+      cardLast4: entity.cardLast4,
       isRecurring: false,
-      isAutoCaptured: entity.sourceApp != null,
+      isAutoCaptured: entity.sourceApp != null && entity.sourceApp != 'manual',
       createdAt: DateTime.now().millisecondsSinceEpoch,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
     );

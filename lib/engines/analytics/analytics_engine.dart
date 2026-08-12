@@ -9,16 +9,18 @@ class AnalyticsEngine {
 
   AnalyticsEngine(this._transactionRepository, this._categoryRepository);
 
-  Future<double> getMonthlyTotal(int year, int month) async {
+  /// Returns monthly total expenses in integer paise.
+  Future<int> getMonthlyTotal(int year, int month) async {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
     
     return txs
         .where((t) => t.type == TransactionType.expense)
-        .fold<double>(0.0, (sum, t) => sum + t.amount.value.toDouble());
+        .fold<int>(0, (sum, t) => sum + t.amount.value);
   }
 
+  /// Returns category breakdown with totals in integer paise.
   Future<List<CategoryBreakdown>> getCategoryBreakdown(int year, int month) async {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
@@ -27,13 +29,13 @@ class AnalyticsEngine {
     final categories = await _categoryRepository.getCategories();
     
     final expenses = txs.where((t) => t.type == TransactionType.expense).toList();
-    final totalExpense = expenses.fold<double>(0.0, (sum, t) => sum + t.amount.value.toDouble());
+    final totalExpense = expenses.fold<int>(0, (sum, t) => sum + t.amount.value);
     
     if (totalExpense == 0) return [];
 
-    final categoryTotals = <String, double>{};
+    final categoryTotals = <String, int>{};
     for (final tx in expenses) {
-      categoryTotals[tx.categoryId] = (categoryTotals[tx.categoryId] ?? 0.0) + tx.amount.value.toDouble();
+      categoryTotals[tx.categoryId] = (categoryTotals[tx.categoryId] ?? 0) + tx.amount.value;
     }
 
     final breakdowns = <CategoryBreakdown>[];
@@ -53,6 +55,7 @@ class AnalyticsEngine {
     return breakdowns;
   }
 
+  /// Returns daily trend with totals in integer paise.
   Future<List<DailyTrend>> getDailyTrend(int year, int month) async {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
@@ -60,13 +63,13 @@ class AnalyticsEngine {
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
     final expenses = txs.where((t) => t.type == TransactionType.expense).toList();
     
-    final dailyTotals = <int, double>{};
+    final dailyTotals = <int, int>{};
     for (var i = 1; i <= end.day; i++) {
-      dailyTotals[i] = 0.0;
+      dailyTotals[i] = 0;
     }
     
     for (final tx in expenses) {
-      dailyTotals[tx.date.day] = (dailyTotals[tx.date.day] ?? 0.0) + tx.amount.value.toDouble();
+      dailyTotals[tx.date.day] = (dailyTotals[tx.date.day] ?? 0) + tx.amount.value;
     }
 
     return dailyTotals.entries.map((e) => DailyTrend(
@@ -75,6 +78,7 @@ class AnalyticsEngine {
     )).toList()..sort((a, b) => a.date.compareTo(b.date));
   }
 
+  /// Returns month-over-month comparison in integer paise.
   Future<MonthOverMonthComparison> getMonthOverMonthComparison(int year, int month) async {
     final currentTotal = await getMonthlyTotal(year, month);
     
@@ -101,18 +105,18 @@ class AnalyticsEngine {
     );
   }
 
-  /// Sum of income transactions for the month.
-  Future<double> getMonthlyIncome(int year, int month) async {
+  /// Sum of income transactions for the month in integer paise.
+  Future<int> getMonthlyIncome(int year, int month) async {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
     return txs
         .where((t) => t.type == TransactionType.income)
-        .fold<double>(0.0, (sum, t) => sum + t.amount.value.toDouble());
+        .fold<int>(0, (sum, t) => sum + t.amount.value);
   }
 
-  /// Returns (date, amount) of the highest-spending day in the month.
-  Future<(DateTime, double)?> getTopSpendingDay(int year, int month) async {
+  /// Returns (date, amountPaise) of the highest-spending day in the month.
+  Future<(DateTime, int)?> getTopSpendingDay(int year, int month) async {
     final trends = await getDailyTrend(year, month);
     if (trends.isEmpty) return null;
     final top = trends.reduce((a, b) => a.total >= b.total ? a : b);
@@ -140,7 +144,7 @@ class AnalyticsEngine {
       final start = DateTime(date.year, date.month, date.day);
       final end = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
       final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
-      final dayExpenses = txs.where((t) => t.type == TransactionType.expense).fold<double>(0.0, (s, t) => s + t.amount.value.toDouble());
+      final dayExpenses = txs.where((t) => t.type == TransactionType.expense).fold<int>(0, (s, t) => s + t.amount.value);
       if (dayExpenses == 0) {
         streak++;
       } else {
@@ -150,8 +154,8 @@ class AnalyticsEngine {
     return streak;
   }
 
-  /// Returns (categoryName, total) of the highest-spending category in the month.
-  Future<(String, double)?> getMostSpentCategory(int year, int month) async {
+  /// Returns (categoryName, totalPaise) of the highest-spending category in the month.
+  Future<(String, int)?> getMostSpentCategory(int year, int month) async {
     final breakdown = await getCategoryBreakdown(year, month);
     if (breakdown.isEmpty) return null;
     final top = breakdown.first; // already sorted desc

@@ -1942,11 +1942,11 @@ class $TransactionsTableTable extends TransactionsTable
   );
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
     'amount',
     aliasedName,
     false,
-    type: DriftSqlType.double,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
@@ -2070,6 +2070,28 @@ class $TransactionsTableTable extends TransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _paymentMethodMeta = const VerificationMeta(
+    'paymentMethod',
+  );
+  @override
+  late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
+    'payment_method',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cardLast4Meta = const VerificationMeta(
+    'cardLast4',
+  );
+  @override
+  late final GeneratedColumn<String> cardLast4 = GeneratedColumn<String>(
+    'card_last4',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2106,6 +2128,8 @@ class $TransactionsTableTable extends TransactionsTable
     recurringId,
     isAutoCaptured,
     sourceApp,
+    paymentMethod,
+    cardLast4,
     createdAt,
     updatedAt,
   ];
@@ -2212,6 +2236,21 @@ class $TransactionsTableTable extends TransactionsTable
         sourceApp.isAcceptableOrUnknown(data['source_app']!, _sourceAppMeta),
       );
     }
+    if (data.containsKey('payment_method')) {
+      context.handle(
+        _paymentMethodMeta,
+        paymentMethod.isAcceptableOrUnknown(
+          data['payment_method']!,
+          _paymentMethodMeta,
+        ),
+      );
+    }
+    if (data.containsKey('card_last4')) {
+      context.handle(
+        _cardLast4Meta,
+        cardLast4.isAcceptableOrUnknown(data['card_last4']!, _cardLast4Meta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2242,7 +2281,7 @@ class $TransactionsTableTable extends TransactionsTable
         data['${effectivePrefix}id'],
       )!,
       amount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        DriftSqlType.int,
         data['${effectivePrefix}amount'],
       )!,
       type: attachedDatabase.typeMapping.read(
@@ -2285,6 +2324,14 @@ class $TransactionsTableTable extends TransactionsTable
         DriftSqlType.string,
         data['${effectivePrefix}source_app'],
       ),
+      paymentMethod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_method'],
+      ),
+      cardLast4: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_last4'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -2304,7 +2351,7 @@ class $TransactionsTableTable extends TransactionsTable
 
 class Transaction extends DataClass implements Insertable<Transaction> {
   final String id;
-  final double amount;
+  final int amount;
   final String type;
   final String categoryId;
   final int date;
@@ -2315,6 +2362,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String? recurringId;
   final bool isAutoCaptured;
   final String? sourceApp;
+  final String? paymentMethod;
+  final String? cardLast4;
   final int createdAt;
   final int updatedAt;
   const Transaction({
@@ -2330,6 +2379,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.recurringId,
     required this.isAutoCaptured,
     this.sourceApp,
+    this.paymentMethod,
+    this.cardLast4,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2337,7 +2388,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['amount'] = Variable<double>(amount);
+    map['amount'] = Variable<int>(amount);
     map['type'] = Variable<String>(type);
     map['category_id'] = Variable<String>(categoryId);
     map['date'] = Variable<int>(date);
@@ -2357,6 +2408,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['is_auto_captured'] = Variable<bool>(isAutoCaptured);
     if (!nullToAbsent || sourceApp != null) {
       map['source_app'] = Variable<String>(sourceApp);
+    }
+    if (!nullToAbsent || paymentMethod != null) {
+      map['payment_method'] = Variable<String>(paymentMethod);
+    }
+    if (!nullToAbsent || cardLast4 != null) {
+      map['card_last4'] = Variable<String>(cardLast4);
     }
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -2385,6 +2442,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       sourceApp: sourceApp == null && nullToAbsent
           ? const Value.absent()
           : Value(sourceApp),
+      paymentMethod: paymentMethod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentMethod),
+      cardLast4: cardLast4 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cardLast4),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2397,7 +2460,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Transaction(
       id: serializer.fromJson<String>(json['id']),
-      amount: serializer.fromJson<double>(json['amount']),
+      amount: serializer.fromJson<int>(json['amount']),
       type: serializer.fromJson<String>(json['type']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
       date: serializer.fromJson<int>(json['date']),
@@ -2408,6 +2471,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       recurringId: serializer.fromJson<String?>(json['recurringId']),
       isAutoCaptured: serializer.fromJson<bool>(json['isAutoCaptured']),
       sourceApp: serializer.fromJson<String?>(json['sourceApp']),
+      paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
+      cardLast4: serializer.fromJson<String?>(json['cardLast4']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -2417,7 +2482,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'amount': serializer.toJson<double>(amount),
+      'amount': serializer.toJson<int>(amount),
       'type': serializer.toJson<String>(type),
       'categoryId': serializer.toJson<String>(categoryId),
       'date': serializer.toJson<int>(date),
@@ -2428,6 +2493,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'recurringId': serializer.toJson<String?>(recurringId),
       'isAutoCaptured': serializer.toJson<bool>(isAutoCaptured),
       'sourceApp': serializer.toJson<String?>(sourceApp),
+      'paymentMethod': serializer.toJson<String?>(paymentMethod),
+      'cardLast4': serializer.toJson<String?>(cardLast4),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
@@ -2435,7 +2502,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
 
   Transaction copyWith({
     String? id,
-    double? amount,
+    int? amount,
     String? type,
     String? categoryId,
     int? date,
@@ -2446,6 +2513,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<String?> recurringId = const Value.absent(),
     bool? isAutoCaptured,
     Value<String?> sourceApp = const Value.absent(),
+    Value<String?> paymentMethod = const Value.absent(),
+    Value<String?> cardLast4 = const Value.absent(),
     int? createdAt,
     int? updatedAt,
   }) => Transaction(
@@ -2461,6 +2530,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     recurringId: recurringId.present ? recurringId.value : this.recurringId,
     isAutoCaptured: isAutoCaptured ?? this.isAutoCaptured,
     sourceApp: sourceApp.present ? sourceApp.value : this.sourceApp,
+    paymentMethod: paymentMethod.present
+        ? paymentMethod.value
+        : this.paymentMethod,
+    cardLast4: cardLast4.present ? cardLast4.value : this.cardLast4,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2490,6 +2563,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ? data.isAutoCaptured.value
           : this.isAutoCaptured,
       sourceApp: data.sourceApp.present ? data.sourceApp.value : this.sourceApp,
+      paymentMethod: data.paymentMethod.present
+          ? data.paymentMethod.value
+          : this.paymentMethod,
+      cardLast4: data.cardLast4.present ? data.cardLast4.value : this.cardLast4,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2510,6 +2587,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('recurringId: $recurringId, ')
           ..write('isAutoCaptured: $isAutoCaptured, ')
           ..write('sourceApp: $sourceApp, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('cardLast4: $cardLast4, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2530,6 +2609,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     recurringId,
     isAutoCaptured,
     sourceApp,
+    paymentMethod,
+    cardLast4,
     createdAt,
     updatedAt,
   );
@@ -2549,13 +2630,15 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.recurringId == this.recurringId &&
           other.isAutoCaptured == this.isAutoCaptured &&
           other.sourceApp == this.sourceApp &&
+          other.paymentMethod == this.paymentMethod &&
+          other.cardLast4 == this.cardLast4 &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
 class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
   final Value<String> id;
-  final Value<double> amount;
+  final Value<int> amount;
   final Value<String> type;
   final Value<String> categoryId;
   final Value<int> date;
@@ -2566,6 +2649,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> recurringId;
   final Value<bool> isAutoCaptured;
   final Value<String?> sourceApp;
+  final Value<String?> paymentMethod;
+  final Value<String?> cardLast4;
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
@@ -2582,13 +2667,15 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     this.recurringId = const Value.absent(),
     this.isAutoCaptured = const Value.absent(),
     this.sourceApp = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    this.cardLast4 = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TransactionsTableCompanion.insert({
     required String id,
-    required double amount,
+    required int amount,
     required String type,
     required String categoryId,
     required int date,
@@ -2599,6 +2686,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     this.recurringId = const Value.absent(),
     this.isAutoCaptured = const Value.absent(),
     this.sourceApp = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    this.cardLast4 = const Value.absent(),
     required int createdAt,
     required int updatedAt,
     this.rowid = const Value.absent(),
@@ -2611,7 +2700,7 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
        updatedAt = Value(updatedAt);
   static Insertable<Transaction> custom({
     Expression<String>? id,
-    Expression<double>? amount,
+    Expression<int>? amount,
     Expression<String>? type,
     Expression<String>? categoryId,
     Expression<int>? date,
@@ -2622,6 +2711,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? recurringId,
     Expression<bool>? isAutoCaptured,
     Expression<String>? sourceApp,
+    Expression<String>? paymentMethod,
+    Expression<String>? cardLast4,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
@@ -2639,6 +2730,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       if (recurringId != null) 'recurring_id': recurringId,
       if (isAutoCaptured != null) 'is_auto_captured': isAutoCaptured,
       if (sourceApp != null) 'source_app': sourceApp,
+      if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (cardLast4 != null) 'card_last4': cardLast4,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2647,7 +2740,7 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
 
   TransactionsTableCompanion copyWith({
     Value<String>? id,
-    Value<double>? amount,
+    Value<int>? amount,
     Value<String>? type,
     Value<String>? categoryId,
     Value<int>? date,
@@ -2658,6 +2751,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     Value<String?>? recurringId,
     Value<bool>? isAutoCaptured,
     Value<String?>? sourceApp,
+    Value<String?>? paymentMethod,
+    Value<String?>? cardLast4,
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int>? rowid,
@@ -2675,6 +2770,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       recurringId: recurringId ?? this.recurringId,
       isAutoCaptured: isAutoCaptured ?? this.isAutoCaptured,
       sourceApp: sourceApp ?? this.sourceApp,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      cardLast4: cardLast4 ?? this.cardLast4,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2688,7 +2785,7 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       map['id'] = Variable<String>(id.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = Variable<int>(amount.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
@@ -2720,6 +2817,12 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     if (sourceApp.present) {
       map['source_app'] = Variable<String>(sourceApp.value);
     }
+    if (paymentMethod.present) {
+      map['payment_method'] = Variable<String>(paymentMethod.value);
+    }
+    if (cardLast4.present) {
+      map['card_last4'] = Variable<String>(cardLast4.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -2747,6 +2850,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
           ..write('recurringId: $recurringId, ')
           ..write('isAutoCaptured: $isAutoCaptured, ')
           ..write('sourceApp: $sourceApp, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('cardLast4: $cardLast4, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -4564,10 +4669,7 @@ final class $$CategoriesTableTableReferences
   static MultiTypedResultKey<$MerchantsTableTable, List<Merchant>>
   _merchantsTableRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.merchantsTable,
-    aliasName: $_aliasNameGenerator(
-      db.categoriesTable.id,
-      db.merchantsTable.defaultCategoryId,
-    ),
+    aliasName: 'categories__id__merchants__default_category_id',
   );
 
   $$MerchantsTableTableProcessedTableManager get merchantsTableRefs {
@@ -4589,10 +4691,7 @@ final class $$CategoriesTableTableReferences
   _recurringTransactionsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.recurringTransactionsTable,
-        aliasName: $_aliasNameGenerator(
-          db.categoriesTable.id,
-          db.recurringTransactionsTable.categoryId,
-        ),
+        aliasName: 'categories__id__recurring_transactions__category_id',
       );
 
   $$RecurringTransactionsTableTableProcessedTableManager
@@ -4614,10 +4713,7 @@ final class $$CategoriesTableTableReferences
   _transactionsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionsTable,
-        aliasName: $_aliasNameGenerator(
-          db.categoriesTable.id,
-          db.transactionsTable.categoryId,
-        ),
+        aliasName: 'categories__id__transactions__category_id',
       );
 
   $$TransactionsTableTableProcessedTableManager get transactionsTableRefs {
@@ -4638,10 +4734,7 @@ final class $$CategoriesTableTableReferences
   _savingsGoalsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.savingsGoalsTable,
-        aliasName: $_aliasNameGenerator(
-          db.categoriesTable.id,
-          db.savingsGoalsTable.categoryId,
-        ),
+        aliasName: 'categories__id__savings_goals__category_id',
       );
 
   $$SavingsGoalsTableTableProcessedTableManager get savingsGoalsTableRefs {
@@ -5247,13 +5340,9 @@ final class $$MerchantsTableTableReferences
     super.$_typedResult,
   );
 
-  static $CategoriesTableTable _defaultCategoryIdTable(_$AppDatabase db) =>
-      db.categoriesTable.createAlias(
-        $_aliasNameGenerator(
-          db.merchantsTable.defaultCategoryId,
-          db.categoriesTable.id,
-        ),
-      );
+  static $CategoriesTableTable _defaultCategoryIdTable(_$AppDatabase db) => db
+      .categoriesTable
+      .createAlias('merchants__default_category_id__categories__id');
 
   $$CategoriesTableTableProcessedTableManager? get defaultCategoryId {
     final $_column = $_itemColumn<String>('default_category_id');
@@ -5273,10 +5362,7 @@ final class $$MerchantsTableTableReferences
   _transactionsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionsTable,
-        aliasName: $_aliasNameGenerator(
-          db.merchantsTable.id,
-          db.transactionsTable.merchantId,
-        ),
+        aliasName: 'merchants__id__transactions__merchant_id',
       );
 
   $$TransactionsTableTableProcessedTableManager get transactionsTableRefs {
@@ -5746,13 +5832,9 @@ final class $$RecurringTransactionsTableTableReferences
     super.$_typedResult,
   );
 
-  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) =>
-      db.categoriesTable.createAlias(
-        $_aliasNameGenerator(
-          db.recurringTransactionsTable.categoryId,
-          db.categoriesTable.id,
-        ),
-      );
+  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) => db
+      .categoriesTable
+      .createAlias('recurring_transactions__category_id__categories__id');
 
   $$CategoriesTableTableProcessedTableManager get categoryId {
     final $_column = $_itemColumn<String>('category_id')!;
@@ -5772,10 +5854,7 @@ final class $$RecurringTransactionsTableTableReferences
   _transactionsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionsTable,
-        aliasName: $_aliasNameGenerator(
-          db.recurringTransactionsTable.id,
-          db.transactionsTable.recurringId,
-        ),
+        aliasName: 'recurring_transactions__id__transactions__recurring_id',
       );
 
   $$TransactionsTableTableProcessedTableManager get transactionsTableRefs {
@@ -6362,7 +6441,7 @@ typedef $$RecurringTransactionsTableTableProcessedTableManager =
 typedef $$TransactionsTableTableCreateCompanionBuilder =
     TransactionsTableCompanion Function({
       required String id,
-      required double amount,
+      required int amount,
       required String type,
       required String categoryId,
       required int date,
@@ -6373,6 +6452,8 @@ typedef $$TransactionsTableTableCreateCompanionBuilder =
       Value<String?> recurringId,
       Value<bool> isAutoCaptured,
       Value<String?> sourceApp,
+      Value<String?> paymentMethod,
+      Value<String?> cardLast4,
       required int createdAt,
       required int updatedAt,
       Value<int> rowid,
@@ -6380,7 +6461,7 @@ typedef $$TransactionsTableTableCreateCompanionBuilder =
 typedef $$TransactionsTableTableUpdateCompanionBuilder =
     TransactionsTableCompanion Function({
       Value<String> id,
-      Value<double> amount,
+      Value<int> amount,
       Value<String> type,
       Value<String> categoryId,
       Value<int> date,
@@ -6391,6 +6472,8 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder =
       Value<String?> recurringId,
       Value<bool> isAutoCaptured,
       Value<String?> sourceApp,
+      Value<String?> paymentMethod,
+      Value<String?> cardLast4,
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int> rowid,
@@ -6405,13 +6488,9 @@ final class $$TransactionsTableTableReferences
     super.$_typedResult,
   );
 
-  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) =>
-      db.categoriesTable.createAlias(
-        $_aliasNameGenerator(
-          db.transactionsTable.categoryId,
-          db.categoriesTable.id,
-        ),
-      );
+  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) => db
+      .categoriesTable
+      .createAlias('transactions__category_id__categories__id');
 
   $$CategoriesTableTableProcessedTableManager get categoryId {
     final $_column = $_itemColumn<String>('category_id')!;
@@ -6428,12 +6507,7 @@ final class $$TransactionsTableTableReferences
   }
 
   static $MerchantsTableTable _merchantIdTable(_$AppDatabase db) =>
-      db.merchantsTable.createAlias(
-        $_aliasNameGenerator(
-          db.transactionsTable.merchantId,
-          db.merchantsTable.id,
-        ),
-      );
+      db.merchantsTable.createAlias('transactions__merchant_id__merchants__id');
 
   $$MerchantsTableTableProcessedTableManager? get merchantId {
     final $_column = $_itemColumn<String>('merchant_id');
@@ -6451,10 +6525,7 @@ final class $$TransactionsTableTableReferences
 
   static $RecurringTransactionsTableTable _recurringIdTable(_$AppDatabase db) =>
       db.recurringTransactionsTable.createAlias(
-        $_aliasNameGenerator(
-          db.transactionsTable.recurringId,
-          db.recurringTransactionsTable.id,
-        ),
+        'transactions__recurring_id__recurring_transactions__id',
       );
 
   $$RecurringTransactionsTableTableProcessedTableManager? get recurringId {
@@ -6486,7 +6557,7 @@ class $$TransactionsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
+  ColumnFilters<int> get amount => $composableBuilder(
     column: $table.amount,
     builder: (column) => ColumnFilters(column),
   );
@@ -6523,6 +6594,16 @@ class $$TransactionsTableTableFilterComposer
 
   ColumnFilters<String> get sourceApp => $composableBuilder(
     column: $table.sourceApp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardLast4 => $composableBuilder(
+    column: $table.cardLast4,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6621,7 +6702,7 @@ class $$TransactionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
+  ColumnOrderings<int> get amount => $composableBuilder(
     column: $table.amount,
     builder: (column) => ColumnOrderings(column),
   );
@@ -6658,6 +6739,16 @@ class $$TransactionsTableTableOrderingComposer
 
   ColumnOrderings<String> get sourceApp => $composableBuilder(
     column: $table.sourceApp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cardLast4 => $composableBuilder(
+    column: $table.cardLast4,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6754,7 +6845,7 @@ class $$TransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
+  GeneratedColumn<int> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
   GeneratedColumn<String> get type =>
@@ -6783,6 +6874,14 @@ class $$TransactionsTableTableAnnotationComposer
 
   GeneratedColumn<String> get sourceApp =>
       $composableBuilder(column: $table.sourceApp, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cardLast4 =>
+      $composableBuilder(column: $table.cardLast4, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -6899,7 +6998,7 @@ class $$TransactionsTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<double> amount = const Value.absent(),
+                Value<int> amount = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
                 Value<int> date = const Value.absent(),
@@ -6910,6 +7009,8 @@ class $$TransactionsTableTableTableManager
                 Value<String?> recurringId = const Value.absent(),
                 Value<bool> isAutoCaptured = const Value.absent(),
                 Value<String?> sourceApp = const Value.absent(),
+                Value<String?> paymentMethod = const Value.absent(),
+                Value<String?> cardLast4 = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6926,6 +7027,8 @@ class $$TransactionsTableTableTableManager
                 recurringId: recurringId,
                 isAutoCaptured: isAutoCaptured,
                 sourceApp: sourceApp,
+                paymentMethod: paymentMethod,
+                cardLast4: cardLast4,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -6933,7 +7036,7 @@ class $$TransactionsTableTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required double amount,
+                required int amount,
                 required String type,
                 required String categoryId,
                 required int date,
@@ -6944,6 +7047,8 @@ class $$TransactionsTableTableTableManager
                 Value<String?> recurringId = const Value.absent(),
                 Value<bool> isAutoCaptured = const Value.absent(),
                 Value<String?> sourceApp = const Value.absent(),
+                Value<String?> paymentMethod = const Value.absent(),
+                Value<String?> cardLast4 = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -6960,6 +7065,8 @@ class $$TransactionsTableTableTableManager
                 recurringId: recurringId,
                 isAutoCaptured: isAutoCaptured,
                 sourceApp: sourceApp,
+                paymentMethod: paymentMethod,
+                cardLast4: cardLast4,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -7101,10 +7208,7 @@ final class $$BudgetsTableTableReferences
   _savingsGoalsTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.savingsGoalsTable,
-        aliasName: $_aliasNameGenerator(
-          db.budgetsTable.id,
-          db.savingsGoalsTable.budgetId,
-        ),
+        aliasName: 'budgets__id__savings_goals__budget_id',
       );
 
   $$SavingsGoalsTableTableProcessedTableManager get savingsGoalsTableRefs {
@@ -7637,9 +7741,7 @@ final class $$SavingsGoalsTableTableReferences
   );
 
   static $BudgetsTableTable _budgetIdTable(_$AppDatabase db) =>
-      db.budgetsTable.createAlias(
-        $_aliasNameGenerator(db.savingsGoalsTable.budgetId, db.budgetsTable.id),
-      );
+      db.budgetsTable.createAlias('savings_goals__budget_id__budgets__id');
 
   $$BudgetsTableTableProcessedTableManager? get budgetId {
     final $_column = $_itemColumn<String>('budget_id');
@@ -7655,13 +7757,9 @@ final class $$SavingsGoalsTableTableReferences
     );
   }
 
-  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) =>
-      db.categoriesTable.createAlias(
-        $_aliasNameGenerator(
-          db.savingsGoalsTable.categoryId,
-          db.categoriesTable.id,
-        ),
-      );
+  static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) => db
+      .categoriesTable
+      .createAlias('savings_goals__category_id__categories__id');
 
   $$CategoriesTableTableProcessedTableManager? get categoryId {
     final $_column = $_itemColumn<String>('category_id');

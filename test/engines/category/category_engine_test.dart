@@ -46,8 +46,10 @@ void main() {
         Category(id: CategoryEngine.catTransport, name: 'Transport', icon: 'car', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catUtilities, name: 'Utilities', icon: 'bolt', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catEntertainment, name: 'Entertainment', icon: 'movie', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catHealth, name: 'Health & Medical', icon: 'medical_services', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catIncome, name: 'Income', icon: 'money', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catUncategorized, name: 'Uncategorized', icon: 'help', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catMisc, name: 'Miscellaneous', icon: 'category', color: 0, isDefault: true, createdAt: now, updatedAt: now),
       ];
 
       when(() => mockRepository.migrateLegacyCategories(any())).thenAnswer((_) async {});
@@ -60,7 +62,7 @@ void main() {
       await engine.seedDefaults();
 
       verify(() => mockRepository.migrateLegacyCategories(CategoryEngine.legacyNameToFixedIdMap)).called(1);
-      verify(() => mockRepository.insertCategory(any())).called(8);
+      verify(() => mockRepository.insertCategory(any())).called(10);
     });
 
     test('seedDefaults() ensures fixed default category IDs are seeded even if custom category with same name exists', () async {
@@ -76,15 +78,16 @@ void main() {
 
       final allDefaults = [
         userCustomGroceries,
-
         Category(id: CategoryEngine.catGroceries, name: 'Groceries', icon: 'cart', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catShopping, name: 'Online Shopping', icon: 'bag', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catFood, name: 'Food Delivery', icon: 'food', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catTransport, name: 'Transport', icon: 'car', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catUtilities, name: 'Utilities', icon: 'bolt', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catEntertainment, name: 'Entertainment', icon: 'movie', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catHealth, name: 'Health & Medical', icon: 'medical_services', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catIncome, name: 'Income', icon: 'money', color: 0, isDefault: true, createdAt: now, updatedAt: now),
         Category(id: CategoryEngine.catUncategorized, name: 'Uncategorized', icon: 'help', color: 0, isDefault: true, createdAt: now, updatedAt: now),
+        Category(id: CategoryEngine.catMisc, name: 'Miscellaneous', icon: 'category', color: 0, isDefault: true, createdAt: now, updatedAt: now),
       ];
 
       when(() => mockRepository.migrateLegacyCategories(any())).thenAnswer((_) async {});
@@ -96,10 +99,9 @@ void main() {
 
       await engine.seedDefaults();
 
-      // All 8 fixed default category IDs are seeded unconditionally
-      verify(() => mockRepository.insertCategory(any())).called(8);
+      // All 10 fixed default category IDs are seeded unconditionally
+      verify(() => mockRepository.insertCategory(any())).called(10);
     });
-
 
     test('getAll() returns all categories', () async {
       when(() => mockRepository.getCategories()).thenAnswer((_) async => [dummyCategory]);

@@ -1,18 +1,22 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../../core/enums.dart';
 
 part 'parsed_transaction.freezed.dart';
 part 'parsed_transaction.g.dart';
 
 @freezed
-class ParsedTransaction with _$ParsedTransaction {
+abstract class ParsedTransaction with _$ParsedTransaction {
   const factory ParsedTransaction({
     required String smsId, // unique ID of the SMS
-    required double amount,
+    required int amount,
     required DateTime date,
     required String merchantName,
     required String merchantId,
     required String categoryId,
     required String originalSmsBody,
+    required String sourceApp,
+    @Default(PaymentMethod.unknown) PaymentMethod paymentMethod,
+    String? cardLast4,
   }) = _ParsedTransaction;
 
   factory ParsedTransaction.fromJson(Map<String, dynamic> json) =>

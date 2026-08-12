@@ -90,15 +90,15 @@ class _TransactionDetailSheetState extends ConsumerState<TransactionDetailSheet>
     final categoryName = CategoryEngine.getDisplayName(_transaction.categoryId, categories: categories);
     final dateStr = DateFormat('MMM dd, yyyy • hh:mm a').format(_transaction.date);
     
-    // Determine payment mode
-    String paymentMode = 'Manual Entry';
-    if (_transaction.sourceApp != null) {
-      final app = _transaction.sourceApp!.toLowerCase();
-      if (app.contains('gpay') || app.contains('nbu.paisa')) paymentMode = 'Google Pay / UPI';
-      else if (app.contains('phonepe')) paymentMode = 'PhonePe';
-      else if (app.contains('paytm')) paymentMode = 'Paytm';
-      else if (app.contains('cred')) paymentMode = 'CRED';
-      else paymentMode = _transaction.sourceApp!;
+    // Determine payment method label (with card last-4 when available)
+    String paymentDisplay;
+    if (_transaction.paymentMethod != PaymentMethod.unknown) {
+      paymentDisplay = _transaction.paymentMethod.displayName;
+      if (_transaction.cardLast4 != null && _transaction.cardLast4!.isNotEmpty) {
+        paymentDisplay += ' •${_transaction.cardLast4}';
+      }
+    } else {
+      paymentDisplay = 'Unknown';
     }
 
     return Container(
@@ -108,59 +108,61 @@ class _TransactionDetailSheetState extends ConsumerState<TransactionDetailSheet>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.darkBorderGlass,
-                  borderRadius: BorderRadius.circular(2),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.darkBorderGlass,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.space4),
-            Text(
-              'Transaction Details',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: AppSpacing.space4),
-            Center(
-              child: Text(
-                _transaction.amount.value.toCurrency(),
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: _transaction.type == TransactionType.income ? tokens.incomeColor : tokens.expenseColor,
+              const SizedBox(height: AppSpacing.space4),
+              Text(
+                'Transaction Details',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: AppSpacing.space4),
+              Center(
+                child: Text(
+                  _transaction.amount.value.toCurrency(),
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _transaction.type == TransactionType.income ? tokens.incomeColor : tokens.expenseColor,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.space4),
-            _buildDetailRow(context, 'Date & Time', dateStr, Icons.access_time),
-            _buildDetailRow(context, 'Payment Mode', paymentMode, Icons.credit_card),
-            if (_transaction.note != null && _transaction.note!.isNotEmpty)
-              _buildDetailRow(context, 'Note', _transaction.note!, Icons.notes),
-            const SizedBox(height: AppSpacing.space4),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: tokens.accentBills.withOpacity(0.2),
-                  shape: BoxShape.circle,
+              const SizedBox(height: AppSpacing.space4),
+              _buildDetailRow(context, 'Date & Time', dateStr, Icons.access_time),
+              _buildDetailRow(context, 'Payment Method', paymentDisplay, Icons.credit_card),
+              if (_transaction.note != null && _transaction.note!.isNotEmpty)
+                _buildDetailRow(context, 'Note', _transaction.note!, Icons.notes),
+              const SizedBox(height: AppSpacing.space4),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: tokens.accentBills.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.category, color: tokens.accentBills),
                 ),
-                child: Icon(Icons.category, color: tokens.accentBills),
+                title: Text('Category', style: Theme.of(context).textTheme.bodySmall),
+                subtitle: Text(categoryName, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                trailing: TextButton(
+                  onPressed: () => _showCategoryPicker(context),
+                  child: const Text('Change'),
+                ),
               ),
-              title: Text('Category', style: Theme.of(context).textTheme.bodySmall),
-              subtitle: Text(categoryName, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-              trailing: TextButton(
-                onPressed: () => _showCategoryPicker(context),
-                child: const Text('Change'),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -139,7 +139,12 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
     try {
       await RecurringRepository.instance.insert(recurringItem);
       if (mounted) {
-        context.pop();
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          // In test environments or when pushed as root, just reset saving state.
+          setState(() => _isSaving = false);
+        }
       }
     } catch (e) {
       if (mounted) {

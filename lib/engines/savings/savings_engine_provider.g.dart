@@ -6,201 +6,88 @@ part of 'savings_engine_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$savingsEngineHash() => r'ee8201713387bdaf56008f14bc832fa229b0a68a';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [savingsEngine].
 @ProviderFor(savingsEngine)
-final savingsEngineProvider = AutoDisposeProvider<SavingsEngine>.internal(
-  savingsEngine,
-  name: r'savingsEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$savingsEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final savingsEngineProvider = SavingsEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SavingsEngineRef = AutoDisposeProviderRef<SavingsEngine>;
-String _$savingsGoalsEngineHash() =>
-    r'b76d2e935492f7ba1cdd1cb84ecb6a34a25ca973';
-
-/// See also [savingsGoalsEngine].
-@ProviderFor(savingsGoalsEngine)
-final savingsGoalsEngineProvider = AutoDisposeProvider<SavingsEngine>.internal(
-  savingsGoalsEngine,
-  name: r'savingsGoalsEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$savingsGoalsEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SavingsGoalsEngineRef = AutoDisposeProviderRef<SavingsEngine>;
-String _$savingsGoalsStreamHash() =>
-    r'0dad1668bf145426e32f9c65f54e04a375e02ec6';
-
-/// See also [savingsGoalsStream].
-@ProviderFor(savingsGoalsStream)
-final savingsGoalsStreamProvider =
-    AutoDisposeStreamProvider<List<SavingsGoal>>.internal(
-      savingsGoalsStream,
-      name: r'savingsGoalsStreamProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$savingsGoalsStreamHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SavingsGoalsStreamRef = AutoDisposeStreamProviderRef<List<SavingsGoal>>;
-String _$savingsGoalStreamHash() => r'3ff8ed5a92839bdce2ac22b2b570a59b4f1d63c7';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [savingsGoalStream].
-@ProviderFor(savingsGoalStream)
-const savingsGoalStreamProvider = SavingsGoalStreamFamily();
-
-/// See also [savingsGoalStream].
-class SavingsGoalStreamFamily extends Family<AsyncValue<SavingsGoal?>> {
-  /// See also [savingsGoalStream].
-  const SavingsGoalStreamFamily();
-
-  /// See also [savingsGoalStream].
-  SavingsGoalStreamProvider call(String id) {
-    return SavingsGoalStreamProvider(id);
-  }
-
-  @override
-  SavingsGoalStreamProvider getProviderOverride(
-    covariant SavingsGoalStreamProvider provider,
-  ) {
-    return call(provider.id);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'savingsGoalStreamProvider';
-}
-
-/// See also [savingsGoalStream].
-class SavingsGoalStreamProvider
-    extends AutoDisposeStreamProvider<SavingsGoal?> {
-  /// See also [savingsGoalStream].
-  SavingsGoalStreamProvider(String id)
-    : this._internal(
-        (ref) => savingsGoalStream(ref as SavingsGoalStreamRef, id),
-        from: savingsGoalStreamProvider,
-        name: r'savingsGoalStreamProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$savingsGoalStreamHash,
-        dependencies: SavingsGoalStreamFamily._dependencies,
-        allTransitiveDependencies:
-            SavingsGoalStreamFamily._allTransitiveDependencies,
-        id: id,
+final class SavingsEngineProvider
+    extends $FunctionalProvider<SavingsEngine, SavingsEngine, SavingsEngine>
+    with $Provider<SavingsEngine> {
+  SavingsEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'savingsEngineProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  SavingsGoalStreamProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.id,
-  }) : super.internal();
+  @override
+  String debugGetCreateSourceHash() => _$savingsEngineHash();
 
-  final String id;
+  @$internal
+  @override
+  $ProviderElement<SavingsEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
-  Override overrideWith(
-    Stream<SavingsGoal?> Function(SavingsGoalStreamRef provider) create,
-  ) {
-    return ProviderOverride(
+  SavingsEngine create(Ref ref) {
+    return savingsEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SavingsEngine value) {
+    return $ProviderOverride(
       origin: this,
-      override: SavingsGoalStreamProvider._internal(
-        (ref) => create(ref as SavingsGoalStreamRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        id: id,
-      ),
+      providerOverride: $SyncValueProvider<SavingsEngine>(value),
     );
   }
+}
+
+String _$savingsEngineHash() => r'f0e2622ccabb49ffd91702bae5d82b59b51bcabc';
+
+@ProviderFor(savingsGoalsEngine)
+final savingsGoalsEngineProvider = SavingsGoalsEngineProvider._();
+
+final class SavingsGoalsEngineProvider
+    extends $FunctionalProvider<SavingsEngine, SavingsEngine, SavingsEngine>
+    with $Provider<SavingsEngine> {
+  SavingsGoalsEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'savingsGoalsEngineProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
-  AutoDisposeStreamProviderElement<SavingsGoal?> createElement() {
-    return _SavingsGoalStreamProviderElement(this);
+  String debugGetCreateSourceHash() => _$savingsGoalsEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<SavingsEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SavingsEngine create(Ref ref) {
+    return savingsGoalsEngine(ref);
   }
 
-  @override
-  bool operator ==(Object other) {
-    return other is SavingsGoalStreamProvider && other.id == id;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, id.hashCode);
-
-    return _SystemHash.finish(hash);
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SavingsEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SavingsEngine>(value),
+    );
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin SavingsGoalStreamRef on AutoDisposeStreamProviderRef<SavingsGoal?> {
-  /// The parameter `id` of this provider.
-  String get id;
-}
-
-class _SavingsGoalStreamProviderElement
-    extends AutoDisposeStreamProviderElement<SavingsGoal?>
-    with SavingsGoalStreamRef {
-  _SavingsGoalStreamProviderElement(super.provider);
-
-  @override
-  String get id => (origin as SavingsGoalStreamProvider).id;
-}
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+String _$savingsGoalsEngineHash() =>
+    r'435e380ea61716ee22ee8ec5fb82b3a3392165bc';

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/providers/database_providers.dart';
@@ -7,23 +8,26 @@ import 'savings_engine.dart';
 part 'savings_engine_provider.g.dart';
 
 @riverpod
-SavingsEngine savingsEngine(SavingsEngineRef ref) {
+SavingsEngine savingsEngine(Ref ref) {
   final dao = ref.watch(savingsGoalDaoProvider);
   final repo = ref.watch(savingsGoalRepositoryProvider);
   return SavingsEngine(dao, repo);
 }
 
 @riverpod
-SavingsEngine savingsGoalsEngine(SavingsGoalsEngineRef ref) {
+SavingsEngine savingsGoalsEngine(Ref ref) {
   return ref.watch(savingsEngineProvider);
 }
 
-@riverpod
-Stream<List<SavingsGoal>> savingsGoalsStream(SavingsGoalsStreamRef ref) {
+// Manual providers: riverpod_generator v4 cannot reference types from drift's
+// generated part files (app_database.g.dart). StreamProvider.autoDispose is
+// identical in behaviour to the @riverpod-generated equivalent.
+final savingsGoalsStreamProvider =
+    StreamProvider.autoDispose<List<SavingsGoal>>((ref) {
   return ref.watch(savingsEngineProvider).watchGoals();
-}
+});
 
-@riverpod
-Stream<SavingsGoal?> savingsGoalStream(SavingsGoalStreamRef ref, String id) {
+final savingsGoalStreamProvider =
+    StreamProvider.autoDispose.family<SavingsGoal?, String>((ref, id) {
   return ref.watch(savingsEngineProvider).watchGoal(id);
-}
+});

@@ -38,6 +38,7 @@ class AppColors {
   static const Color darkGoldLight = Color(0xFFFFD57A);
   static const Color darkGoldDark = Color(0xFFFFB71B);
   static const Color darkGoldGlow = Color(0x33FFC64B);
+  static const Color darkBorderGoldRim = Color(0x66FFC64B);
   static const Color darkSurface3 = Color(0xFF32324A);
   static const Color darkBorderMedium = Color(0x3DFFFFFF);
   static const Color darkTextTertiary = Color(0xFF6E6E82);

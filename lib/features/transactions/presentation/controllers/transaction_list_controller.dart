@@ -8,7 +8,7 @@ part 'transaction_list_controller.freezed.dart';
 part 'transaction_list_controller.g.dart';
 
 @freezed
-class TransactionListState with _$TransactionListState {
+abstract class TransactionListState with _$TransactionListState {
   const factory TransactionListState({
     required DateTime selectedMonth,
     required Map<DateTime, List<Transaction>> groupedTransactions,

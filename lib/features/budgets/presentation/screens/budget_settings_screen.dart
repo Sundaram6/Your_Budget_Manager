@@ -1,11 +1,12 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/providers/database_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../database/app_database.dart';
 import '../../../../engines/analytics/analytics_engine_provider.dart';
 import '../../../../engines/budget/budget_engine_provider.dart';
@@ -23,7 +24,7 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   Budget? _currentBudget;
-  double _currentMonthSpent = 0.0;
+  int _currentMonthSpentPaise = 0;
 
   @override
   void initState() {
@@ -45,12 +46,12 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
     final analyticsEngine = ref.read(analyticsEngineProvider);
 
     final budget = await budgetRepo.getOverallBudget(now.month, now.year);
-    final spent = await analyticsEngine.getMonthlyTotal(now.year, now.month);
+    final spentPaise = await analyticsEngine.getMonthlyTotal(now.year, now.month);
 
     if (mounted) {
       setState(() {
         _currentBudget = budget;
-        _currentMonthSpent = spent;
+        _currentMonthSpentPaise = spentPaise;
         if (budget != null) {
           final rupees = (budget.amount / 100).toStringAsFixed(0);
           _amountController.text = rupees;
@@ -63,8 +64,8 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
   Future<void> _saveBudget() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final rupees = double.tryParse(_amountController.text.trim()) ?? 0.0;
-    if (rupees <= 0) {
+    final amountPaise = CurrencyFormatter.parseRupeesToPaise(_amountController.text) ?? 0;
+    if (amountPaise <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid amount greater than ₹0.')),
       );
@@ -76,22 +77,20 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
     final budgetEngine = ref.read(budgetEngineProvider);
 
     try {
-      final amountPaise = (rupees * 100).round();
       await budgetEngine.setMonthlyBudget(
         amountPaise: amountPaise,
         month: now.month,
         year: now.year,
       );
 
-      final fmtNoDec = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
-
       // Invalidate dashboard to reload instantly
       ref.invalidate(dashboardControllerProvider);
       await _loadBudgetData();
 
       if (mounted) {
+        final formatted = CurrencyFormatter.formatPaiseNoDecimals(amountPaise);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Monthly budget set to ${fmtNoDec.format(rupees)}!')),
+          SnackBar(content: Text('Monthly budget set to $formatted!')),
         );
       }
     } catch (e) {
@@ -159,20 +158,8 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
-    final currencyFormat = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 2,
-    );
-
-    final currencyFormatNoDecimals = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
-
-    final budgetRupees = _currentBudget != null ? (_currentBudget!.amount / 100) : 0.0;
-    final remainingRupees = (budgetRupees - _currentMonthSpent).clamp(0.0, double.infinity);
+    final budgetPaise = _currentBudget?.amount ?? 0;
+    final remainingPaise = max(0, budgetPaise - _currentMonthSpentPaise);
 
     return Scaffold(
       appBar: AppBar(
@@ -202,7 +189,7 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
                         ),
                         const SizedBox(height: AppSpacing.space1),
                         Text(
-                          currencyFormatNoDecimals.format(budgetRupees),
+                          CurrencyFormatter.formatPaiseNoDecimals(budgetPaise),
                           style: AppTypography.heading2.copyWith(color: AppColors.darkGoldPrimary),
                         ),
                         const SizedBox(height: AppSpacing.space2),
@@ -210,11 +197,11 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Spent: ${currencyFormat.format(_currentMonthSpent)}',
+                              'Spent: ${CurrencyFormatter.formatPaise(_currentMonthSpentPaise)}',
                               style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                             ),
                             Text(
-                              'Remaining: ${currencyFormat.format(remainingRupees)}',
+                              'Remaining: ${CurrencyFormatter.formatPaise(remainingPaise)}',
                               style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                             ),
                           ],
@@ -260,8 +247,8 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
                         ),
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) return 'Enter budget amount';
-                          final d = double.tryParse(val.trim());
-                          if (d == null || d <= 0) return 'Enter a valid amount > 0';
+                          final paise = CurrencyFormatter.parseRupeesToPaise(val);
+                          if (paise == null || paise <= 0) return 'Enter a valid amount > 0';
                           return null;
                         },
                       ),

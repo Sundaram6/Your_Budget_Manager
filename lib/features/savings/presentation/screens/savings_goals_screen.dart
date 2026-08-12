@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
 import '../../../../routing/route_names.dart';
 import '../widgets/savings_goal_card.dart';
@@ -17,12 +18,6 @@ class SavingsGoalsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final goalsAsync = ref.watch(savingsGoalsStreamProvider);
     final totalSavedAsync = ref.watch(savingsEngineProvider).getTotalSavings();
-
-    final currencyFormat = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -82,7 +77,6 @@ class SavingsGoalsScreen extends ConsumerWidget {
                   future: totalSavedAsync,
                   builder: (context, snapshot) {
                     final totalPaise = snapshot.data ?? 0;
-                    final totalRupees = totalPaise / 100;
                     return Container(
                       margin: const EdgeInsets.all(AppSpacing.space4),
                       padding: const EdgeInsets.all(AppSpacing.space4),
@@ -99,8 +93,11 @@ class SavingsGoalsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.space1),
                           Text(
-                            currencyFormat.format(totalRupees),
-                            style: AppTypography.heading1.copyWith(color: AppColors.darkGoldPrimary),
+                            CurrencyFormatter.formatPaiseNoDecimals(totalPaise),
+                            style: AppTypography.heading1.copyWith(
+                              color: AppColors.darkGoldPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),

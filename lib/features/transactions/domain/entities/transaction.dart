@@ -9,14 +9,14 @@ class AmountConverter implements JsonConverter<Amount, num> {
   const AmountConverter();
 
   @override
-  Amount fromJson(num json) => Amount(json.toDouble());
+  Amount fromJson(num json) => Amount(json.toInt());
 
   @override
   num toJson(Amount object) => object.value;
 }
 
 @freezed
-class Transaction with _$Transaction {
+abstract class Transaction with _$Transaction {
   const factory Transaction({
     required String id,
     @AmountConverter() required Amount amount,
@@ -25,6 +25,8 @@ class Transaction with _$Transaction {
     required TransactionType type,
     String? note,
     String? sourceApp,
+    @Default(PaymentMethod.unknown) PaymentMethod paymentMethod,
+    String? cardLast4,
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

@@ -6,7 +6,7 @@ import 'backup_engine.dart';
 part 'backup_engine_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-BackupEngine backupEngine(BackupEngineRef ref) {
+BackupEngine backupEngine(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return BackupEngine(db);
 }

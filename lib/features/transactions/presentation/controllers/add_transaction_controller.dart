@@ -3,7 +3,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/enums.dart';
-
 import '../../../../core/providers/database_providers.dart';
 import '../../../../engines/category/category_engine.dart';
 import '../../../../engines/expense/expense_engine_provider.dart';
@@ -12,13 +11,14 @@ part 'add_transaction_controller.freezed.dart';
 part 'add_transaction_controller.g.dart';
 
 @freezed
-class AddTransactionState with _$AddTransactionState {
+abstract class AddTransactionState with _$AddTransactionState {
   const factory AddTransactionState({
-    @Default(0.0) double amount,
+    @Default(0) int amount, // Integer paise
     @Default(TransactionType.expense) TransactionType type,
     String? selectedCategoryId,
     required DateTime date,
     @Default('') String note,
+    @Default(PaymentMethod.cash) PaymentMethod paymentMethod,
     @Default(false) bool isSaving,
     String? error,
   }) = _AddTransactionState;
@@ -35,7 +35,7 @@ class AddTransactionController extends _$AddTransactionController {
     );
   }
 
-  void setAmount(double amount) => state = state.copyWith(amount: amount, error: null);
+  void setAmount(int amountPaise) => state = state.copyWith(amount: amountPaise, error: null);
 
   void setType(TransactionType type) {
     if (type == TransactionType.income && state.selectedCategoryId == null) {
@@ -48,9 +48,10 @@ class AddTransactionController extends _$AddTransactionController {
   void setCategory(String categoryId) => state = state.copyWith(selectedCategoryId: categoryId, error: null);
   void setDate(DateTime date) => state = state.copyWith(date: date, error: null);
   void setNote(String note) => state = state.copyWith(note: note, error: null);
+  void setPaymentMethod(PaymentMethod method) => state = state.copyWith(paymentMethod: method, error: null);
 
   /// Checks if adding the specified expense amount will exceed the overall monthly budget.
-  Future<({bool isExceeded, double projectedSpend, double budgetAmount, double remaining})?> checkBudgetOverflow() async {
+  Future<({bool isExceeded, int projectedSpendPaise, int budgetAmountPaise, int remainingPaise})?> checkBudgetOverflow() async {
     if (state.type != TransactionType.expense || state.amount <= 0) return null;
 
     final now = state.date;
@@ -60,22 +61,18 @@ class AddTransactionController extends _$AddTransactionController {
     final overallBudget = await budgetRepo.getOverallBudget(now.month, now.year);
     if (overallBudget == null || overallBudget.amount <= 0) return null;
 
-    final monthlyTotalDouble = await expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-    final spentPaise = (monthlyTotalDouble * 100).round();
-    final thisExpensePaise = (state.amount * 100).round();
+    final spentPaise = await expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
+    final thisExpensePaise = state.amount;
 
     final projectedSpendPaise = spentPaise + thisExpensePaise;
 
     if (projectedSpendPaise > overallBudget.amount) {
-      final remainingPaise = overallBudget.amount - spentPaise;
-      final double proj = projectedSpendPaise / 100;
-      final double budgetAmt = overallBudget.amount / 100;
-      final double rem = max(0.0, remainingPaise / 100);
+      final remainingPaise = max(0, overallBudget.amount - spentPaise);
       return (
         isExceeded: true,
-        projectedSpend: proj,
-        budgetAmount: budgetAmt,
-        remaining: rem,
+        projectedSpendPaise: projectedSpendPaise,
+        budgetAmountPaise: overallBudget.amount,
+        remainingPaise: remainingPaise,
       );
     }
 
@@ -103,6 +100,8 @@ class AddTransactionController extends _$AddTransactionController {
         categoryId: categoryId,
         type: state.type,
         note: state.note.isEmpty ? null : state.note,
+        sourceApp: 'manual',
+        paymentMethod: state.paymentMethod,
       );
       state = state.copyWith(isSaving: false);
       return true;

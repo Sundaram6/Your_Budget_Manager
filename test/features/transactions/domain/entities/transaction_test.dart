@@ -8,7 +8,7 @@ void main() {
     final tDate = DateTime(2023, 1, 1);
     final tTransaction = Transaction(
       id: '1',
-      amount: const Amount(100.0),
+      amount: const Amount(10000),
       date: tDate,
       categoryId: 'cat1',
       type: TransactionType.expense,
@@ -18,7 +18,7 @@ void main() {
     test('should support value equality', () {
       final tTransaction2 = Transaction(
         id: '1',
-        amount: const Amount(100.0),
+        amount: const Amount(10000),
         date: tDate,
         categoryId: 'cat1',
         type: TransactionType.expense,
@@ -30,10 +30,10 @@ void main() {
 
     test('copyWith should work correctly', () {
       final updatedTransaction = tTransaction.copyWith(
-        amount: const Amount(200.0),
+        amount: const Amount(20000),
       );
 
-      expect(updatedTransaction.amount.value, 200.0);
+      expect(updatedTransaction.amount.value, 20000);
       expect(updatedTransaction.id, tTransaction.id);
     });
 
@@ -42,15 +42,41 @@ void main() {
       
       expect(json, {
         'id': '1',
-        'amount': 100.0,
+        'amount': 10000,
         'date': tDate.toIso8601String(),
         'categoryId': 'cat1',
         'type': 'expense',
         'note': 'Groceries',
+        'sourceApp': null,
+        'paymentMethod': 'unknown',
+        'cardLast4': null,
       });
 
       final fromJson = Transaction.fromJson(json);
       expect(fromJson, equals(tTransaction));
+    });
+
+    test('should correctly serialize and deserialize with debit card and cardLast4', () {
+      final cardTx = Transaction(
+        id: '2',
+        amount: const Amount(25000),
+        date: tDate,
+        categoryId: 'cat_food',
+        type: TransactionType.expense,
+        note: 'Dinner',
+        sourceApp: 'sms:hdfc',
+        paymentMethod: PaymentMethod.debit_card,
+        cardLast4: '4521',
+      );
+
+      final json = cardTx.toJson();
+      expect(json['paymentMethod'], 'debit_card');
+      expect(json['cardLast4'], '4521');
+
+      final fromJson = Transaction.fromJson(json);
+      expect(fromJson, equals(cardTx));
+      expect(fromJson.paymentMethod, PaymentMethod.debit_card);
+      expect(fromJson.cardLast4, '4521');
     });
   });
 }

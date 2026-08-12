@@ -6,22 +6,51 @@ part of 'secure_key_storage.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$secureKeyStorageHash() => r'de9fb1812eb901b21ca6f59942118369b7dbc49a';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [secureKeyStorage].
 @ProviderFor(secureKeyStorage)
-final secureKeyStorageProvider = AutoDisposeProvider<SecureKeyStorage>.internal(
-  secureKeyStorage,
-  name: r'secureKeyStorageProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$secureKeyStorageHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final secureKeyStorageProvider = SecureKeyStorageProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SecureKeyStorageRef = AutoDisposeProviderRef<SecureKeyStorage>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class SecureKeyStorageProvider
+    extends
+        $FunctionalProvider<
+          SecureKeyStorage,
+          SecureKeyStorage,
+          SecureKeyStorage
+        >
+    with $Provider<SecureKeyStorage> {
+  SecureKeyStorageProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'secureKeyStorageProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$secureKeyStorageHash();
+
+  @$internal
+  @override
+  $ProviderElement<SecureKeyStorage> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SecureKeyStorage create(Ref ref) {
+    return secureKeyStorage(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SecureKeyStorage value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SecureKeyStorage>(value),
+    );
+  }
+}
+
+String _$secureKeyStorageHash() => r'835d4ea28118b857a5f3e1780f6646facfec760b';

@@ -8,4 +8,22 @@ mixin _$SavingsGoalDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoriesTableTable get categoriesTable => attachedDatabase.categoriesTable;
   $SavingsGoalsTableTable get savingsGoalsTable =>
       attachedDatabase.savingsGoalsTable;
+  SavingsGoalDaoManager get managers => SavingsGoalDaoManager(this);
+}
+
+class SavingsGoalDaoManager {
+  final _$SavingsGoalDaoMixin _db;
+  SavingsGoalDaoManager(this._db);
+  $$BudgetsTableTableTableManager get budgetsTable =>
+      $$BudgetsTableTableTableManager(_db.attachedDatabase, _db.budgetsTable);
+  $$CategoriesTableTableTableManager get categoriesTable =>
+      $$CategoriesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.categoriesTable,
+      );
+  $$SavingsGoalsTableTableTableManager get savingsGoalsTable =>
+      $$SavingsGoalsTableTableTableManager(
+        _db.attachedDatabase,
+        _db.savingsGoalsTable,
+      );
 }

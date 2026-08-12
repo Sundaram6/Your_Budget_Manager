@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/enums.dart';
 import '../../../../core/extensions/number_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
@@ -55,8 +56,22 @@ class _TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<AppCustomTokens>()!;
     final dateStr = DateFormat('dd MMM yyyy').format(transaction.date);
+    final hasMethod = transaction.paymentMethod != PaymentMethod.unknown;
+    final methodStr = hasMethod
+        ? (transaction.cardLast4 != null && transaction.cardLast4!.isNotEmpty
+            ? '${transaction.paymentMethod.displayName} •${transaction.cardLast4}'
+            : transaction.paymentMethod.displayName)
+        : null;
     final hasNote = transaction.note != null && transaction.note!.trim().isNotEmpty;
-    final subtitleText = hasNote ? '$dateStr • ${transaction.note}' : dateStr;
+
+    String subtitleText = dateStr;
+    if (methodStr != null && hasNote) {
+      subtitleText = '$dateStr • $methodStr • ${transaction.note}';
+    } else if (methodStr != null) {
+      subtitleText = '$dateStr • $methodStr';
+    } else if (hasNote) {
+      subtitleText = '$dateStr • ${transaction.note}';
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.space2),

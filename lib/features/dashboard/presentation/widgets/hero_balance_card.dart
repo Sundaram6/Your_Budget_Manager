@@ -6,7 +6,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../routing/route_names.dart';
 
 class HeroBalanceCard extends StatelessWidget {
-  final double totalBalance;
+  final int totalBalance; // Integer paise
   
   const HeroBalanceCard({
     super.key,
@@ -53,7 +53,7 @@ class HeroBalanceCard extends StatelessWidget {
           ),
           SizedBox(height: tokens.gridUnit),
           Text(
-            CurrencyFormatter.format(totalBalance),
+            CurrencyFormatter.formatPaise(totalBalance),
             style: theme.textTheme.displayLarge?.copyWith(
               color: tokens.heroTextColor,
               fontFeatures: const [FontFeature.tabularFigures()],

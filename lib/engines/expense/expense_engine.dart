@@ -12,12 +12,16 @@ class ExpenseEngine {
 
   ExpenseEngine(this._repository, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
 
+  /// Adds transaction with [amount] in integer paise.
   Future<Transaction> addTransaction({
-    required double amount,
+    required int amount,
     required DateTime date,
     required String categoryId,
     required TransactionType type,
     String? note,
+    String? sourceApp,
+    PaymentMethod paymentMethod = PaymentMethod.unknown,
+    String? cardLast4,
   }) async {
     if (amount <= 0) {
       throw const ValidationException('Amount must be greater than 0');
@@ -29,6 +33,9 @@ class ExpenseEngine {
       categoryId: categoryId,
       type: type,
       note: note,
+      sourceApp: sourceApp,
+      paymentMethod: paymentMethod,
+      cardLast4: cardLast4,
     );
     await _repository.insertTransaction(transaction);
     return transaction;
@@ -65,9 +72,10 @@ class ExpenseEngine {
     return await watchTransactionsByMonth(month).first;
   }
 
-  Future<double> getMonthlyTotal(DateTime month, {TransactionType? type}) async {
+  /// Calculates monthly total in integer paise.
+  Future<int> getMonthlyTotal(DateTime month, {TransactionType? type}) async {
     final transactions = await getTransactionsByMonth(month);
-    double total = 0.0;
+    int total = 0;
     for (final t in transactions) {
       if (type == null || t.type == type) {
         total += t.amount.value;

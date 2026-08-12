@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,309 +9,296 @@ part of 'parsed_transaction.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-ParsedTransaction _$ParsedTransactionFromJson(Map<String, dynamic> json) {
-  return _ParsedTransaction.fromJson(json);
-}
 
 /// @nodoc
 mixin _$ParsedTransaction {
-  String get smsId =>
-      throw _privateConstructorUsedError; // unique ID of the SMS
-  double get amount => throw _privateConstructorUsedError;
-  DateTime get date => throw _privateConstructorUsedError;
-  String get merchantName => throw _privateConstructorUsedError;
-  String get merchantId => throw _privateConstructorUsedError;
-  String get categoryId => throw _privateConstructorUsedError;
-  String get originalSmsBody => throw _privateConstructorUsedError;
+
+ String get smsId; int get amount; DateTime get date; String get merchantName; String get merchantId; String get categoryId; String get originalSmsBody; String get sourceApp; PaymentMethod get paymentMethod; String? get cardLast4;
+/// Create a copy of ParsedTransaction
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ParsedTransactionCopyWith<ParsedTransaction> get copyWith => _$ParsedTransactionCopyWithImpl<ParsedTransaction>(this as ParsedTransaction, _$identity);
 
   /// Serializes this ParsedTransaction to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of ParsedTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ParsedTransactionCopyWith<ParsedTransaction> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParsedTransaction&&(identical(other.smsId, smsId) || other.smsId == smsId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.merchantId, merchantId) || other.merchantId == merchantId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.originalSmsBody, originalSmsBody) || other.originalSmsBody == originalSmsBody)&&(identical(other.sourceApp, sourceApp) || other.sourceApp == sourceApp)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.cardLast4, cardLast4) || other.cardLast4 == cardLast4));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,smsId,amount,date,merchantName,merchantId,categoryId,originalSmsBody,sourceApp,paymentMethod,cardLast4);
+
+@override
+String toString() {
+  return 'ParsedTransaction(smsId: $smsId, amount: $amount, date: $date, merchantName: $merchantName, merchantId: $merchantId, categoryId: $categoryId, originalSmsBody: $originalSmsBody, sourceApp: $sourceApp, paymentMethod: $paymentMethod, cardLast4: $cardLast4)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ParsedTransactionCopyWith<$Res> {
-  factory $ParsedTransactionCopyWith(
-    ParsedTransaction value,
-    $Res Function(ParsedTransaction) then,
-  ) = _$ParsedTransactionCopyWithImpl<$Res, ParsedTransaction>;
-  @useResult
-  $Res call({
-    String smsId,
-    double amount,
-    DateTime date,
-    String merchantName,
-    String merchantId,
-    String categoryId,
-    String originalSmsBody,
-  });
-}
+abstract mixin class $ParsedTransactionCopyWith<$Res>  {
+  factory $ParsedTransactionCopyWith(ParsedTransaction value, $Res Function(ParsedTransaction) _then) = _$ParsedTransactionCopyWithImpl;
+@useResult
+$Res call({
+ String smsId, int amount, DateTime date, String merchantName, String merchantId, String categoryId, String originalSmsBody, String sourceApp, PaymentMethod paymentMethod, String? cardLast4
+});
 
+
+
+
+}
 /// @nodoc
-class _$ParsedTransactionCopyWithImpl<$Res, $Val extends ParsedTransaction>
+class _$ParsedTransactionCopyWithImpl<$Res>
     implements $ParsedTransactionCopyWith<$Res> {
-  _$ParsedTransactionCopyWithImpl(this._value, this._then);
+  _$ParsedTransactionCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final ParsedTransaction _self;
+  final $Res Function(ParsedTransaction) _then;
 
-  /// Create a copy of ParsedTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? smsId = null,
-    Object? amount = null,
-    Object? date = null,
-    Object? merchantName = null,
-    Object? merchantId = null,
-    Object? categoryId = null,
-    Object? originalSmsBody = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            smsId: null == smsId
-                ? _value.smsId
-                : smsId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            amount: null == amount
-                ? _value.amount
-                : amount // ignore: cast_nullable_to_non_nullable
-                      as double,
-            date: null == date
-                ? _value.date
-                : date // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            merchantName: null == merchantName
-                ? _value.merchantName
-                : merchantName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            merchantId: null == merchantId
-                ? _value.merchantId
-                : merchantId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            categoryId: null == categoryId
-                ? _value.categoryId
-                : categoryId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            originalSmsBody: null == originalSmsBody
-                ? _value.originalSmsBody
-                : originalSmsBody // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of ParsedTransaction
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? smsId = null,Object? amount = null,Object? date = null,Object? merchantName = null,Object? merchantId = null,Object? categoryId = null,Object? originalSmsBody = null,Object? sourceApp = null,Object? paymentMethod = null,Object? cardLast4 = freezed,}) {
+  return _then(_self.copyWith(
+smsId: null == smsId ? _self.smsId : smsId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as DateTime,merchantName: null == merchantName ? _self.merchantName : merchantName // ignore: cast_nullable_to_non_nullable
+as String,merchantId: null == merchantId ? _self.merchantId : merchantId // ignore: cast_nullable_to_non_nullable
+as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String,originalSmsBody: null == originalSmsBody ? _self.originalSmsBody : originalSmsBody // ignore: cast_nullable_to_non_nullable
+as String,sourceApp: null == sourceApp ? _self.sourceApp : sourceApp // ignore: cast_nullable_to_non_nullable
+as String,paymentMethod: null == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as PaymentMethod,cardLast4: freezed == cardLast4 ? _self.cardLast4 : cardLast4 // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$ParsedTransactionImplCopyWith<$Res>
-    implements $ParsedTransactionCopyWith<$Res> {
-  factory _$$ParsedTransactionImplCopyWith(
-    _$ParsedTransactionImpl value,
-    $Res Function(_$ParsedTransactionImpl) then,
-  ) = __$$ParsedTransactionImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String smsId,
-    double amount,
-    DateTime date,
-    String merchantName,
-    String merchantId,
-    String categoryId,
-    String originalSmsBody,
-  });
 }
 
-/// @nodoc
-class __$$ParsedTransactionImplCopyWithImpl<$Res>
-    extends _$ParsedTransactionCopyWithImpl<$Res, _$ParsedTransactionImpl>
-    implements _$$ParsedTransactionImplCopyWith<$Res> {
-  __$$ParsedTransactionImplCopyWithImpl(
-    _$ParsedTransactionImpl _value,
-    $Res Function(_$ParsedTransactionImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of ParsedTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? smsId = null,
-    Object? amount = null,
-    Object? date = null,
-    Object? merchantName = null,
-    Object? merchantId = null,
-    Object? categoryId = null,
-    Object? originalSmsBody = null,
-  }) {
-    return _then(
-      _$ParsedTransactionImpl(
-        smsId: null == smsId
-            ? _value.smsId
-            : smsId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        amount: null == amount
-            ? _value.amount
-            : amount // ignore: cast_nullable_to_non_nullable
-                  as double,
-        date: null == date
-            ? _value.date
-            : date // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        merchantName: null == merchantName
-            ? _value.merchantName
-            : merchantName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        merchantId: null == merchantId
-            ? _value.merchantId
-            : merchantId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        categoryId: null == categoryId
-            ? _value.categoryId
-            : categoryId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        originalSmsBody: null == originalSmsBody
-            ? _value.originalSmsBody
-            : originalSmsBody // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [ParsedTransaction].
+extension ParsedTransactionPatterns on ParsedTransaction {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ParsedTransaction value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ParsedTransaction() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ParsedTransaction value)  $default,){
+final _that = this;
+switch (_that) {
+case _ParsedTransaction():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ParsedTransaction value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ParsedTransaction() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String smsId,  int amount,  DateTime date,  String merchantName,  String merchantId,  String categoryId,  String originalSmsBody,  String sourceApp,  PaymentMethod paymentMethod,  String? cardLast4)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ParsedTransaction() when $default != null:
+return $default(_that.smsId,_that.amount,_that.date,_that.merchantName,_that.merchantId,_that.categoryId,_that.originalSmsBody,_that.sourceApp,_that.paymentMethod,_that.cardLast4);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String smsId,  int amount,  DateTime date,  String merchantName,  String merchantId,  String categoryId,  String originalSmsBody,  String sourceApp,  PaymentMethod paymentMethod,  String? cardLast4)  $default,) {final _that = this;
+switch (_that) {
+case _ParsedTransaction():
+return $default(_that.smsId,_that.amount,_that.date,_that.merchantName,_that.merchantId,_that.categoryId,_that.originalSmsBody,_that.sourceApp,_that.paymentMethod,_that.cardLast4);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String smsId,  int amount,  DateTime date,  String merchantName,  String merchantId,  String categoryId,  String originalSmsBody,  String sourceApp,  PaymentMethod paymentMethod,  String? cardLast4)?  $default,) {final _that = this;
+switch (_that) {
+case _ParsedTransaction() when $default != null:
+return $default(_that.smsId,_that.amount,_that.date,_that.merchantName,_that.merchantId,_that.categoryId,_that.originalSmsBody,_that.sourceApp,_that.paymentMethod,_that.cardLast4);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ParsedTransactionImpl implements _ParsedTransaction {
-  const _$ParsedTransactionImpl({
-    required this.smsId,
-    required this.amount,
-    required this.date,
-    required this.merchantName,
-    required this.merchantId,
-    required this.categoryId,
-    required this.originalSmsBody,
-  });
 
-  factory _$ParsedTransactionImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ParsedTransactionImplFromJson(json);
+class _ParsedTransaction implements ParsedTransaction {
+  const _ParsedTransaction({required this.smsId, required this.amount, required this.date, required this.merchantName, required this.merchantId, required this.categoryId, required this.originalSmsBody, required this.sourceApp, this.paymentMethod = PaymentMethod.unknown, this.cardLast4});
+  factory _ParsedTransaction.fromJson(Map<String, dynamic> json) => _$ParsedTransactionFromJson(json);
 
-  @override
-  final String smsId;
-  // unique ID of the SMS
-  @override
-  final double amount;
-  @override
-  final DateTime date;
-  @override
-  final String merchantName;
-  @override
-  final String merchantId;
-  @override
-  final String categoryId;
-  @override
-  final String originalSmsBody;
+@override final  String smsId;
+@override final  int amount;
+@override final  DateTime date;
+@override final  String merchantName;
+@override final  String merchantId;
+@override final  String categoryId;
+@override final  String originalSmsBody;
+@override final  String sourceApp;
+@override@JsonKey() final  PaymentMethod paymentMethod;
+@override final  String? cardLast4;
 
-  @override
-  String toString() {
-    return 'ParsedTransaction(smsId: $smsId, amount: $amount, date: $date, merchantName: $merchantName, merchantId: $merchantId, categoryId: $categoryId, originalSmsBody: $originalSmsBody)';
-  }
+/// Create a copy of ParsedTransaction
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ParsedTransactionCopyWith<_ParsedTransaction> get copyWith => __$ParsedTransactionCopyWithImpl<_ParsedTransaction>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ParsedTransactionImpl &&
-            (identical(other.smsId, smsId) || other.smsId == smsId) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.date, date) || other.date == date) &&
-            (identical(other.merchantName, merchantName) ||
-                other.merchantName == merchantName) &&
-            (identical(other.merchantId, merchantId) ||
-                other.merchantId == merchantId) &&
-            (identical(other.categoryId, categoryId) ||
-                other.categoryId == categoryId) &&
-            (identical(other.originalSmsBody, originalSmsBody) ||
-                other.originalSmsBody == originalSmsBody));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    smsId,
-    amount,
-    date,
-    merchantName,
-    merchantId,
-    categoryId,
-    originalSmsBody,
-  );
-
-  /// Create a copy of ParsedTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ParsedTransactionImplCopyWith<_$ParsedTransactionImpl> get copyWith =>
-      __$$ParsedTransactionImplCopyWithImpl<_$ParsedTransactionImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ParsedTransactionImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$ParsedTransactionToJson(this, );
 }
 
-abstract class _ParsedTransaction implements ParsedTransaction {
-  const factory _ParsedTransaction({
-    required final String smsId,
-    required final double amount,
-    required final DateTime date,
-    required final String merchantName,
-    required final String merchantId,
-    required final String categoryId,
-    required final String originalSmsBody,
-  }) = _$ParsedTransactionImpl;
-
-  factory _ParsedTransaction.fromJson(Map<String, dynamic> json) =
-      _$ParsedTransactionImpl.fromJson;
-
-  @override
-  String get smsId; // unique ID of the SMS
-  @override
-  double get amount;
-  @override
-  DateTime get date;
-  @override
-  String get merchantName;
-  @override
-  String get merchantId;
-  @override
-  String get categoryId;
-  @override
-  String get originalSmsBody;
-
-  /// Create a copy of ParsedTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ParsedTransactionImplCopyWith<_$ParsedTransactionImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParsedTransaction&&(identical(other.smsId, smsId) || other.smsId == smsId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.merchantId, merchantId) || other.merchantId == merchantId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.originalSmsBody, originalSmsBody) || other.originalSmsBody == originalSmsBody)&&(identical(other.sourceApp, sourceApp) || other.sourceApp == sourceApp)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.cardLast4, cardLast4) || other.cardLast4 == cardLast4));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,smsId,amount,date,merchantName,merchantId,categoryId,originalSmsBody,sourceApp,paymentMethod,cardLast4);
+
+@override
+String toString() {
+  return 'ParsedTransaction(smsId: $smsId, amount: $amount, date: $date, merchantName: $merchantName, merchantId: $merchantId, categoryId: $categoryId, originalSmsBody: $originalSmsBody, sourceApp: $sourceApp, paymentMethod: $paymentMethod, cardLast4: $cardLast4)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ParsedTransactionCopyWith<$Res> implements $ParsedTransactionCopyWith<$Res> {
+  factory _$ParsedTransactionCopyWith(_ParsedTransaction value, $Res Function(_ParsedTransaction) _then) = __$ParsedTransactionCopyWithImpl;
+@override @useResult
+$Res call({
+ String smsId, int amount, DateTime date, String merchantName, String merchantId, String categoryId, String originalSmsBody, String sourceApp, PaymentMethod paymentMethod, String? cardLast4
+});
+
+
+
+
+}
+/// @nodoc
+class __$ParsedTransactionCopyWithImpl<$Res>
+    implements _$ParsedTransactionCopyWith<$Res> {
+  __$ParsedTransactionCopyWithImpl(this._self, this._then);
+
+  final _ParsedTransaction _self;
+  final $Res Function(_ParsedTransaction) _then;
+
+/// Create a copy of ParsedTransaction
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? smsId = null,Object? amount = null,Object? date = null,Object? merchantName = null,Object? merchantId = null,Object? categoryId = null,Object? originalSmsBody = null,Object? sourceApp = null,Object? paymentMethod = null,Object? cardLast4 = freezed,}) {
+  return _then(_ParsedTransaction(
+smsId: null == smsId ? _self.smsId : smsId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as DateTime,merchantName: null == merchantName ? _self.merchantName : merchantName // ignore: cast_nullable_to_non_nullable
+as String,merchantId: null == merchantId ? _self.merchantId : merchantId // ignore: cast_nullable_to_non_nullable
+as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String,originalSmsBody: null == originalSmsBody ? _self.originalSmsBody : originalSmsBody // ignore: cast_nullable_to_non_nullable
+as String,sourceApp: null == sourceApp ? _self.sourceApp : sourceApp // ignore: cast_nullable_to_non_nullable
+as String,paymentMethod: null == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as PaymentMethod,cardLast4: freezed == cardLast4 ? _self.cardLast4 : cardLast4 // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+// dart format on

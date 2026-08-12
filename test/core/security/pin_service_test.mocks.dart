@@ -22,6 +22,7 @@ import 'package:your_budget_manager/core/security/secure_key_storage.dart'
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: invalid_use_of_internal_member
 
 /// A class which mocks [SecureKeyStorage].
 ///

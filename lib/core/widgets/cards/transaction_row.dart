@@ -7,7 +7,7 @@ import 'merchant_sticker.dart';
 class TransactionRow extends StatelessWidget {
   final String merchantName;
   final String category;
-  final double amount;
+  final int amount; // Integer paise
   final DateTime date;
   final Color categoryColor;
   final bool isIncome;
@@ -30,8 +30,8 @@ class TransactionRow extends StatelessWidget {
     final tokens = theme.extension<AppCustomTokens>()!;
     
     final formattedAmount = isIncome
-        ? '+${CurrencyFormatter.format(amount)}'
-        : '-${CurrencyFormatter.format(amount)}';
+        ? '+${CurrencyFormatter.formatPaise(amount)}'
+        : '-${CurrencyFormatter.formatPaise(amount)}';
     
     // In dark mode, text might be slightly different. We use onSurface for primary text.
     final primaryTextColor = theme.colorScheme.onSurface;

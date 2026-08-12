@@ -6,4 +6,20 @@ part of 'merchant_dao.dart';
 mixin _$MerchantDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoriesTableTable get categoriesTable => attachedDatabase.categoriesTable;
   $MerchantsTableTable get merchantsTable => attachedDatabase.merchantsTable;
+  MerchantDaoManager get managers => MerchantDaoManager(this);
+}
+
+class MerchantDaoManager {
+  final _$MerchantDaoMixin _db;
+  MerchantDaoManager(this._db);
+  $$CategoriesTableTableTableManager get categoriesTable =>
+      $$CategoriesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.categoriesTable,
+      );
+  $$MerchantsTableTableTableManager get merchantsTable =>
+      $$MerchantsTableTableTableManager(
+        _db.attachedDatabase,
+        _db.merchantsTable,
+      );
 }

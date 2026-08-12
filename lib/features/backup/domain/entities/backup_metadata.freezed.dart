@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,244 +9,278 @@ part of 'backup_metadata.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-BackupMetadata _$BackupMetadataFromJson(Map<String, dynamic> json) {
-  return _BackupMetadata.fromJson(json);
-}
 
 /// @nodoc
 mixin _$BackupMetadata {
-  String get formatVersion => throw _privateConstructorUsedError;
-  String get appVersion => throw _privateConstructorUsedError;
-  DateTime get exportedAt => throw _privateConstructorUsedError;
-  int get dbSchemaVersion => throw _privateConstructorUsedError;
+
+ String get formatVersion; String get appVersion; DateTime get exportedAt; int get dbSchemaVersion;
+/// Create a copy of BackupMetadata
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BackupMetadataCopyWith<BackupMetadata> get copyWith => _$BackupMetadataCopyWithImpl<BackupMetadata>(this as BackupMetadata, _$identity);
 
   /// Serializes this BackupMetadata to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of BackupMetadata
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $BackupMetadataCopyWith<BackupMetadata> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BackupMetadata&&(identical(other.formatVersion, formatVersion) || other.formatVersion == formatVersion)&&(identical(other.appVersion, appVersion) || other.appVersion == appVersion)&&(identical(other.exportedAt, exportedAt) || other.exportedAt == exportedAt)&&(identical(other.dbSchemaVersion, dbSchemaVersion) || other.dbSchemaVersion == dbSchemaVersion));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,formatVersion,appVersion,exportedAt,dbSchemaVersion);
+
+@override
+String toString() {
+  return 'BackupMetadata(formatVersion: $formatVersion, appVersion: $appVersion, exportedAt: $exportedAt, dbSchemaVersion: $dbSchemaVersion)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $BackupMetadataCopyWith<$Res> {
-  factory $BackupMetadataCopyWith(
-    BackupMetadata value,
-    $Res Function(BackupMetadata) then,
-  ) = _$BackupMetadataCopyWithImpl<$Res, BackupMetadata>;
-  @useResult
-  $Res call({
-    String formatVersion,
-    String appVersion,
-    DateTime exportedAt,
-    int dbSchemaVersion,
-  });
-}
+abstract mixin class $BackupMetadataCopyWith<$Res>  {
+  factory $BackupMetadataCopyWith(BackupMetadata value, $Res Function(BackupMetadata) _then) = _$BackupMetadataCopyWithImpl;
+@useResult
+$Res call({
+ String formatVersion, String appVersion, DateTime exportedAt, int dbSchemaVersion
+});
 
+
+
+
+}
 /// @nodoc
-class _$BackupMetadataCopyWithImpl<$Res, $Val extends BackupMetadata>
+class _$BackupMetadataCopyWithImpl<$Res>
     implements $BackupMetadataCopyWith<$Res> {
-  _$BackupMetadataCopyWithImpl(this._value, this._then);
+  _$BackupMetadataCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final BackupMetadata _self;
+  final $Res Function(BackupMetadata) _then;
 
-  /// Create a copy of BackupMetadata
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? formatVersion = null,
-    Object? appVersion = null,
-    Object? exportedAt = null,
-    Object? dbSchemaVersion = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            formatVersion: null == formatVersion
-                ? _value.formatVersion
-                : formatVersion // ignore: cast_nullable_to_non_nullable
-                      as String,
-            appVersion: null == appVersion
-                ? _value.appVersion
-                : appVersion // ignore: cast_nullable_to_non_nullable
-                      as String,
-            exportedAt: null == exportedAt
-                ? _value.exportedAt
-                : exportedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            dbSchemaVersion: null == dbSchemaVersion
-                ? _value.dbSchemaVersion
-                : dbSchemaVersion // ignore: cast_nullable_to_non_nullable
-                      as int,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of BackupMetadata
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? formatVersion = null,Object? appVersion = null,Object? exportedAt = null,Object? dbSchemaVersion = null,}) {
+  return _then(_self.copyWith(
+formatVersion: null == formatVersion ? _self.formatVersion : formatVersion // ignore: cast_nullable_to_non_nullable
+as String,appVersion: null == appVersion ? _self.appVersion : appVersion // ignore: cast_nullable_to_non_nullable
+as String,exportedAt: null == exportedAt ? _self.exportedAt : exportedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,dbSchemaVersion: null == dbSchemaVersion ? _self.dbSchemaVersion : dbSchemaVersion // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
 
-/// @nodoc
-abstract class _$$BackupMetadataImplCopyWith<$Res>
-    implements $BackupMetadataCopyWith<$Res> {
-  factory _$$BackupMetadataImplCopyWith(
-    _$BackupMetadataImpl value,
-    $Res Function(_$BackupMetadataImpl) then,
-  ) = __$$BackupMetadataImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String formatVersion,
-    String appVersion,
-    DateTime exportedAt,
-    int dbSchemaVersion,
-  });
 }
 
-/// @nodoc
-class __$$BackupMetadataImplCopyWithImpl<$Res>
-    extends _$BackupMetadataCopyWithImpl<$Res, _$BackupMetadataImpl>
-    implements _$$BackupMetadataImplCopyWith<$Res> {
-  __$$BackupMetadataImplCopyWithImpl(
-    _$BackupMetadataImpl _value,
-    $Res Function(_$BackupMetadataImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of BackupMetadata
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? formatVersion = null,
-    Object? appVersion = null,
-    Object? exportedAt = null,
-    Object? dbSchemaVersion = null,
-  }) {
-    return _then(
-      _$BackupMetadataImpl(
-        formatVersion: null == formatVersion
-            ? _value.formatVersion
-            : formatVersion // ignore: cast_nullable_to_non_nullable
-                  as String,
-        appVersion: null == appVersion
-            ? _value.appVersion
-            : appVersion // ignore: cast_nullable_to_non_nullable
-                  as String,
-        exportedAt: null == exportedAt
-            ? _value.exportedAt
-            : exportedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        dbSchemaVersion: null == dbSchemaVersion
-            ? _value.dbSchemaVersion
-            : dbSchemaVersion // ignore: cast_nullable_to_non_nullable
-                  as int,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [BackupMetadata].
+extension BackupMetadataPatterns on BackupMetadata {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _BackupMetadata value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _BackupMetadata() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _BackupMetadata value)  $default,){
+final _that = this;
+switch (_that) {
+case _BackupMetadata():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _BackupMetadata value)?  $default,){
+final _that = this;
+switch (_that) {
+case _BackupMetadata() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String formatVersion,  String appVersion,  DateTime exportedAt,  int dbSchemaVersion)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _BackupMetadata() when $default != null:
+return $default(_that.formatVersion,_that.appVersion,_that.exportedAt,_that.dbSchemaVersion);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String formatVersion,  String appVersion,  DateTime exportedAt,  int dbSchemaVersion)  $default,) {final _that = this;
+switch (_that) {
+case _BackupMetadata():
+return $default(_that.formatVersion,_that.appVersion,_that.exportedAt,_that.dbSchemaVersion);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String formatVersion,  String appVersion,  DateTime exportedAt,  int dbSchemaVersion)?  $default,) {final _that = this;
+switch (_that) {
+case _BackupMetadata() when $default != null:
+return $default(_that.formatVersion,_that.appVersion,_that.exportedAt,_that.dbSchemaVersion);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$BackupMetadataImpl implements _BackupMetadata {
-  const _$BackupMetadataImpl({
-    required this.formatVersion,
-    required this.appVersion,
-    required this.exportedAt,
-    required this.dbSchemaVersion,
-  });
 
-  factory _$BackupMetadataImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BackupMetadataImplFromJson(json);
+class _BackupMetadata implements BackupMetadata {
+  const _BackupMetadata({required this.formatVersion, required this.appVersion, required this.exportedAt, required this.dbSchemaVersion});
+  factory _BackupMetadata.fromJson(Map<String, dynamic> json) => _$BackupMetadataFromJson(json);
 
-  @override
-  final String formatVersion;
-  @override
-  final String appVersion;
-  @override
-  final DateTime exportedAt;
-  @override
-  final int dbSchemaVersion;
+@override final  String formatVersion;
+@override final  String appVersion;
+@override final  DateTime exportedAt;
+@override final  int dbSchemaVersion;
 
-  @override
-  String toString() {
-    return 'BackupMetadata(formatVersion: $formatVersion, appVersion: $appVersion, exportedAt: $exportedAt, dbSchemaVersion: $dbSchemaVersion)';
-  }
+/// Create a copy of BackupMetadata
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$BackupMetadataCopyWith<_BackupMetadata> get copyWith => __$BackupMetadataCopyWithImpl<_BackupMetadata>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$BackupMetadataImpl &&
-            (identical(other.formatVersion, formatVersion) ||
-                other.formatVersion == formatVersion) &&
-            (identical(other.appVersion, appVersion) ||
-                other.appVersion == appVersion) &&
-            (identical(other.exportedAt, exportedAt) ||
-                other.exportedAt == exportedAt) &&
-            (identical(other.dbSchemaVersion, dbSchemaVersion) ||
-                other.dbSchemaVersion == dbSchemaVersion));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    formatVersion,
-    appVersion,
-    exportedAt,
-    dbSchemaVersion,
-  );
-
-  /// Create a copy of BackupMetadata
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$BackupMetadataImplCopyWith<_$BackupMetadataImpl> get copyWith =>
-      __$$BackupMetadataImplCopyWithImpl<_$BackupMetadataImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BackupMetadataImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$BackupMetadataToJson(this, );
 }
 
-abstract class _BackupMetadata implements BackupMetadata {
-  const factory _BackupMetadata({
-    required final String formatVersion,
-    required final String appVersion,
-    required final DateTime exportedAt,
-    required final int dbSchemaVersion,
-  }) = _$BackupMetadataImpl;
-
-  factory _BackupMetadata.fromJson(Map<String, dynamic> json) =
-      _$BackupMetadataImpl.fromJson;
-
-  @override
-  String get formatVersion;
-  @override
-  String get appVersion;
-  @override
-  DateTime get exportedAt;
-  @override
-  int get dbSchemaVersion;
-
-  /// Create a copy of BackupMetadata
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$BackupMetadataImplCopyWith<_$BackupMetadataImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BackupMetadata&&(identical(other.formatVersion, formatVersion) || other.formatVersion == formatVersion)&&(identical(other.appVersion, appVersion) || other.appVersion == appVersion)&&(identical(other.exportedAt, exportedAt) || other.exportedAt == exportedAt)&&(identical(other.dbSchemaVersion, dbSchemaVersion) || other.dbSchemaVersion == dbSchemaVersion));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,formatVersion,appVersion,exportedAt,dbSchemaVersion);
+
+@override
+String toString() {
+  return 'BackupMetadata(formatVersion: $formatVersion, appVersion: $appVersion, exportedAt: $exportedAt, dbSchemaVersion: $dbSchemaVersion)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$BackupMetadataCopyWith<$Res> implements $BackupMetadataCopyWith<$Res> {
+  factory _$BackupMetadataCopyWith(_BackupMetadata value, $Res Function(_BackupMetadata) _then) = __$BackupMetadataCopyWithImpl;
+@override @useResult
+$Res call({
+ String formatVersion, String appVersion, DateTime exportedAt, int dbSchemaVersion
+});
+
+
+
+
+}
+/// @nodoc
+class __$BackupMetadataCopyWithImpl<$Res>
+    implements _$BackupMetadataCopyWith<$Res> {
+  __$BackupMetadataCopyWithImpl(this._self, this._then);
+
+  final _BackupMetadata _self;
+  final $Res Function(_BackupMetadata) _then;
+
+/// Create a copy of BackupMetadata
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? formatVersion = null,Object? appVersion = null,Object? exportedAt = null,Object? dbSchemaVersion = null,}) {
+  return _then(_BackupMetadata(
+formatVersion: null == formatVersion ? _self.formatVersion : formatVersion // ignore: cast_nullable_to_non_nullable
+as String,appVersion: null == appVersion ? _self.appVersion : appVersion // ignore: cast_nullable_to_non_nullable
+as String,exportedAt: null == exportedAt ? _self.exportedAt : exportedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,dbSchemaVersion: null == dbSchemaVersion ? _self.dbSchemaVersion : dbSchemaVersion // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+// dart format on

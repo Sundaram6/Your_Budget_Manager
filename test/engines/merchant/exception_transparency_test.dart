@@ -17,6 +17,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(TransactionType.expense);
+    registerFallbackValue(PaymentMethod.unknown);
     registerFallbackValue(DateTime.now());
   });
 
@@ -25,17 +26,17 @@ void main() {
     merchantEngine = MerchantEngine(SmsQuery(), Logger(), mockExpenseEngine);
   });
 
-
   group('Exception Transparency Tests', () {
     test('confirmPendingTransaction throws exception when ExpenseEngine.addTransaction fails (e.g. Foreign Key SqliteException)', () async {
       final tx = ParsedTransaction(
         smsId: 'test-sms-1',
-        amount: 500.0,
+        amount: 50000,
         date: DateTime.now(),
         merchantName: 'Zepto',
         merchantId: 'mer_zepto',
         categoryId: 'cat_invalid_foreign_key',
         originalSmsBody: 'Paid 500',
+        sourceApp: 'sms:unknown',
       );
 
       when(() => mockExpenseEngine.addTransaction(
@@ -44,6 +45,9 @@ void main() {
         categoryId: any(named: 'categoryId'),
         type: any(named: 'type'),
         note: any(named: 'note'),
+        sourceApp: any(named: 'sourceApp'),
+        paymentMethod: any(named: 'paymentMethod'),
+        cardLast4: any(named: 'cardLast4'),
       )).thenThrow(const FormatException('SqliteException(787): FOREIGN KEY constraint failed'));
 
       expect(
@@ -55,20 +59,22 @@ void main() {
     test('confirmPendingTransaction throws StateError when post-write DB read-back verification fails', () async {
       final tx = ParsedTransaction(
         smsId: 'test-sms-2',
-        amount: 250.0,
+        amount: 25000,
         date: DateTime.now(),
         merchantName: 'Dmart',
         merchantId: 'mer_dmart',
         categoryId: 'cat_groceries',
         originalSmsBody: 'Paid 250',
+        sourceApp: 'sms:dmart',
       );
 
       final dummySaved = Transaction(
         id: 'saved-id-999',
-        amount: const Amount(250.0),
+        amount: const Amount(25000),
         date: DateTime.now(),
         categoryId: 'cat_groceries',
         type: TransactionType.expense,
+        sourceApp: 'sms:dmart',
       );
 
       when(() => mockExpenseEngine.addTransaction(
@@ -77,6 +83,9 @@ void main() {
         categoryId: any(named: 'categoryId'),
         type: any(named: 'type'),
         note: any(named: 'note'),
+        sourceApp: any(named: 'sourceApp'),
+        paymentMethod: any(named: 'paymentMethod'),
+        cardLast4: any(named: 'cardLast4'),
       )).thenAnswer((_) async => dummySaved);
 
       // Simulate post-write read-back returning null (row missing in DB)

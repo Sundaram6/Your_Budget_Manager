@@ -4,7 +4,7 @@ part 'backup_metadata.freezed.dart';
 part 'backup_metadata.g.dart';
 
 @freezed
-class BackupMetadata with _$BackupMetadata {
+abstract class BackupMetadata with _$BackupMetadata {
   const factory BackupMetadata({
     required String formatVersion,
     required String appVersion,

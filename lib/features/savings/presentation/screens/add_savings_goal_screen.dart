@@ -7,6 +7,7 @@ import '../../../../core/providers/database_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
 
 class AddSavingsGoalScreen extends ConsumerStatefulWidget {
@@ -40,8 +41,7 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
   }
 
   void _calculate50_30_20(String val) {
-    final rupees = double.tryParse(val.trim()) ?? 0.0;
-    final incomePaise = (rupees * 100).round();
+    final incomePaise = CurrencyFormatter.parseRupeesToPaise(val) ?? 0;
     final engine = ref.read(savingsEngineProvider);
     setState(() {
       _ruleBreakdown = engine.calculate50_30_20(incomePaise);
@@ -65,16 +65,14 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
-    final targetRupees = double.tryParse(_targetAmountController.text.trim()) ?? 0.0;
-    if (targetRupees <= 0) return;
-
-    final targetPaise = (targetRupees * 100).round();
+    final targetPaise = CurrencyFormatter.parseRupeesToPaise(_targetAmountController.text) ?? 0;
+    if (targetPaise <= 0) return;
 
     int? autoDeductPaise;
     if (_autoDeduct) {
-      final autoRupees = double.tryParse(_autoDeductAmountController.text.trim()) ?? 0.0;
-      if (autoRupees > 0) {
-        autoDeductPaise = (autoRupees * 100).round();
+      final autoPaise = CurrencyFormatter.parseRupeesToPaise(_autoDeductAmountController.text);
+      if (autoPaise != null && autoPaise > 0) {
+        autoDeductPaise = autoPaise;
       }
     }
 
