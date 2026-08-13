@@ -24,6 +24,7 @@ import '../features/savings/presentation/screens/savings_goals_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/settings/presentation/screens/sms_settings_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
+import '../screens/settings/pin_security_screen.dart';
 import '../features/transactions/presentation/screens/add_transaction_screen.dart';
 import '../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../core/widgets/layout/main_navigation_shell.dart';
@@ -119,6 +120,7 @@ GoRouter appRouter(Ref ref) {
         routes: [
           GoRoute(
             path: '/insights',
+            name: RouteNames.insights,
             builder: (context, state) => const InsightsScreen(),
           ),
           GoRoute(
@@ -184,6 +186,11 @@ GoRouter appRouter(Ref ref) {
         path: '/notification-settings',
         name: RouteNames.notificationSettings,
         builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/security',
+        name: RouteNames.security,
+        builder: (context, state) => const PinSecurityScreen(),
       ),
       GoRoute(
         path: '/savings',

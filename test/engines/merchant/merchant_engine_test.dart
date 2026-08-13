@@ -69,6 +69,8 @@ void main() {
             paymentMethod: PaymentMethod.debit_card,
             cardLast4: '4521',
             merchantName: 'Swiggy',
+            recurrenceOccurrenceKey: any(named: 'recurrenceOccurrenceKey'),
+            sourceMessageId: 'sms-123',
           )).thenAnswer((_) async => savedTx);
 
       when(() => mockExpenseEngine.getTransactionById('saved-tx-123')).thenAnswer((_) async => savedTx);
@@ -89,6 +91,8 @@ void main() {
             paymentMethod: PaymentMethod.debit_card,
             cardLast4: '4521',
             merchantName: 'Swiggy',
+            recurrenceOccurrenceKey: any(named: 'recurrenceOccurrenceKey'),
+            sourceMessageId: 'sms-123',
           )).called(1);
       verify(() => mockExpenseEngine.getTransactionById('saved-tx-123')).called(1);
     });
@@ -104,6 +108,8 @@ void main() {
             paymentMethod: any(named: 'paymentMethod'),
             cardLast4: any(named: 'cardLast4'),
             merchantName: any(named: 'merchantName'),
+            recurrenceOccurrenceKey: any(named: 'recurrenceOccurrenceKey'),
+            sourceMessageId: any(named: 'sourceMessageId'),
           )).thenAnswer((_) async => savedTx);
 
       when(() => mockExpenseEngine.getTransactionById('saved-tx-123')).thenAnswer((_) async => null);
@@ -128,6 +134,8 @@ void main() {
             paymentMethod: any(named: 'paymentMethod'),
             cardLast4: any(named: 'cardLast4'),
             merchantName: any(named: 'merchantName'),
+            recurrenceOccurrenceKey: any(named: 'recurrenceOccurrenceKey'),
+            sourceMessageId: any(named: 'sourceMessageId'),
           )).thenThrow(Exception('Database insertion error'));
 
       expect(

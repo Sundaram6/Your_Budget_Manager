@@ -27,3 +27,7 @@ class CryptographyException extends AppException {
 class ValidationException extends AppException {
   const ValidationException(super.message, [super.cause]);
 }
+
+class SecurityException extends AppException {
+  const SecurityException(super.message, [super.cause]);
+}

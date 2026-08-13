@@ -173,36 +173,39 @@ class _PinSecurityScreenState extends ConsumerState<PinSecurityScreen> {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: const Color(0xFF2A2A2A)),
                   ),
-                  child: Column(
-                    children: [
-                      SwitchListTile(
-                        title: const Text(
-                          'Use Fingerprint / Face ID',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
+                      children: [
+                        SwitchListTile(
+                          title: const Text(
+                            'Use Fingerprint / Face ID',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: const Text(
+                            'Authenticate using biometric hardware',
+                            style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12),
+                          ),
+                          value: _useBiometric,
+                          activeColor: AppColors.darkGoldPrimary,
+                          onChanged: _toggleBiometric,
                         ),
-                        subtitle: const Text(
-                          'Authenticate using biometric hardware',
-                          style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12),
+                        const Divider(height: 1, color: Color(0xFF2A2A2A)),
+                        SwitchListTile(
+                          title: const Text(
+                            'Lock app when backgrounded',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: const Text(
+                            'Require authentication upon returning to app',
+                            style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12),
+                          ),
+                          value: _lockOnBackground,
+                          activeColor: AppColors.darkGoldPrimary,
+                          onChanged: _toggleLockOnBackground,
                         ),
-                        value: _useBiometric,
-                        activeColor: AppColors.darkGoldPrimary,
-                        onChanged: _toggleBiometric,
-                      ),
-                      const Divider(height: 1, color: Color(0xFF2A2A2A)),
-                      SwitchListTile(
-                        title: const Text(
-                          'Lock app when backgrounded',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          'Require authentication upon returning to app',
-                          style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12),
-                        ),
-                        value: _lockOnBackground,
-                        activeColor: AppColors.darkGoldPrimary,
-                        onChanged: _toggleLockOnBackground,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

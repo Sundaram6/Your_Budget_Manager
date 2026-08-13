@@ -22,6 +22,8 @@ _Transaction _$TransactionFromJson(Map<String, dynamic> json) => _Transaction(
   recurringId: json['recurringId'] as String?,
   merchantName: json['merchantName'] as String?,
   merchantId: json['merchantId'] as String?,
+  recurrenceOccurrenceKey: json['recurrenceOccurrenceKey'] as String?,
+  sourceMessageId: json['sourceMessageId'] as String?,
   createdAt: (json['createdAt'] as num?)?.toInt(),
   updatedAt: (json['updatedAt'] as num?)?.toInt(),
 );
@@ -41,6 +43,8 @@ Map<String, dynamic> _$TransactionToJson(_Transaction instance) =>
       'recurringId': instance.recurringId,
       'merchantName': instance.merchantName,
       'merchantId': instance.merchantId,
+      'recurrenceOccurrenceKey': instance.recurrenceOccurrenceKey,
+      'sourceMessageId': instance.sourceMessageId,
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,
     };

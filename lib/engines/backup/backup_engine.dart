@@ -77,17 +77,57 @@ class BackupEngine {
     switch (formatVersion) {
       case 1:
       case 2:
-        await _importValidatedPayload(payload);
+        await _importValidatedPayload(payload, formatVersion);
         break;
       default:
         throw ValidationException('Unsupported backup format version: $formatVersion');
     }
   }
 
-  Future<void> _importValidatedPayload(Map<String, dynamic> payload) async {
+  Future<void> _importValidatedPayload(Map<String, dynamic> payload, int formatVersion) async {
     final data = payload['data'] as Map<String, dynamic>? ?? {};
 
-    // Pre-validate all data lists before touching database
+    // 1. Strict top-level section completeness check
+    if (formatVersion == 2) {
+      const requiredSections = [
+        'categories',
+        'merchants',
+        'budgets',
+        'recurringTransactions',
+        'savingsGoals',
+        'transactions',
+      ];
+
+      for (final section in requiredSections) {
+        if (!data.containsKey(section) || data[section] == null) {
+          throw ValidationException(
+            'Backup payload is corrupted or incomplete: missing expected section "$section" in v2 backup.',
+          );
+        }
+        if (data[section] is! List) {
+          throw ValidationException(
+            'Backup payload schema validation failed: section "$section" must be a JSON array.',
+          );
+        }
+      }
+    } else {
+      // Legacy v1 schema requires categories and transactions
+      const requiredV1Sections = ['categories', 'transactions'];
+      for (final section in requiredV1Sections) {
+        if (!data.containsKey(section) || data[section] == null) {
+          throw ValidationException(
+            'Backup payload is corrupted or incomplete: missing expected section "$section" in v1 backup.',
+          );
+        }
+        if (data[section] is! List) {
+          throw ValidationException(
+            'Backup payload schema validation failed: section "$section" must be a JSON array.',
+          );
+        }
+      }
+    }
+
+    // 2. Strict item-level field and structure validation
     final List<Category> categories = [];
     final List<Merchant> merchants = [];
     final List<Budget> budgets = [];
@@ -97,59 +137,101 @@ class BackupEngine {
     final List<AppSetting> settings = [];
 
     try {
+      // Categories validation
       if (data.containsKey('categories') && data['categories'] is List) {
-        for (var item in (data['categories'] as List)) {
-          if (item is Map<String, dynamic>) {
-            categories.add(Category.fromJson(item));
+        for (final item in (data['categories'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Category item is not a JSON object');
           }
+          if (item['id'] is! String || item['name'] is! String) {
+            throw const FormatException('Category item missing required string fields (id, name)');
+          }
+          categories.add(Category.fromJson(item));
         }
       }
 
+      // Merchants validation
       if (data.containsKey('merchants') && data['merchants'] is List) {
-        for (var item in (data['merchants'] as List)) {
-          if (item is Map<String, dynamic>) {
-            merchants.add(Merchant.fromJson(item));
+        for (final item in (data['merchants'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Merchant item is not a JSON object');
           }
+          if (item['id'] is! String || item['name'] is! String) {
+            throw const FormatException('Merchant item missing required string fields (id, name)');
+          }
+          merchants.add(Merchant.fromJson(item));
         }
       }
 
+      // Budgets validation
       if (data.containsKey('budgets') && data['budgets'] is List) {
-        for (var item in (data['budgets'] as List)) {
-          if (item is Map<String, dynamic>) {
-            budgets.add(Budget.fromJson(item));
+        for (final item in (data['budgets'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Budget item is not a JSON object');
           }
+          if (item['id'] is! String || item['amount'] is! num) {
+            throw const FormatException('Budget item missing required fields (id, amount)');
+          }
+          budgets.add(Budget.fromJson(item));
         }
       }
 
+      // Recurring Transactions validation
       if (data.containsKey('recurringTransactions') && data['recurringTransactions'] is List) {
-        for (var item in (data['recurringTransactions'] as List)) {
-          if (item is Map<String, dynamic>) {
-            recurring.add(RecurringTransactionData.fromJson(item));
+        for (final item in (data['recurringTransactions'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Recurring transaction item is not a JSON object');
           }
+          if (item['id'] is! String || item['title'] is! String) {
+            throw const FormatException('Recurring transaction item missing required fields (id, title)');
+          }
+          recurring.add(RecurringTransactionData.fromJson(item));
         }
       }
 
-      if (data.containsKey('savingsGoals') && data['savingsGoals'] is List) {
-        for (var item in (data['savingsGoals'] as List)) {
-          if (item is Map<String, dynamic>) {
-            savingsGoals.add(SavingsGoal.fromJson(item));
+      // Savings Goals validation (required in v2, optional in v1)
+      if (data.containsKey('savingsGoals') && data['savingsGoals'] != null) {
+        for (final item in (data['savingsGoals'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Savings goal item is not a JSON object');
           }
+          if (item['id'] is! String ||
+              item['name'] is! String ||
+              item['targetAmount'] is! num ||
+              item['currentAmount'] is! num) {
+            throw const FormatException('Savings goal item missing required fields (id, name, targetAmount, currentAmount)');
+          }
+          savingsGoals.add(SavingsGoal.fromJson(item));
         }
       }
 
+      // Transactions validation
       if (data.containsKey('transactions') && data['transactions'] is List) {
-        for (var item in (data['transactions'] as List)) {
-          if (item is Map<String, dynamic>) {
-            transactions.add(Transaction.fromJson(item));
+        for (final item in (data['transactions'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Transaction item is not a JSON object');
           }
+          if (item['id'] is! String ||
+              item['amount'] is! num ||
+              item['type'] is! String ||
+              item['categoryId'] is! String ||
+              item['date'] is! num) {
+            throw const FormatException('Transaction item missing required fields (id, amount, type, categoryId, date)');
+          }
+          transactions.add(Transaction.fromJson(item));
         }
       }
 
+      // App Settings validation (optional)
       if (data.containsKey('appSettings') && data['appSettings'] is List) {
-        for (var item in (data['appSettings'] as List)) {
-          if (item is Map<String, dynamic>) {
-            settings.add(AppSetting.fromJson(item));
+        for (final item in (data['appSettings'] as List)) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('App setting item is not a JSON object');
           }
+          if (item['key'] is! String || item['value'] is! String) {
+            throw const FormatException('App setting item missing key or value');
+          }
+          settings.add(AppSetting.fromJson(item));
         }
       }
     } catch (e) {
@@ -157,7 +239,8 @@ class BackupEngine {
     }
 
     // Atomic database replacement:
-    // If any insert fails, transaction rolls back completely and existing DB is unchanged.
+    // Only executed after 100% of the payload passes strict schema and completeness checks.
+    // If any DB operation fails, the transaction rolls back completely and existing DB is unchanged.
     await _db.transaction(() async {
       // Clear tables in reverse dependency order
       await _db.delete(_db.transactionsTable).go();

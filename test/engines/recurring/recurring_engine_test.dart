@@ -149,8 +149,8 @@ void main() {
       expect(dateFormat.format(dates[1]), equals('2026-02-28')); // Clamped to Feb 28 in non-leap year
 
       final updated = await DatabaseHelper.instance.getRecurringTransactionById('rec_monthly_clamp');
-      // Next due date in March (month has 31 days)
-      expect(dateFormat.format(updated!.nextDueDate), equals('2026-03-28'));
+      // Next due date in March restores 31st (month has 31 days - no anchor drift!)
+      expect(dateFormat.format(updated!.nextDueDate), equals('2026-03-31'));
     });
 
     test('Leap year clamping handles Feb 29 safely for yearly schedules', () async {

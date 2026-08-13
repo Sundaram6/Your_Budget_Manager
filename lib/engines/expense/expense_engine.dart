@@ -26,6 +26,8 @@ class ExpenseEngine {
     String? recurringId,
     String? merchantName,
     String? merchantId,
+    String? recurrenceOccurrenceKey,
+    String? sourceMessageId,
     int? createdAt,
   }) async {
     if (amount <= 0) {
@@ -46,6 +48,8 @@ class ExpenseEngine {
       recurringId: recurringId,
       merchantName: merchantName,
       merchantId: merchantId,
+      recurrenceOccurrenceKey: recurrenceOccurrenceKey,
+      sourceMessageId: sourceMessageId,
       createdAt: createdAt ?? now,
       updatedAt: now,
     );

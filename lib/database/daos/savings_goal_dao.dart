@@ -52,35 +52,43 @@ class SavingsGoalDao extends DatabaseAccessor<AppDatabase>
   Future<bool> updateGoal(SavingsGoalsTableCompanion goal) =>
       update(savingsGoalsTable).replace(goal);
 
-  /// Add deposit amount in paise to a goal's currentAmount.
+  /// Add deposit amount in paise to a goal's currentAmount atomically.
   Future<void> addDepositPaise(String id, int amountPaise) async {
-    final goal = await getById(id);
-    if (goal == null) return;
-    final newAmount = goal.currentAmount + amountPaise;
-    final isCompleted = newAmount >= goal.targetAmount;
-    await (update(savingsGoalsTable)..where((t) => t.id.equals(id))).write(
-      SavingsGoalsTableCompanion(
-        currentAmount: Value(newAmount),
-        status: isCompleted ? const Value('completed') : Value(goal.status),
-        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ),
-    );
+    await db.transaction(() async {
+      final goal = await (select(savingsGoalsTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+      if (goal == null) return;
+      final newAmount = goal.currentAmount + amountPaise;
+      final isCompleted = newAmount >= goal.targetAmount;
+      await (update(savingsGoalsTable)..where((t) => t.id.equals(id))).write(
+        SavingsGoalsTableCompanion(
+          currentAmount: Value(newAmount),
+          status: isCompleted ? const Value('completed') : Value(goal.status),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+    });
   }
 
-  /// Record auto-deduction executed for current month.
-  Future<void> recordAutoDeduction(String id, String monthKey, int amountPaise) async {
-    final goal = await getById(id);
-    if (goal == null) return;
-    final newAmount = goal.currentAmount + amountPaise;
-    final isCompleted = newAmount >= goal.targetAmount;
-    await (update(savingsGoalsTable)..where((t) => t.id.equals(id))).write(
-      SavingsGoalsTableCompanion(
-        currentAmount: Value(newAmount),
-        lastAutoDeductedMonth: Value(monthKey),
-        status: isCompleted ? const Value('completed') : Value(goal.status),
-        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ),
-    );
+  /// Record auto-deduction executed for current month atomically with race guard.
+  /// Returns true if auto-deduction was applied; false if already recorded for monthKey.
+  Future<bool> recordAutoDeduction(String id, String monthKey, int amountPaise) async {
+    return await db.transaction(() async {
+      final goal = await (select(savingsGoalsTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+      if (goal == null) return false;
+      if (goal.lastAutoDeductedMonth == monthKey) return false;
+
+      final newAmount = goal.currentAmount + amountPaise;
+      final isCompleted = newAmount >= goal.targetAmount;
+      await (update(savingsGoalsTable)..where((t) => t.id.equals(id))).write(
+        SavingsGoalsTableCompanion(
+          currentAmount: Value(newAmount),
+          lastAutoDeductedMonth: Value(monthKey),
+          status: isCompleted ? const Value('completed') : Value(goal.status),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+      return true;
+    });
   }
 
   /// Delete a savings goal.

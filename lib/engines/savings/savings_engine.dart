@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/errors/app_exception.dart';
 import '../../database/app_database.dart';
 import '../../database/daos/savings_goal_dao.dart';
 import '../../features/savings/domain/repositories/savings_goal_repository.dart';
@@ -37,8 +38,12 @@ class SavingsEngine {
     String colorHex = '#FFD700',
     String? note,
   }) async {
-    assert(name.isNotEmpty, 'Goal name must not be empty');
-    assert(targetAmountPaise > 0, 'Target amount must be positive');
+    if (name.trim().isEmpty) {
+      throw const ValidationException('Goal name must not be empty');
+    }
+    if (targetAmountPaise <= 0) {
+      throw const ValidationException('Target amount must be positive');
+    }
 
     final now = DateTime.now();
     final id = _uuid.v4();
@@ -71,7 +76,9 @@ class SavingsEngine {
 
   /// Contribute/deposit an amount in paise to a goal.
   Future<void> contributeToGoal(String goalId, int amountPaise) async {
-    assert(amountPaise > 0, 'Contribution amount must be positive');
+    if (amountPaise <= 0) {
+      throw const ValidationException('Contribution amount must be positive');
+    }
     if (_repo != null) {
       await _repo.addDepositPaise(goalId, amountPaise);
     } else {

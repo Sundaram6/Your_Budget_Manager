@@ -13,6 +13,6 @@ abstract class SavingsGoalRepository {
   Future<void> createGoal(SavingsGoalsTableCompanion goal);
   Future<bool> updateGoal(SavingsGoalsTableCompanion goal);
   Future<void> addDepositPaise(String id, int amountPaise);
-  Future<void> recordAutoDeduction(String id, String monthKey, int amountPaise);
+  Future<bool> recordAutoDeduction(String id, String monthKey, int amountPaise);
   Future<int> deleteGoal(String id);
 }

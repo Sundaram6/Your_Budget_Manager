@@ -41,13 +41,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_recurrence_key ON transactions(recurrence_occurrence_key) WHERE recurrence_occurrence_key IS NOT NULL;',
+        );
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_source_message_id ON transactions(source_message_id) WHERE source_message_id IS NOT NULL;',
+        );
       },
       onUpgrade: (Migrator m, int from, int to) async {
         // v1 → v2: savings_goals table added.
@@ -327,6 +333,28 @@ class AppDatabase extends _$AppDatabase {
             SET payment_method = 'unknown'
             WHERE payment_method IS NULL;
           ''');
+        }
+
+        // v7 → v8: recurrence_occurrence_key column and unique index added to transactions table
+        if (from < 8) {
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.recurrenceOccurrenceKey);
+          } catch (_) {}
+
+          await customStatement(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_recurrence_key ON transactions(recurrence_occurrence_key) WHERE recurrence_occurrence_key IS NOT NULL;',
+          );
+        }
+
+        // v8 → v9: source_message_id column and partial unique index added to transactions table
+        if (from < 9) {
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.sourceMessageId);
+          } catch (_) {}
+
+          await customStatement(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_source_message_id ON transactions(source_message_id) WHERE source_message_id IS NOT NULL;',
+          );
         }
       },
       beforeOpen: (details) async {

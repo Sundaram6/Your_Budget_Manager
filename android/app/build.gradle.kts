@@ -59,11 +59,60 @@ android {
     buildTypes {
         release {
             val releaseConfig = signingConfigs.getByName("release")
-            if (releaseConfig.storeFile != null && releaseConfig.storeFile!!.exists()) {
+            val hasValidStore = releaseConfig.storeFile != null && releaseConfig.storeFile!!.exists()
+            val hasValidCredentials = !releaseConfig.keyAlias.isNullOrBlank() &&
+                !releaseConfig.keyPassword.isNullOrBlank() &&
+                !releaseConfig.storePassword.isNullOrBlank()
+
+            if (hasValidStore && hasValidCredentials) {
                 signingConfig = releaseConfig
             } else {
-                // Fallback to debug signing config when key.properties is not yet generated
-                signingConfig = signingConfigs.getByName("debug")
+                signingConfig = null
+
+                gradle.taskGraph.whenReady {
+                    val isReleaseTask = allTasks.any { task ->
+                        task.name.contains("Release", ignoreCase = true) &&
+                        (task.name.startsWith("assemble") ||
+                         task.name.startsWith("bundle") ||
+                         task.name.startsWith("package") ||
+                         task.name.startsWith("build"))
+                    }
+
+                    if (isReleaseTask) {
+                        val missingDetails = mutableListOf<String>()
+                        if (!keystorePropertiesFile.exists()) {
+                            missingDetails.add("key.properties file not found at: ${keystorePropertiesFile.absolutePath}")
+                        }
+                        if (releaseConfig.storeFile == null || !releaseConfig.storeFile!!.exists()) {
+                            val path = keystoreProperties.getProperty("storeFile") ?: "not specified"
+                            missingDetails.add("Keystore file '$path' does not exist")
+                        }
+                        if (releaseConfig.keyAlias.isNullOrBlank()) missingDetails.add("keyAlias is missing")
+                        if (releaseConfig.keyPassword.isNullOrBlank()) missingDetails.add("keyPassword is missing")
+                        if (releaseConfig.storePassword.isNullOrBlank()) missingDetails.add("storePassword is missing")
+
+                        throw org.gradle.api.GradleException(
+                            """
+                            |================================================================================
+                            |RELEASE BUILD SIGNING ERROR:
+                            |Release build requires a valid release keystore configured in android/key.properties.
+                            |Silently falling back to debug signing is strictly disabled for release safety.
+                            |
+                            |Issues detected:
+                            |${missingDetails.joinToString("\n") { "| - $it" }}
+                            |
+                            |To configure release signing:
+                            |1. Create android/key.properties containing:
+                            |   storePassword=<your-store-password>
+                            |   keyPassword=<your-key-password>
+                            |   keyAlias=<your-key-alias>
+                            |   storeFile=<path-to-your-keystore.jks>
+                            |2. Ensure the keystore file exists at the specified path.
+                            |================================================================================
+                            """.trimMargin()
+                        )
+                    }
+                }
             }
         }
     }

@@ -21,6 +21,8 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       sourceApp: json['source_app'] as String?,
       paymentMethod: json['payment_method'] as String?,
       cardLast4: json['card_last_4'] as String?,
+      recurrenceOccurrenceKey: json['recurrence_occurrence_key'] as String?,
+      sourceMessageId: json['source_message_id'] as String?,
       createdAt: _$JsonConverterFromJson<String, DateTime>(
         json['created_at'],
         const Iso8601Converter().fromJson,
@@ -42,6 +44,8 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'source_app': instance.sourceApp,
       'payment_method': instance.paymentMethod,
       'card_last_4': instance.cardLast4,
+      'recurrence_occurrence_key': instance.recurrenceOccurrenceKey,
+      'source_message_id': instance.sourceMessageId,
       'created_at': _$JsonConverterToJson<String, DateTime>(
         instance.createdAt,
         const Iso8601Converter().toJson,

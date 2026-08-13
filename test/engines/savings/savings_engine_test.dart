@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:your_budget_manager/core/errors/app_exception.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/engines/savings/savings_engine.dart';
 import 'package:your_budget_manager/features/savings/data/repositories/savings_goal_repository_impl.dart';
@@ -31,14 +32,14 @@ void main() {
     test('throws on empty name', () {
       expect(
         () => engine.createGoal(name: '', targetAmountPaise: 100000),
-        throwsA(isA<AssertionError>()),
+        throwsA(isA<ValidationException>()),
       );
     });
 
     test('throws on zero target amount', () {
       expect(
         () => engine.createGoal(name: 'Goal', targetAmountPaise: 0),
-        throwsA(isA<AssertionError>()),
+        throwsA(isA<ValidationException>()),
       );
     });
   });

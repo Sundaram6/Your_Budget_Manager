@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:sqlite3/sqlite3.dart';
 
+import '../core/errors/app_exception.dart';
+
 class EncryptionMigrationException implements Exception {
   final String message;
   const EncryptionMigrationException(this.message);
@@ -25,11 +27,25 @@ class EncryptionMigration {
   static String escapeSqlString(String source) => source.replaceAll("'", "''");
 
   /// Verifies if the loaded SQLite binary has SQLite3MultipleCiphers cipher support enabled.
-  static bool debugCheckHasCipher(Database database) {
+  static bool hasCipher(Database database) {
     try {
       return database.select('PRAGMA cipher;').isNotEmpty;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// Legacy alias for [hasCipher].
+  static bool debugCheckHasCipher(Database database) => hasCipher(database);
+
+  /// Unconditionally asserts cipher capability at runtime in both debug and release builds.
+  /// Throws [SecurityException] if SQLite3MultipleCiphers is not available.
+  static void verifyCipherSupport(Database database, {String context = 'database initialization'}) {
+    if (!hasCipher(database)) {
+      throw SecurityException(
+        'Database encryption verification failed ($context): SQLite3MultipleCiphers is not active. '
+        'Cannot proceed with an unencrypted database.',
+      );
     }
   }
 

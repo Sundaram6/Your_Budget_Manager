@@ -2092,6 +2092,28 @@ class $TransactionsTableTable extends TransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _recurrenceOccurrenceKeyMeta =
+      const VerificationMeta('recurrenceOccurrenceKey');
+  @override
+  late final GeneratedColumn<String> recurrenceOccurrenceKey =
+      GeneratedColumn<String>(
+        'recurrence_occurrence_key',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sourceMessageIdMeta = const VerificationMeta(
+    'sourceMessageId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceMessageId = GeneratedColumn<String>(
+    'source_message_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2130,6 +2152,8 @@ class $TransactionsTableTable extends TransactionsTable
     sourceApp,
     paymentMethod,
     cardLast4,
+    recurrenceOccurrenceKey,
+    sourceMessageId,
     createdAt,
     updatedAt,
   ];
@@ -2251,6 +2275,24 @@ class $TransactionsTableTable extends TransactionsTable
         cardLast4.isAcceptableOrUnknown(data['card_last4']!, _cardLast4Meta),
       );
     }
+    if (data.containsKey('recurrence_occurrence_key')) {
+      context.handle(
+        _recurrenceOccurrenceKeyMeta,
+        recurrenceOccurrenceKey.isAcceptableOrUnknown(
+          data['recurrence_occurrence_key']!,
+          _recurrenceOccurrenceKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_message_id')) {
+      context.handle(
+        _sourceMessageIdMeta,
+        sourceMessageId.isAcceptableOrUnknown(
+          data['source_message_id']!,
+          _sourceMessageIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2332,6 +2374,14 @@ class $TransactionsTableTable extends TransactionsTable
         DriftSqlType.string,
         data['${effectivePrefix}card_last4'],
       ),
+      recurrenceOccurrenceKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_occurrence_key'],
+      ),
+      sourceMessageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_message_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -2364,6 +2414,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String? sourceApp;
   final String? paymentMethod;
   final String? cardLast4;
+  final String? recurrenceOccurrenceKey;
+  final String? sourceMessageId;
   final int createdAt;
   final int updatedAt;
   const Transaction({
@@ -2381,6 +2433,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.sourceApp,
     this.paymentMethod,
     this.cardLast4,
+    this.recurrenceOccurrenceKey,
+    this.sourceMessageId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2415,6 +2469,14 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || cardLast4 != null) {
       map['card_last4'] = Variable<String>(cardLast4);
     }
+    if (!nullToAbsent || recurrenceOccurrenceKey != null) {
+      map['recurrence_occurrence_key'] = Variable<String>(
+        recurrenceOccurrenceKey,
+      );
+    }
+    if (!nullToAbsent || sourceMessageId != null) {
+      map['source_message_id'] = Variable<String>(sourceMessageId);
+    }
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
     return map;
@@ -2448,6 +2510,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       cardLast4: cardLast4 == null && nullToAbsent
           ? const Value.absent()
           : Value(cardLast4),
+      recurrenceOccurrenceKey: recurrenceOccurrenceKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceOccurrenceKey),
+      sourceMessageId: sourceMessageId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceMessageId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2473,6 +2541,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       sourceApp: serializer.fromJson<String?>(json['sourceApp']),
       paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
       cardLast4: serializer.fromJson<String?>(json['cardLast4']),
+      recurrenceOccurrenceKey: serializer.fromJson<String?>(
+        json['recurrenceOccurrenceKey'],
+      ),
+      sourceMessageId: serializer.fromJson<String?>(json['sourceMessageId']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -2495,6 +2567,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'sourceApp': serializer.toJson<String?>(sourceApp),
       'paymentMethod': serializer.toJson<String?>(paymentMethod),
       'cardLast4': serializer.toJson<String?>(cardLast4),
+      'recurrenceOccurrenceKey': serializer.toJson<String?>(
+        recurrenceOccurrenceKey,
+      ),
+      'sourceMessageId': serializer.toJson<String?>(sourceMessageId),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
@@ -2515,6 +2591,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<String?> sourceApp = const Value.absent(),
     Value<String?> paymentMethod = const Value.absent(),
     Value<String?> cardLast4 = const Value.absent(),
+    Value<String?> recurrenceOccurrenceKey = const Value.absent(),
+    Value<String?> sourceMessageId = const Value.absent(),
     int? createdAt,
     int? updatedAt,
   }) => Transaction(
@@ -2534,6 +2612,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
         ? paymentMethod.value
         : this.paymentMethod,
     cardLast4: cardLast4.present ? cardLast4.value : this.cardLast4,
+    recurrenceOccurrenceKey: recurrenceOccurrenceKey.present
+        ? recurrenceOccurrenceKey.value
+        : this.recurrenceOccurrenceKey,
+    sourceMessageId: sourceMessageId.present
+        ? sourceMessageId.value
+        : this.sourceMessageId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2567,6 +2651,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ? data.paymentMethod.value
           : this.paymentMethod,
       cardLast4: data.cardLast4.present ? data.cardLast4.value : this.cardLast4,
+      recurrenceOccurrenceKey: data.recurrenceOccurrenceKey.present
+          ? data.recurrenceOccurrenceKey.value
+          : this.recurrenceOccurrenceKey,
+      sourceMessageId: data.sourceMessageId.present
+          ? data.sourceMessageId.value
+          : this.sourceMessageId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2589,6 +2679,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('sourceApp: $sourceApp, ')
           ..write('paymentMethod: $paymentMethod, ')
           ..write('cardLast4: $cardLast4, ')
+          ..write('recurrenceOccurrenceKey: $recurrenceOccurrenceKey, ')
+          ..write('sourceMessageId: $sourceMessageId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2611,6 +2703,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     sourceApp,
     paymentMethod,
     cardLast4,
+    recurrenceOccurrenceKey,
+    sourceMessageId,
     createdAt,
     updatedAt,
   );
@@ -2632,6 +2726,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.sourceApp == this.sourceApp &&
           other.paymentMethod == this.paymentMethod &&
           other.cardLast4 == this.cardLast4 &&
+          other.recurrenceOccurrenceKey == this.recurrenceOccurrenceKey &&
+          other.sourceMessageId == this.sourceMessageId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2651,6 +2747,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> sourceApp;
   final Value<String?> paymentMethod;
   final Value<String?> cardLast4;
+  final Value<String?> recurrenceOccurrenceKey;
+  final Value<String?> sourceMessageId;
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
@@ -2669,6 +2767,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     this.sourceApp = const Value.absent(),
     this.paymentMethod = const Value.absent(),
     this.cardLast4 = const Value.absent(),
+    this.recurrenceOccurrenceKey = const Value.absent(),
+    this.sourceMessageId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2688,6 +2788,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     this.sourceApp = const Value.absent(),
     this.paymentMethod = const Value.absent(),
     this.cardLast4 = const Value.absent(),
+    this.recurrenceOccurrenceKey = const Value.absent(),
+    this.sourceMessageId = const Value.absent(),
     required int createdAt,
     required int updatedAt,
     this.rowid = const Value.absent(),
@@ -2713,6 +2815,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? sourceApp,
     Expression<String>? paymentMethod,
     Expression<String>? cardLast4,
+    Expression<String>? recurrenceOccurrenceKey,
+    Expression<String>? sourceMessageId,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
@@ -2732,6 +2836,9 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       if (sourceApp != null) 'source_app': sourceApp,
       if (paymentMethod != null) 'payment_method': paymentMethod,
       if (cardLast4 != null) 'card_last4': cardLast4,
+      if (recurrenceOccurrenceKey != null)
+        'recurrence_occurrence_key': recurrenceOccurrenceKey,
+      if (sourceMessageId != null) 'source_message_id': sourceMessageId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2753,6 +2860,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     Value<String?>? sourceApp,
     Value<String?>? paymentMethod,
     Value<String?>? cardLast4,
+    Value<String?>? recurrenceOccurrenceKey,
+    Value<String?>? sourceMessageId,
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int>? rowid,
@@ -2772,6 +2881,9 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
       sourceApp: sourceApp ?? this.sourceApp,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       cardLast4: cardLast4 ?? this.cardLast4,
+      recurrenceOccurrenceKey:
+          recurrenceOccurrenceKey ?? this.recurrenceOccurrenceKey,
+      sourceMessageId: sourceMessageId ?? this.sourceMessageId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2823,6 +2935,14 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
     if (cardLast4.present) {
       map['card_last4'] = Variable<String>(cardLast4.value);
     }
+    if (recurrenceOccurrenceKey.present) {
+      map['recurrence_occurrence_key'] = Variable<String>(
+        recurrenceOccurrenceKey.value,
+      );
+    }
+    if (sourceMessageId.present) {
+      map['source_message_id'] = Variable<String>(sourceMessageId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -2852,6 +2972,8 @@ class TransactionsTableCompanion extends UpdateCompanion<Transaction> {
           ..write('sourceApp: $sourceApp, ')
           ..write('paymentMethod: $paymentMethod, ')
           ..write('cardLast4: $cardLast4, ')
+          ..write('recurrenceOccurrenceKey: $recurrenceOccurrenceKey, ')
+          ..write('sourceMessageId: $sourceMessageId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -6454,6 +6576,8 @@ typedef $$TransactionsTableTableCreateCompanionBuilder =
       Value<String?> sourceApp,
       Value<String?> paymentMethod,
       Value<String?> cardLast4,
+      Value<String?> recurrenceOccurrenceKey,
+      Value<String?> sourceMessageId,
       required int createdAt,
       required int updatedAt,
       Value<int> rowid,
@@ -6474,6 +6598,8 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder =
       Value<String?> sourceApp,
       Value<String?> paymentMethod,
       Value<String?> cardLast4,
+      Value<String?> recurrenceOccurrenceKey,
+      Value<String?> sourceMessageId,
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int> rowid,
@@ -6604,6 +6730,16 @@ class $$TransactionsTableTableFilterComposer
 
   ColumnFilters<String> get cardLast4 => $composableBuilder(
     column: $table.cardLast4,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceOccurrenceKey => $composableBuilder(
+    column: $table.recurrenceOccurrenceKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceMessageId => $composableBuilder(
+    column: $table.sourceMessageId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6752,6 +6888,16 @@ class $$TransactionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get recurrenceOccurrenceKey => $composableBuilder(
+    column: $table.recurrenceOccurrenceKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceMessageId => $composableBuilder(
+    column: $table.sourceMessageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6883,6 +7029,16 @@ class $$TransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get cardLast4 =>
       $composableBuilder(column: $table.cardLast4, builder: (column) => column);
 
+  GeneratedColumn<String> get recurrenceOccurrenceKey => $composableBuilder(
+    column: $table.recurrenceOccurrenceKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceMessageId => $composableBuilder(
+    column: $table.sourceMessageId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -7011,6 +7167,8 @@ class $$TransactionsTableTableTableManager
                 Value<String?> sourceApp = const Value.absent(),
                 Value<String?> paymentMethod = const Value.absent(),
                 Value<String?> cardLast4 = const Value.absent(),
+                Value<String?> recurrenceOccurrenceKey = const Value.absent(),
+                Value<String?> sourceMessageId = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -7029,6 +7187,8 @@ class $$TransactionsTableTableTableManager
                 sourceApp: sourceApp,
                 paymentMethod: paymentMethod,
                 cardLast4: cardLast4,
+                recurrenceOccurrenceKey: recurrenceOccurrenceKey,
+                sourceMessageId: sourceMessageId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -7049,6 +7209,8 @@ class $$TransactionsTableTableTableManager
                 Value<String?> sourceApp = const Value.absent(),
                 Value<String?> paymentMethod = const Value.absent(),
                 Value<String?> cardLast4 = const Value.absent(),
+                Value<String?> recurrenceOccurrenceKey = const Value.absent(),
+                Value<String?> sourceMessageId = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -7067,6 +7229,8 @@ class $$TransactionsTableTableTableManager
                 sourceApp: sourceApp,
                 paymentMethod: paymentMethod,
                 cardLast4: cardLast4,
+                recurrenceOccurrenceKey: recurrenceOccurrenceKey,
+                sourceMessageId: sourceMessageId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

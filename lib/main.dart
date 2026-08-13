@@ -6,6 +6,7 @@ import 'package:workmanager/workmanager.dart';
 import 'app.dart';
 import 'core/providers/database_providers.dart';
 import 'core/providers/initial_route_provider.dart';
+import 'core/widgets/fatal_security_error_app.dart';
 import 'database/database_helper.dart';
 import 'database/health/database_health_check.dart';
 import 'engines/category/category_engine_provider.dart';
@@ -63,8 +64,18 @@ void main() async {
   );
 
   // 1. Run DatabaseHealthCheck safety net on every startup before any read/write
-  final db = container.read(appDatabaseProvider);
-  await DatabaseHealthCheck(db).run();
+  try {
+    final db = container.read(appDatabaseProvider);
+    await DatabaseHealthCheck(db).run();
+  } catch (e, stack) {
+    debugPrint('Fatal Database Security / Startup Error: $e\n$stack');
+    runApp(
+      FatalSecurityErrorApp(
+        errorMessage: e.toString(),
+      ),
+    );
+    return;
+  }
 
   // 2. Run RecurringEngine check on startup to process any due recurring transactions
   try {

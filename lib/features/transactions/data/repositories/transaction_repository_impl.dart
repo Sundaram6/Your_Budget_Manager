@@ -25,6 +25,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       recurringId: entity.recurringId,
       merchantName: entity.merchantName,
       merchantId: entity.merchantId,
+      recurrenceOccurrenceKey: entity.recurrenceOccurrenceKey,
+      sourceMessageId: entity.sourceMessageId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -46,6 +48,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       merchantId: entity.merchantId,
       isRecurring: entity.isRecurring,
       recurringId: entity.recurringId,
+      recurrenceOccurrenceKey: entity.recurrenceOccurrenceKey,
+      sourceMessageId: entity.sourceMessageId,
       isAutoCaptured: entity.sourceApp != null && entity.sourceApp != 'manual',
       createdAt: entity.createdAt ?? now,
       updatedAt: now,

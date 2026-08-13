@@ -118,6 +118,7 @@ class PendingTransactionsController extends _$PendingTransactionsController {
           amountValue: tx.amount,
           date: tx.date,
           snippet: tx.merchantName,
+          sourceMessageId: tx.smsId,
         );
 
         if (isDuplicate) continue;
@@ -146,6 +147,7 @@ class PendingTransactionsController extends _$PendingTransactionsController {
         amountValue: transaction.amount,
         date: transaction.date,
         snippet: transaction.merchantName,
+        sourceMessageId: transaction.smsId,
       );
 
       if (isDuplicate) {
@@ -190,6 +192,7 @@ class PendingTransactionsController extends _$PendingTransactionsController {
           amountValue: tx.amount,
           date: tx.date,
           snippet: tx.merchantName,
+          sourceMessageId: tx.smsId,
         );
 
         if (isDuplicate) {

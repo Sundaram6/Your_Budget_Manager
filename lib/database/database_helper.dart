@@ -57,9 +57,9 @@ class DatabaseHelper {
       NativeDatabase.createInBackground(
         cryptFile,
         setup: (rawDb) {
-          assert(
-            EncryptionMigration.debugCheckHasCipher(rawDb),
-            'sqlite3mc encryption support missing in background isolate',
+          EncryptionMigration.verifyCipherSupport(
+            rawDb,
+            context: 'background isolate DatabaseHelper',
           );
           rawDb.execute("PRAGMA key = '$escapedKey';");
         },
@@ -150,6 +150,8 @@ class DatabaseHelper {
             merchantName: Value(tx.title),
             isRecurring: Value(tx.isRecurring),
             recurringId: Value(tx.recurringId),
+            recurrenceOccurrenceKey: Value(tx.recurrenceOccurrenceKey),
+            sourceMessageId: Value(tx.sourceMessageId),
             isAutoCaptured: Value(tx.isAutoCaptured),
             sourceApp: Value(tx.sourceApp),
             paymentMethod: Value(tx.paymentMethod),
@@ -159,6 +161,62 @@ class DatabaseHelper {
           ),
           mode: InsertMode.insertOrReplace,
         );
+  }
+
+  /// Atomically inserts a recurring transaction occurrence and advances the schedule.
+  /// Idempotent: if an occurrence with [occurrenceKey] already exists, skips insert but still advances schedule.
+  Future<bool> generateRecurringOccurrence({
+    required TransactionModel transaction,
+    required String occurrenceKey,
+    required String recurringId,
+    required String nextDueDate,
+    required String? lastGeneratedDate,
+    required String updatedAt,
+  }) async {
+    final dbInstance = await db;
+    return await dbInstance.transaction(() async {
+      final existing = await (dbInstance.select(dbInstance.transactionsTable)
+            ..where((tbl) => tbl.recurrenceOccurrenceKey.equals(occurrenceKey)))
+          .get();
+
+      bool inserted = false;
+      if (existing.isEmpty) {
+        final dateMillis = transaction.date.millisecondsSinceEpoch;
+        final nowMillis = (transaction.createdAt ?? DateTime.now()).millisecondsSinceEpoch;
+
+        await dbInstance.into(dbInstance.transactionsTable).insert(
+              TransactionsTableCompanion.insert(
+                id: transaction.id,
+                amount: transaction.amountPaise,
+                type: transaction.type,
+                categoryId: transaction.categoryId,
+                date: dateMillis,
+                note: Value(transaction.notes),
+                merchantName: Value(transaction.title),
+                isRecurring: const Value(true),
+                recurringId: Value(recurringId),
+                recurrenceOccurrenceKey: Value(occurrenceKey),
+                sourceMessageId: Value(transaction.sourceMessageId),
+                isAutoCaptured: Value(transaction.isAutoCaptured),
+                sourceApp: Value(transaction.sourceApp),
+                paymentMethod: Value(transaction.paymentMethod),
+                cardLast4: Value(transaction.cardLast4),
+                createdAt: nowMillis,
+                updatedAt: nowMillis,
+              ),
+              mode: InsertMode.insertOrReplace,
+            );
+        inserted = true;
+      }
+
+      await dbInstance.customStatement(
+        'UPDATE recurring_transactions SET next_due_date = ?, last_generated_date = ?, updated_at = ? WHERE id = ?',
+        [nextDueDate, lastGeneratedDate, updatedAt, recurringId],
+      );
+      dbInstance.markTablesUpdated({dbInstance.recurringTransactionsTable});
+
+      return inserted;
+    });
   }
 
   Future<void> updateRecurringTransactionDates({
@@ -209,17 +267,31 @@ class DatabaseHelper {
     return 1;
   }
 
-  /// Returns true if a transaction with same amount, matching timestamp window (±2 minutes),
-  /// and matching merchant/note already exists, preventing duplicate imports while preserving
-  /// distinct legitimate transactions on the same day.
+  /// Returns true if a transaction with same durable sourceMessageId exists (primary authoritative check),
+  /// OR if a transaction with same amount, matching timestamp window (±2 minutes),
+  /// and matching merchant/note already exists (secondary legacy/unhashed safety net).
   Future<bool> checkDuplicateTransaction({
     required int amountValue,
     required DateTime date,
     required String snippet,
+    String? sourceMessageId,
   }) async {
     final dbInstance = await db;
-    final targetMillis = date.millisecondsSinceEpoch;
+
+    // 1. Primary authoritative check: durable source message identity
+    if (sourceMessageId != null && sourceMessageId.trim().isNotEmpty) {
+      final rows = await dbInstance.customSelect(
+        'SELECT id FROM transactions WHERE source_message_id = ? LIMIT 1',
+        variables: [Variable.withString(sourceMessageId.trim())],
+      ).get();
+      if (rows.isNotEmpty) {
+        return true; // Authoritative match -> Early return immediately!
+      }
+    }
+
+    // 2. Secondary heuristic safety net (for pre-v9 legacy unhashed transactions):
     // Proximate window: within 2 minutes of the transaction timestamp
+    final targetMillis = date.millisecondsSinceEpoch;
     final windowStart = targetMillis - 120000;
     final windowEnd = targetMillis + 120000;
     final cleanSnippet = snippet.trim();

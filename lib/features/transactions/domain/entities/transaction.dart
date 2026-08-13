@@ -31,6 +31,8 @@ abstract class Transaction with _$Transaction {
     String? recurringId,
     String? merchantName,
     String? merchantId,
+    String? recurrenceOccurrenceKey,
+    String? sourceMessageId,
     int? createdAt,
     int? updatedAt,
   }) = _Transaction;

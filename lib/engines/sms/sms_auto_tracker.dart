@@ -62,6 +62,7 @@ class SmsAutoTracker {
           amountValue: parsed.amount,
           date: parsed.date,
           snippet: parsed.merchantName,
+          sourceMessageId: parsed.smsId,
         );
         if (isDuplicate) continue;
 

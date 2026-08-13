@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:logger/logger.dart';
 
@@ -15,6 +17,20 @@ class MerchantEngine {
   final SmsQuery _smsQuery;
   final Logger _logger;
   final ExpenseEngine _expenseEngine;
+
+  /// Generates a deterministic, immutable SHA-256 identity for an SMS message
+  /// from its immutable properties: Android Telephony ID, sender address, timestamp, and body.
+  /// Guarantees that re-processing the same SMS at any point produces the exact same ID.
+  static String generateDurableSmsId(SmsMessage msg) {
+    final id = msg.id?.toString().trim() ?? '';
+    final address = msg.address?.trim().toUpperCase() ?? '';
+    final timestamp = msg.date?.millisecondsSinceEpoch.toString() ?? '0';
+    final body = msg.body?.trim() ?? '';
+
+    final raw = 'sms:$id:$address:$timestamp:$body';
+    final hash = sha256.convert(utf8.encode(raw)).toString();
+    return 'sms_sha256_$hash';
+  }
 
   /// Parse inbox messages with full historical scan support or count/date limits.
   Future<List<ParsedTransaction>> scanInbox({int? count, int? year, int? month}) async {
@@ -81,7 +97,7 @@ class MerchantEngine {
     final paymentEvidence = extractPaymentEvidence(body);
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: parsed.amount,
       date: parsed.date,
       merchantName: finalMerchantName,
@@ -114,6 +130,7 @@ class MerchantEngine {
         paymentMethod: transaction.paymentMethod,
         cardLast4: transaction.cardLast4,
         merchantName: transaction.merchantName,
+        sourceMessageId: transaction.smsId,
       );
 
       final verifiedTx = await _expenseEngine.getTransactionById(savedTx.id);
@@ -187,7 +204,7 @@ class MerchantEngine {
     if (isCredit) return null; // We focus on expenses / debit tracking
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
@@ -224,7 +241,7 @@ class MerchantEngine {
     if (lower.contains('credited') || lower.contains('refund')) return null;
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
@@ -260,7 +277,7 @@ class MerchantEngine {
     if (isCredit) return null;
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
@@ -294,7 +311,7 @@ class MerchantEngine {
     if (isCredit) return null;
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
@@ -352,7 +369,7 @@ class MerchantEngine {
     if (isCredit) return null;
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
@@ -397,7 +414,7 @@ class MerchantEngine {
     if (!isDebit) return null;
 
     return ParsedTransaction(
-      smsId: msg.id?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),

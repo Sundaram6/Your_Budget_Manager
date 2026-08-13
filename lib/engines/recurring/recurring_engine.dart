@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/errors/app_exception.dart';
 import '../../database/database_helper.dart';
 import '../../models/recurring_transaction.dart';
 import '../../models/transaction.dart';
@@ -49,8 +50,12 @@ class RecurringEngine {
 
     int totalGeneratedCount = 0;
     for (final rt in dueTransactions) {
-      final generated = await _processSingle(rt, now);
-      totalGeneratedCount += generated;
+      try {
+        final generated = await _processSingle(rt, now);
+        totalGeneratedCount += generated;
+      } catch (_) {
+        // Skip corrupt or invalid recurring schedules without generating invalid transactions
+      }
     }
 
     return totalGeneratedCount;
@@ -58,6 +63,7 @@ class RecurringEngine {
 
   /// Processes single recurring schedule catch-up generation.
   /// Loops while currentDue <= referenceDate (and <= endDate if specified).
+  /// Generates transactions atomically and idempotently using recurrenceOccurrenceKey.
   static Future<int> _processSingle(
     RecurringTransactionModel rt,
     DateTime referenceDate,
@@ -76,6 +82,8 @@ class RecurringEngine {
           ? '${rt.notes}\n[Auto-generated from recurring]'
           : '[Auto-generated from recurring]';
 
+      final occurrenceKey = '${rt.id}:$currentDueStr';
+
       final tx = TransactionModel(
         id: 'tx_${_uuid.v4()}',
         title: rt.title,
@@ -86,26 +94,29 @@ class RecurringEngine {
         notes: notesText,
         isRecurring: true,
         recurringId: rt.id,
+        recurrenceOccurrenceKey: occurrenceKey,
         isAutoCaptured: false,
         sourceApp: null,
         createdAt: DateTime.now(),
       );
-
-      await DatabaseHelper.instance.insertTransaction(tx);
 
       final nextDue = _calculateNextDue(currentDue, rt);
       final nextDueStr = _dateFormat.format(nextDue);
       final lastGenStr = _dateFormat.format(currentDue);
       final updatedAtStr = DateTime.now().toIso8601String();
 
-      await DatabaseHelper.instance.updateRecurringTransactionDates(
-        id: rt.id,
+      final inserted = await DatabaseHelper.instance.generateRecurringOccurrence(
+        transaction: tx,
+        occurrenceKey: occurrenceKey,
+        recurringId: rt.id,
         nextDueDate: nextDueStr,
         lastGeneratedDate: lastGenStr,
         updatedAt: updatedAtStr,
       );
 
-      generatedCount++;
+      if (inserted) {
+        generatedCount++;
+      }
       currentDue = nextDue;
       currentDueStr = nextDueStr;
     }
@@ -117,9 +128,10 @@ class RecurringEngine {
   /// - daily: +1 day
   /// - weekly: +7 days
   /// - biweekly: +14 days
-  /// - monthly: safe month addition with day clamping (e.g. Jan 31 -> Feb 28)
-  /// - yearly: safe year addition with leap-year day clamping (e.g. Feb 29 2024 -> Feb 28 2025)
-  /// - custom: +intervalDays
+  /// - monthly: safe month addition using original anchor day (e.g. Jan 31 -> Feb 28 -> Mar 31)
+  /// - yearly: safe year addition with leap-year day clamping (Feb 29 -> Feb 28 -> Feb 29)
+  /// - custom: +intervalDays (rejects intervalDays <= 0)
+  /// Throws [ValidationException] for unknown frequency or invalid interval.
   static DateTime _calculateNextDue(
       DateTime from, RecurringTransactionModel rt) {
     final freq = rt.frequency.toLowerCase();
@@ -131,36 +143,42 @@ class RecurringEngine {
       case 'biweekly':
         return from.add(const Duration(days: 14));
       case 'monthly':
-        return _addMonths(from, 1);
+        return _addMonths(from, 1, anchorDay: rt.startDate.day);
       case 'yearly':
-        return _addYears(from, 1);
+        return _addYears(from, 1,
+            anchorDay: rt.startDate.day, anchorMonth: rt.startDate.month);
       case 'custom':
-        final interval = rt.intervalDays ?? 1;
+        final interval = rt.intervalDays;
+        if (interval == null || interval <= 0) {
+          throw ValidationException(
+              'Invalid recurrence intervalDays: $interval for custom frequency on recurring id ${rt.id}');
+        }
         return from.add(Duration(days: interval));
       default:
-        return from.add(const Duration(days: 1));
+        throw ValidationException(
+            'Unsupported recurrence frequency: "${rt.frequency}" on recurring id ${rt.id}');
     }
   }
 
-  /// Safely adds [months] to [from], clamping to the last valid day of the target month.
-  static DateTime _addMonths(DateTime from, int months) {
+  /// Safely adds [months] to [from], clamping to [anchorDay] and target month length.
+  /// Prevents monthly anchor drift across short/long months.
+  static DateTime _addMonths(DateTime from, int months, {required int anchorDay}) {
     final targetYear = from.year + ((from.month + months - 1) ~/ 12);
     final targetMonth = ((from.month + months - 1) % 12) + 1;
     final daysInTargetMonth = DateTime(targetYear, targetMonth + 1, 0).day;
-    final targetDay =
-        from.day > daysInTargetMonth ? daysInTargetMonth : from.day;
+    final targetDay = anchorDay > daysInTargetMonth ? daysInTargetMonth : anchorDay;
     return DateTime(
         targetYear, targetMonth, targetDay, from.hour, from.minute, from.second);
   }
 
-  /// Safely adds [years] to [from], handling leap year clamping.
-  static DateTime _addYears(DateTime from, int years) {
+  /// Safely adds [years] to [from], preserving original anchor day and month with leap-year handling.
+  static DateTime _addYears(DateTime from, int years,
+      {required int anchorDay, required int anchorMonth}) {
     final targetYear = from.year + years;
-    final daysInTargetMonth = DateTime(targetYear, from.month + 1, 0).day;
-    final targetDay =
-        from.day > daysInTargetMonth ? daysInTargetMonth : from.day;
+    final daysInTargetMonth = DateTime(targetYear, anchorMonth + 1, 0).day;
+    final targetDay = anchorDay > daysInTargetMonth ? daysInTargetMonth : anchorDay;
     return DateTime(
-        targetYear, from.month, targetDay, from.hour, from.minute, from.second);
+        targetYear, anchorMonth, targetDay, from.hour, from.minute, from.second);
   }
 
   /// Manually force generates a transaction for the specified recurring schedule.
@@ -177,6 +195,7 @@ class RecurringEngine {
       return _processSingle(rt, now);
     } else {
       final targetDate = rt.nextDueDate;
+      final occurrenceKey = '${rt.id}:$nextDueStr';
       final notesText = rt.notes != null && rt.notes!.isNotEmpty
           ? '${rt.notes}\n[Auto-generated from recurring]'
           : '[Auto-generated from recurring]';
@@ -191,26 +210,28 @@ class RecurringEngine {
         notes: notesText,
         isRecurring: true,
         recurringId: rt.id,
+        recurrenceOccurrenceKey: occurrenceKey,
         isAutoCaptured: false,
         sourceApp: null,
         createdAt: DateTime.now(),
       );
-
-      await DatabaseHelper.instance.insertTransaction(tx);
 
       final nextDue = _calculateNextDue(targetDate, rt);
       final newNextDueStr = _dateFormat.format(nextDue);
       final lastGenStr = _dateFormat.format(targetDate);
       final updatedAtStr = DateTime.now().toIso8601String();
 
-      await DatabaseHelper.instance.updateRecurringTransactionDates(
-        id: rt.id,
+      final inserted = await DatabaseHelper.instance.generateRecurringOccurrence(
+        transaction: tx,
+        occurrenceKey: occurrenceKey,
+        recurringId: rt.id,
         nextDueDate: newNextDueStr,
         lastGeneratedDate: lastGenStr,
         updatedAt: updatedAtStr,
       );
 
-      return 1;
+      return inserted ? 1 : 0;
     }
   }
 }
+

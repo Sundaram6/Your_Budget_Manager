@@ -39,7 +39,7 @@ class SavingsGoalRepositoryImpl implements SavingsGoalRepository {
   Future<void> addDepositPaise(String id, int amountPaise) => _dao.addDepositPaise(id, amountPaise);
 
   @override
-  Future<void> recordAutoDeduction(String id, String monthKey, int amountPaise) =>
+  Future<bool> recordAutoDeduction(String id, String monthKey, int amountPaise) =>
       _dao.recordAutoDeduction(id, monthKey, amountPaise);
 
   @override

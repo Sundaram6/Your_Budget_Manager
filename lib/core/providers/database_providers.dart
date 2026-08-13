@@ -44,9 +44,9 @@ AppDatabase appDatabase(Ref ref) {
       return NativeDatabase.createInBackground(
         cryptFile,
         setup: (rawDb) {
-          assert(
-            EncryptionMigration.debugCheckHasCipher(rawDb),
-            'sqlite3mc encryption support missing — check build hooks',
+          EncryptionMigration.verifyCipherSupport(
+            rawDb,
+            context: 'foreground appDatabaseProvider',
           );
           rawDb.execute("PRAGMA key = '$escapedKey';");
         },

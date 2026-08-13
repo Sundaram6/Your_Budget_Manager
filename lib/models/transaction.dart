@@ -44,6 +44,8 @@ abstract class TransactionModel with _$TransactionModel {
     @JsonKey(name: 'source_app') String? sourceApp,
     @JsonKey(name: 'payment_method') String? paymentMethod,
     @JsonKey(name: 'card_last_4') String? cardLast4,
+    @JsonKey(name: 'recurrence_occurrence_key') String? recurrenceOccurrenceKey,
+    @JsonKey(name: 'source_message_id') String? sourceMessageId,
     @Iso8601Converter() @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _TransactionModel;
 

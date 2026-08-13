@@ -54,6 +54,8 @@ void main() {
         'recurringId': null,
         'merchantName': null,
         'merchantId': null,
+        'recurrenceOccurrenceKey': null,
+        'sourceMessageId': null,
         'createdAt': null,
         'updatedAt': null,
       });

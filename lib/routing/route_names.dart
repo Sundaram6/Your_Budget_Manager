@@ -20,4 +20,8 @@ class RouteNames {
 
   // Phase 4 Routes
   static const String notificationSettings = 'notification_settings';
+
+  // Security & Intelligence
+  static const String security = 'security';
+  static const String insights = 'insights';
 }

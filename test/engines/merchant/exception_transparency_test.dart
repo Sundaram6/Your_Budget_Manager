@@ -49,6 +49,8 @@ void main() {
         paymentMethod: any(named: 'paymentMethod'),
         cardLast4: any(named: 'cardLast4'),
         merchantName: any(named: 'merchantName'),
+        recurrenceOccurrenceKey: any(named: 'recurrenceOccurrenceKey'),
+        sourceMessageId: any(named: 'sourceMessageId'),
       )).thenThrow(const FormatException('SqliteException(787): FOREIGN KEY constraint failed'));
 
       expect(
@@ -88,6 +90,8 @@ void main() {
         paymentMethod: any(named: 'paymentMethod'),
         cardLast4: any(named: 'cardLast4'),
         merchantName: any(named: 'merchantName'),
+        recurrenceOccurrenceKey: any(named: 'recurrenceOccurrenceKey'),
+        sourceMessageId: any(named: 'sourceMessageId'),
       )).thenAnswer((_) async => dummySaved);
 
       // Simulate post-write read-back returning null (row missing in DB)
