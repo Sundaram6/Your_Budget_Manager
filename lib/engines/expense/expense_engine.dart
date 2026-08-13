@@ -22,10 +22,16 @@ class ExpenseEngine {
     String? sourceApp,
     PaymentMethod paymentMethod = PaymentMethod.unknown,
     String? cardLast4,
+    bool isRecurring = false,
+    String? recurringId,
+    String? merchantName,
+    String? merchantId,
+    int? createdAt,
   }) async {
     if (amount <= 0) {
       throw const ValidationException('Amount must be greater than 0');
     }
+    final now = DateTime.now().millisecondsSinceEpoch;
     final transaction = Transaction(
       id: _uuid.v4(),
       amount: Amount(amount),
@@ -36,6 +42,12 @@ class ExpenseEngine {
       sourceApp: sourceApp,
       paymentMethod: paymentMethod,
       cardLast4: cardLast4,
+      isRecurring: isRecurring,
+      recurringId: recurringId,
+      merchantName: merchantName,
+      merchantId: merchantId,
+      createdAt: createdAt ?? now,
+      updatedAt: now,
     );
     await _repository.insertTransaction(transaction);
     return transaction;

@@ -18,6 +18,12 @@ _Transaction _$TransactionFromJson(Map<String, dynamic> json) => _Transaction(
       $enumDecodeNullable(_$PaymentMethodEnumMap, json['paymentMethod']) ??
       PaymentMethod.unknown,
   cardLast4: json['cardLast4'] as String?,
+  isRecurring: json['isRecurring'] as bool? ?? false,
+  recurringId: json['recurringId'] as String?,
+  merchantName: json['merchantName'] as String?,
+  merchantId: json['merchantId'] as String?,
+  createdAt: (json['createdAt'] as num?)?.toInt(),
+  updatedAt: (json['updatedAt'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$TransactionToJson(_Transaction instance) =>
@@ -31,6 +37,12 @@ Map<String, dynamic> _$TransactionToJson(_Transaction instance) =>
       'sourceApp': instance.sourceApp,
       'paymentMethod': _$PaymentMethodEnumMap[instance.paymentMethod]!,
       'cardLast4': instance.cardLast4,
+      'isRecurring': instance.isRecurring,
+      'recurringId': instance.recurringId,
+      'merchantName': instance.merchantName,
+      'merchantId': instance.merchantId,
+      'createdAt': instance.createdAt,
+      'updatedAt': instance.updatedAt,
     };
 
 const _$TransactionTypeEnumMap = {

@@ -50,6 +50,12 @@ void main() {
         'sourceApp': null,
         'paymentMethod': 'unknown',
         'cardLast4': null,
+        'isRecurring': false,
+        'recurringId': null,
+        'merchantName': null,
+        'merchantId': null,
+        'createdAt': null,
+        'updatedAt': null,
       });
 
       final fromJson = Transaction.fromJson(json);

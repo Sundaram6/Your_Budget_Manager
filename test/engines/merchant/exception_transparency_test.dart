@@ -48,6 +48,7 @@ void main() {
         sourceApp: any(named: 'sourceApp'),
         paymentMethod: any(named: 'paymentMethod'),
         cardLast4: any(named: 'cardLast4'),
+        merchantName: any(named: 'merchantName'),
       )).thenThrow(const FormatException('SqliteException(787): FOREIGN KEY constraint failed'));
 
       expect(
@@ -86,6 +87,7 @@ void main() {
         sourceApp: any(named: 'sourceApp'),
         paymentMethod: any(named: 'paymentMethod'),
         cardLast4: any(named: 'cardLast4'),
+        merchantName: any(named: 'merchantName'),
       )).thenAnswer((_) async => dummySaved);
 
       // Simulate post-write read-back returning null (row missing in DB)

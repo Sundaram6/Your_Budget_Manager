@@ -1,8 +1,10 @@
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../database/database_helper.dart';
 import '../merchant/merchant_engine.dart';
 import '../merchant/merchant_engine_provider.dart';
 
@@ -14,11 +16,13 @@ final smsAutoTrackerProvider = Provider<SmsAutoTracker>((ref) {
 
 class SmsAutoTracker {
   final MerchantEngine _merchantEngine;
-  final SmsQuery _smsQuery = SmsQuery();
+  final SmsQuery _smsQuery;
 
   SmsAutoTracker({
     required MerchantEngine merchantEngine,
-  }) : _merchantEngine = merchantEngine;
+    SmsQuery? smsQuery,
+  })  : _merchantEngine = merchantEngine,
+        _smsQuery = smsQuery ?? SmsQuery();
 
   void startForegroundTracking() {
     // Polling background check on startup / resume
@@ -37,18 +41,29 @@ class SmsAutoTracker {
     final now = DateTime.now().millisecondsSinceEpoch;
 
     try {
+      // Query without artificial 50-message cap to prevent skipping unread messages
       final messages = await _smsQuery.querySms(
         kinds: [SmsQueryKind.inbox],
-        count: 50,
       );
 
       int processed = 0;
+      int maxProcessedTimestamp = lastCheck;
+
       for (final msg in messages) {
         final msgDate = msg.date;
         if (msgDate == null || msgDate.millisecondsSinceEpoch <= lastCheck) continue;
 
+        maxProcessedTimestamp = max(maxProcessedTimestamp, msgDate.millisecondsSinceEpoch);
+
         final parsed = _merchantEngine.parseSingleSms(msg);
         if (parsed == null) continue;
+
+        final isDuplicate = await DatabaseHelper.instance.checkDuplicateTransaction(
+          amountValue: parsed.amount,
+          date: parsed.date,
+          snippet: parsed.merchantName,
+        );
+        if (isDuplicate) continue;
 
         final success = await _merchantEngine.confirmPendingTransaction(
           transaction: parsed,
@@ -58,7 +73,7 @@ class SmsAutoTracker {
         }
       }
 
-      await prefs.setInt('sms_last_check_timestamp', now);
+      await prefs.setInt('sms_last_check_timestamp', max(maxProcessedTimestamp, now));
       return processed;
     } catch (_) {
       return 0;

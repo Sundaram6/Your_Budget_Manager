@@ -21,10 +21,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
       sourceApp: entity.sourceApp,
       paymentMethod: PaymentMethod.fromString(entity.paymentMethod),
       cardLast4: entity.cardLast4,
+      isRecurring: entity.isRecurring,
+      recurringId: entity.recurringId,
+      merchantName: entity.merchantName,
+      merchantId: entity.merchantId,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     );
   }
 
   db.Transaction _mapToDrift(domain.Transaction entity) {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return db.Transaction(
       id: entity.id,
       amount: entity.amount.value,
@@ -35,10 +42,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
       sourceApp: entity.sourceApp,
       paymentMethod: entity.paymentMethod.name,
       cardLast4: entity.cardLast4,
-      isRecurring: false,
+      merchantName: entity.merchantName,
+      merchantId: entity.merchantId,
+      isRecurring: entity.isRecurring,
+      recurringId: entity.recurringId,
       isAutoCaptured: entity.sourceApp != null && entity.sourceApp != 'manual',
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      updatedAt: DateTime.now().millisecondsSinceEpoch,
+      createdAt: entity.createdAt ?? now,
+      updatedAt: now,
     );
   }
 

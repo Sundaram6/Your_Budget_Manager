@@ -27,6 +27,12 @@ abstract class Transaction with _$Transaction {
     String? sourceApp,
     @Default(PaymentMethod.unknown) PaymentMethod paymentMethod,
     String? cardLast4,
+    @Default(false) bool isRecurring,
+    String? recurringId,
+    String? merchantName,
+    String? merchantId,
+    int? createdAt,
+    int? updatedAt,
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

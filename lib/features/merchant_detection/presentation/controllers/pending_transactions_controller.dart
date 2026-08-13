@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,11 +107,13 @@ class PendingTransactionsController extends _$PendingTransactionsController {
       if (!status.isGranted) return 0;
 
       final engine = ref.read(merchantEngineProvider);
-      final transactions = await engine.scanInbox(count: 100);
+      final transactions = await engine.scanInbox();
       
       final newTxs = transactions.where((tx) => tx.date.millisecondsSinceEpoch > lastCheck).toList();
       int autoSaved = 0;
+      int maxProcessedTimestamp = lastCheck;
       for (final tx in newTxs) {
+        maxProcessedTimestamp = max(maxProcessedTimestamp, tx.date.millisecondsSinceEpoch);
         final isDuplicate = await DatabaseHelper.instance.checkDuplicateTransaction(
           amountValue: tx.amount,
           date: tx.date,
@@ -125,7 +128,7 @@ class PendingTransactionsController extends _$PendingTransactionsController {
         }
       }
 
-      await prefs.setInt('sms_last_check_timestamp', now);
+      await prefs.setInt('sms_last_check_timestamp', max(maxProcessedTimestamp, now));
       return autoSaved;
     } catch (e) {
       return 0;

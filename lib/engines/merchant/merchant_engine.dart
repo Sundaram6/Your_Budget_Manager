@@ -113,6 +113,7 @@ class MerchantEngine {
         sourceApp: transaction.sourceApp,
         paymentMethod: transaction.paymentMethod,
         cardLast4: transaction.cardLast4,
+        merchantName: transaction.merchantName,
       );
 
       final verifiedTx = await _expenseEngine.getTransactionById(savedTx.id);
@@ -264,7 +265,7 @@ class MerchantEngine {
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_imps',
-      categoryId: CategoryEngine.catUtilities,
+      categoryId: CategoryEngine.catUncategorized,
       originalSmsBody: body,
       sourceApp: 'sms:imps',
     );
@@ -298,7 +299,7 @@ class MerchantEngine {
       date: _extractDate(body, msg),
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_neft',
-      categoryId: CategoryEngine.catUtilities,
+      categoryId: CategoryEngine.catUncategorized,
       originalSmsBody: body,
       sourceApp: 'sms:neft',
     );
@@ -431,32 +432,58 @@ class MerchantEngine {
 
   DateTime _extractDate(String body, SmsMessage msg) {
     final patterns = [
-      RegExp(r'on\s+(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})', caseSensitive: false),
-      RegExp(r'on\s+(\d{1,2})\s*([a-zA-Z]{3,})\s*(\d{2,4})?', caseSensitive: false),
-      RegExp(r'(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})', caseSensitive: false),
+      // 1. "15-Aug-2026", "15 August 2026", "15.August.2026", "15-AUG-26"
+      RegExp(r'\b(\d{1,2})[\s\-\/\.]+([a-zA-Z]{3,})(?:[\s\-\/\.]+(\d{2,4}))?\b', caseSensitive: false),
+      // 2. "August 15, 2026", "Aug 15 2026"
+      RegExp(r'\b([a-zA-Z]{3,})[\s\-\/\.]+(\d{1,2})(?:[,\s\-\/\.]+(\d{2,4}))?\b', caseSensitive: false),
+      // 3. "15/08/2026", "15-08-2026", "15.08.2026", "15/08/26"
+      RegExp(r'\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\b', caseSensitive: false),
     ];
 
     for (final pattern in patterns) {
-      final match = pattern.firstMatch(body);
-      if (match != null) {
+      for (final match in pattern.allMatches(body)) {
         try {
-          final day = int.parse(match.group(1)!);
-          final monthOrName = match.group(2)!;
-          final yearStr = match.group(3);
+          int day;
+          int? month;
+          String? yearStr;
 
-          int month;
-          if (RegExp(r'^\d+$').hasMatch(monthOrName)) {
-            month = int.parse(monthOrName);
+          final g1 = match.group(1)!;
+          final g2 = match.group(2)!;
+          final g3 = match.group(3);
+
+          if (RegExp(r'^\d+$').hasMatch(g1)) {
+            day = int.parse(g1);
+            if (RegExp(r'^\d+$').hasMatch(g2)) {
+              month = int.parse(g2);
+            } else {
+              month = _monthNameToNum(g2);
+            }
+            yearStr = g3;
           } else {
-            month = _monthNameToNum(monthOrName);
+            month = _monthNameToNum(g1);
+            day = int.parse(g2);
+            yearStr = g3;
           }
 
-          int year = yearStr != null ? int.parse(yearStr) : DateTime.now().year;
+          if (month == null || month < 1 || month > 12) continue;
+          if (day < 1 || day > 31) continue;
+
+          int year = yearStr != null ? int.parse(yearStr) : (msg.date?.year ?? DateTime.now().year);
           if (year < 100) year += 2000;
 
-          if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-            return DateTime(year, month, day);
+          if (msg.date != null) {
+            return DateTime(
+              year,
+              month,
+              day,
+              msg.date!.hour,
+              msg.date!.minute,
+              msg.date!.second,
+              msg.date!.millisecond,
+            );
           }
+
+          return DateTime(year, month, day);
         } catch (_) {}
       }
     }
@@ -467,13 +494,22 @@ class MerchantEngine {
     return DateTime.now();
   }
 
-  int _monthNameToNum(String name) {
+  int? _monthNameToNum(String name) {
     final map = {
-      'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
-      'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
-      'january': 1, 'february': 2, 'march': 3, 'april': 4,
+      'jan': 1, 'january': 1,
+      'feb': 2, 'february': 2,
+      'mar': 3, 'march': 3,
+      'apr': 4, 'april': 4,
+      'may': 5,
+      'jun': 6, 'june': 6,
+      'jul': 7, 'july': 7,
+      'aug': 8, 'august': 8,
+      'sep': 9, 'sept': 9, 'september': 9,
+      'oct': 10, 'october': 10,
+      'nov': 11, 'november': 11,
+      'dec': 12, 'december': 12,
     };
-    return map[name.toLowerCase().trim()] ?? DateTime.now().month;
+    return map[name.toLowerCase().trim()];
   }
 
   String _cleanMerchant(String raw) {

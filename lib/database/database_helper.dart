@@ -209,25 +209,28 @@ class DatabaseHelper {
     return 1;
   }
 
-  /// Returns true if a transaction with same amount, same calendar day, and
-  /// note/merchantName containing [snippet] already exists.
+  /// Returns true if a transaction with same amount, matching timestamp window (±2 minutes),
+  /// and matching merchant/note already exists, preventing duplicate imports while preserving
+  /// distinct legitimate transactions on the same day.
   Future<bool> checkDuplicateTransaction({
     required int amountValue,
     required DateTime date,
     required String snippet,
   }) async {
     final dbInstance = await db;
-    // Same day range in millis
-    final dayStart = DateTime(date.year, date.month, date.day).millisecondsSinceEpoch;
-    final dayEnd = DateTime(date.year, date.month, date.day, 23, 59, 59, 999).millisecondsSinceEpoch;
-    final likeSnippet = '%${snippet.isNotEmpty ? snippet.substring(0, snippet.length.clamp(0, 20)) : ''}%';
+    final targetMillis = date.millisecondsSinceEpoch;
+    // Proximate window: within 2 minutes of the transaction timestamp
+    final windowStart = targetMillis - 120000;
+    final windowEnd = targetMillis + 120000;
+    final cleanSnippet = snippet.trim();
+    final likeSnippet = '%${cleanSnippet.isNotEmpty ? cleanSnippet.substring(0, cleanSnippet.length.clamp(0, 30)) : ''}%';
 
     final rows = await dbInstance.customSelect(
       'SELECT id FROM transactions WHERE amount = ? AND date >= ? AND date <= ? AND (note LIKE ? OR merchant_name LIKE ?) LIMIT 1',
       variables: [
         Variable.withInt(amountValue),
-        Variable.withInt(dayStart),
-        Variable.withInt(dayEnd),
+        Variable.withInt(windowStart),
+        Variable.withInt(windowEnd),
         Variable.withString(likeSnippet),
         Variable.withString(likeSnippet),
       ],
