@@ -64,12 +64,15 @@ class DashboardController extends _$DashboardController {
       ..sort((a, b) => b.date.compareTo(a.date));
     final limitedTransactions = recentTransactions.take(5).toList();
 
+    final progress = await budgetEngine.calculateBudgetProgress(date: now);
+    final budgetProgressList = progress != null ? [progress] : <BudgetProgress>[];
+
     return DashboardState(
       monthlyTotal: monthlyTotal,
       dailyAllowance: dailyAllowance,
       overallMonthlyBudget: overallBudget,
       categoryBreakdown: categoryBreakdown,
-      budgetProgress: const [],
+      budgetProgress: budgetProgressList,
       recentTransactions: limitedTransactions,
       insights: insights,
       healthScore: healthScore,

@@ -100,7 +100,7 @@ class RecurringEngine {
         createdAt: DateTime.now(),
       );
 
-      final nextDue = _calculateNextDue(currentDue, rt);
+      final nextDue = calculateNextDue(currentDue, rt);
       final nextDueStr = _dateFormat.format(nextDue);
       final lastGenStr = _dateFormat.format(currentDue);
       final updatedAtStr = DateTime.now().toIso8601String();
@@ -132,7 +132,7 @@ class RecurringEngine {
   /// - yearly: safe year addition with leap-year day clamping (Feb 29 -> Feb 28 -> Feb 29)
   /// - custom: +intervalDays (rejects intervalDays <= 0)
   /// Throws [ValidationException] for unknown frequency or invalid interval.
-  static DateTime _calculateNextDue(
+  static DateTime calculateNextDue(
       DateTime from, RecurringTransactionModel rt) {
     final freq = rt.frequency.toLowerCase();
     switch (freq) {
@@ -216,7 +216,7 @@ class RecurringEngine {
         createdAt: DateTime.now(),
       );
 
-      final nextDue = _calculateNextDue(targetDate, rt);
+      final nextDue = calculateNextDue(targetDate, rt);
       final newNextDueStr = _dateFormat.format(nextDue);
       final lastGenStr = _dateFormat.format(targetDate);
       final updatedAtStr = DateTime.now().toIso8601String();

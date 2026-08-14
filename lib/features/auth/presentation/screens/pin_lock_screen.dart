@@ -181,177 +181,191 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
     return Scaffold(
       backgroundColor: AppColors.darkCanvas,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1A1A1A),
-                  shape: BoxShape.circle,
-                  border: Border(
-                    top: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
-                    bottom: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
-                    left: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
-                    right: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.lock_outline,
-                  size: 48,
-                  color: AppColors.darkGoldPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              Text(
-                'App Locked',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.darkTextPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-
-              Text(
-                _hasPin
-                    ? 'Enter your PIN or use biometrics to continue'
-                    : 'Use biometric authentication to unlock',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.darkTextSecondary,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              if (_remainingLockoutSeconds > 0) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.timer_outlined, color: Colors.redAccent, size: 20),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          _formatLockoutMessage(_remainingLockoutSeconds),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1A1A1A),
+                            shape: BoxShape.circle,
+                            border: Border(
+                              top: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                              bottom: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                              left: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                              right: BorderSide(color: AppColors.darkGoldPrimary, width: 2),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.lock_outline,
+                            size: 42,
+                            color: AppColors.darkGoldPrimary,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                        const SizedBox(height: 20),
 
-              if (_hasPin) ...[
-                TextField(
-                  controller: _pinController,
-                  enabled: _remainingLockoutSeconds <= 0,
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  maxLength: 6,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _remainingLockoutSeconds > 0 ? Colors.grey : Colors.white,
-                    fontSize: 24,
-                    letterSpacing: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    counterText: '',
-                    hintText: '••••',
-                    hintStyle: const TextStyle(
-                      color: AppColors.darkTextTertiary,
-                      letterSpacing: 8,
-                    ),
-                    filled: true,
-                    fillColor: _remainingLockoutSeconds > 0 ? AppColors.darkSurface2.withValues(alpha: 0.5) : AppColors.darkSurface2,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.darkBorderGlass),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.darkBorderGlass),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.darkGoldPrimary),
-                    ),
-                  ),
-                  onChanged: (_) => setState(() => _errorMsg = ''),
-                ),
-                if (_errorMsg.isNotEmpty && _remainingLockoutSeconds <= 0) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _errorMsg,
-                    style: const TextStyle(color: Colors.redAccent, fontSize: 13),
-                  ),
-                ],
-                const SizedBox(height: 24),
+                        Text(
+                          'App Locked',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: AppColors.darkTextPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _remainingLockoutSeconds > 0 ? Colors.grey.shade800 : AppColors.darkGoldPrimary,
-                      foregroundColor: _remainingLockoutSeconds > 0 ? Colors.white54 : Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: _remainingLockoutSeconds > 0 ? null : _verifyPin,
-                    child: Text(
-                      _remainingLockoutSeconds > 0 ? 'Locked Out' : 'Unlock',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
+                        Text(
+                          _hasPin
+                              ? 'Enter your PIN or use biometrics to continue'
+                              : 'Use biometric authentication to unlock',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.darkTextSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
 
-              if (_useBiometric) ...[
-                const SizedBox(height: 24),
-                IconButton(
-                  icon: Icon(
-                    Icons.fingerprint,
-                    size: 56,
-                    color: _remainingLockoutSeconds > 0 ? Colors.grey : AppColors.darkGoldPrimary,
+                        if (_remainingLockoutSeconds > 0) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.timer_outlined, color: Colors.redAccent, size: 20),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    _formatLockoutMessage(_remainingLockoutSeconds),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        if (_hasPin) ...[
+                          TextField(
+                            controller: _pinController,
+                            enabled: _remainingLockoutSeconds <= 0,
+                            keyboardType: TextInputType.number,
+                            obscureText: true,
+                            maxLength: 6,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: _remainingLockoutSeconds > 0 ? Colors.grey : Colors.white,
+                              fontSize: 24,
+                              letterSpacing: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            decoration: InputDecoration(
+                              counterText: '',
+                              hintText: '••••',
+                              hintStyle: const TextStyle(
+                                color: AppColors.darkTextTertiary,
+                                letterSpacing: 8,
+                              ),
+                              filled: true,
+                              fillColor: _remainingLockoutSeconds > 0 ? AppColors.darkSurface2.withValues(alpha: 0.5) : AppColors.darkSurface2,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: AppColors.darkBorderGlass),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: AppColors.darkBorderGlass),
+                              ),
+                              disabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: AppColors.darkGoldPrimary),
+                              ),
+                            ),
+                            onChanged: (_) => setState(() => _errorMsg = ''),
+                          ),
+                          if (_errorMsg.isNotEmpty && _remainingLockoutSeconds <= 0) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              _errorMsg,
+                              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _remainingLockoutSeconds > 0 ? Colors.grey.shade800 : AppColors.darkGoldPrimary,
+                                foregroundColor: _remainingLockoutSeconds > 0 ? Colors.white54 : Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: _remainingLockoutSeconds > 0 ? null : _verifyPin,
+                              child: Text(
+                                _remainingLockoutSeconds > 0 ? 'Locked Out' : 'Unlock',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        if (_useBiometric) ...[
+                          const SizedBox(height: 20),
+                          IconButton(
+                            icon: Icon(
+                              Icons.fingerprint,
+                              size: 48,
+                              color: _remainingLockoutSeconds > 0 ? Colors.grey : AppColors.darkGoldPrimary,
+                            ),
+                            tooltip: _remainingLockoutSeconds > 0 ? 'Locked out' : 'Unlock with Biometric',
+                            onPressed: _remainingLockoutSeconds > 0 ? null : _attemptBiometric,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _remainingLockoutSeconds > 0
+                                ? 'Biometric unlock paused during lockout'
+                                : 'Tap to use Fingerprint / Face ID',
+                            style: TextStyle(
+                              color: _remainingLockoutSeconds > 0 ? Colors.grey : AppColors.darkTextTertiary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                        const Spacer(),
+                      ],
+                    ),
                   ),
-                  tooltip: _remainingLockoutSeconds > 0 ? 'Locked out' : 'Unlock with Biometric',
-                  onPressed: _remainingLockoutSeconds > 0 ? null : _attemptBiometric,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _remainingLockoutSeconds > 0
-                      ? 'Biometric unlock paused during lockout'
-                      : 'Tap to use Fingerprint / Face ID',
-                  style: TextStyle(
-                    color: _remainingLockoutSeconds > 0 ? Colors.grey : AppColors.darkTextTertiary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

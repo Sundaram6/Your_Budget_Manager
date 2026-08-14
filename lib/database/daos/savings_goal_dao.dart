@@ -48,9 +48,35 @@ class SavingsGoalDao extends DatabaseAccessor<AppDatabase>
   Future<void> insertGoal(SavingsGoalsTableCompanion goal) =>
       into(savingsGoalsTable).insert(goal);
 
-  /// Update a savings goal.
-  Future<bool> updateGoal(SavingsGoalsTableCompanion goal) =>
-      update(savingsGoalsTable).replace(goal);
+  /// Update a savings goal within an atomic database transaction.
+  Future<bool> updateGoal(SavingsGoalsTableCompanion goal) async {
+    return await db.transaction(() async {
+      final existing = await (select(savingsGoalsTable)..where((t) => t.id.equals(goal.id.value))).getSingleOrNull();
+      if (existing == null) return false;
+
+      final targetAmt = goal.targetAmount.present ? goal.targetAmount.value : existing.targetAmount;
+      final isCompleted = existing.currentAmount >= targetAmt;
+
+      await (update(savingsGoalsTable)..where((t) => t.id.equals(goal.id.value))).write(
+        SavingsGoalsTableCompanion(
+          name: goal.name,
+          targetAmount: goal.targetAmount,
+          deadline: goal.deadline,
+          budgetId: goal.budgetId,
+          autoDeduct: goal.autoDeduct,
+          autoDeductAmount: goal.autoDeductAmount,
+          categoryId: goal.categoryId,
+          targetDate: goal.targetDate,
+          iconName: goal.iconName,
+          colorHex: goal.colorHex,
+          note: goal.note,
+          status: isCompleted ? const Value('completed') : const Value('active'),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+      return true;
+    });
+  }
 
   /// Add deposit amount in paise to a goal's currentAmount atomically.
   Future<void> addDepositPaise(String id, int amountPaise) async {

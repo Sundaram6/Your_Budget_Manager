@@ -52,3 +52,46 @@ Map<String, dynamic> _$MonthOverMonthComparisonToJson(
   'previousTotal': instance.previousTotal,
   'changePercent': instance.changePercent,
 };
+
+_RecurringCommitmentSummary _$RecurringCommitmentSummaryFromJson(
+  Map<String, dynamic> json,
+) => _RecurringCommitmentSummary(
+  totalMonthlyRecurringPaise: (json['totalMonthlyRecurringPaise'] as num)
+      .toInt(),
+  upcomingRecurringThisMonthPaise:
+      (json['upcomingRecurringThisMonthPaise'] as num).toInt(),
+  recurringCount: (json['recurringCount'] as num).toInt(),
+  recurringExpenseRatio: (json['recurringExpenseRatio'] as num).toDouble(),
+);
+
+Map<String, dynamic> _$RecurringCommitmentSummaryToJson(
+  _RecurringCommitmentSummary instance,
+) => <String, dynamic>{
+  'totalMonthlyRecurringPaise': instance.totalMonthlyRecurringPaise,
+  'upcomingRecurringThisMonthPaise': instance.upcomingRecurringThisMonthPaise,
+  'recurringCount': instance.recurringCount,
+  'recurringExpenseRatio': instance.recurringExpenseRatio,
+};
+
+_SavingsAnalyticsSummary _$SavingsAnalyticsSummaryFromJson(
+  Map<String, dynamic> json,
+) => _SavingsAnalyticsSummary(
+  totalGoalsCount: (json['totalGoalsCount'] as num).toInt(),
+  activeGoalsCount: (json['activeGoalsCount'] as num).toInt(),
+  totalSavedPaise: (json['totalSavedPaise'] as num).toInt(),
+  totalTargetPaise: (json['totalTargetPaise'] as num).toInt(),
+  monthlyCommittedAutoSavePaise: (json['monthlyCommittedAutoSavePaise'] as num)
+      .toInt(),
+  overallProgressPercent: (json['overallProgressPercent'] as num).toDouble(),
+);
+
+Map<String, dynamic> _$SavingsAnalyticsSummaryToJson(
+  _SavingsAnalyticsSummary instance,
+) => <String, dynamic>{
+  'totalGoalsCount': instance.totalGoalsCount,
+  'activeGoalsCount': instance.activeGoalsCount,
+  'totalSavedPaise': instance.totalSavedPaise,
+  'totalTargetPaise': instance.totalTargetPaise,
+  'monthlyCommittedAutoSavePaise': instance.monthlyCommittedAutoSavePaise,
+  'overallProgressPercent': instance.overallProgressPercent,
+};

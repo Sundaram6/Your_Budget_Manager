@@ -5,6 +5,8 @@ import '../../core/enums.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../database/daos/category_dao.dart';
 import '../../database/daos/transaction_dao.dart';
+import '../../repositories/recurring_repository.dart';
+import '../analytics/analytics_engine.dart';
 import '../budget/budget_engine.dart';
 import '../category/category_engine.dart';
 import '../expense/expense_engine.dart';
@@ -17,6 +19,8 @@ class IntelligenceEngine {
   final ExpenseEngine? _expenseEngine;
   final TransactionDao? _transactionDao;
   final CategoryDao? _categoryDao;
+  final RecurringRepository? _recurringRepository;
+  final AnalyticsEngine? _analyticsEngine;
 
   IntelligenceEngine({
     BudgetEngine? budgetEngine,
@@ -24,106 +28,118 @@ class IntelligenceEngine {
     ExpenseEngine? expenseEngine,
     TransactionDao? transactionDao,
     CategoryDao? categoryDao,
+    RecurringRepository? recurringRepository,
+    AnalyticsEngine? analyticsEngine,
   })  : _budgetEngine = budgetEngine,
         _savingsEngine = savingsEngine,
         _expenseEngine = expenseEngine,
         _transactionDao = transactionDao,
-        _categoryDao = categoryDao;
+        _categoryDao = categoryDao,
+        _recurringRepository = recurringRepository,
+        _analyticsEngine = analyticsEngine;
 
   /// Calculate Budget Health Score: 0 - 100
-  /// Rule 1:
-  /// score = 100
-  /// if (overBudget) score -= 40
-  /// if (budgetProgress > 0.8) score -= 20
-  /// else if (budgetProgress > 0.5) score -= 10
-  /// if (noSavingsGoals) score -= 15
-  /// if (dailyAllowance < 500) score -= 10 (i.e. < ₹500/day = 50000 paise)
-  /// max(score, 0)
+  /// Considers:
+  /// - Budget progress with total committed spend (spent + upcoming recurring + committed savings)
+  /// - Fixed recurring cost ratio
+  /// - Savings discipline and goals
+  /// - Daily allowance comfort
   Future<int> calculateBudgetHealthScore() async {
     int score = 100;
     final now = DateTime.now();
 
-    if (_budgetEngine != null && _expenseEngine != null) {
-      final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
-      if (overallBudget != null && overallBudget.amount > 0) {
-        final monthlySpendPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-        final budgetAmountPaise = overallBudget.amount;
-
-        final isOverBudget = monthlySpendPaise > budgetAmountPaise;
-        final budgetProgress = monthlySpendPaise / budgetAmountPaise;
-
-        if (isOverBudget) {
+    if (_budgetEngine != null) {
+      final progress = await _budgetEngine!.calculateBudgetProgress(date: now);
+      if (progress != null && progress.limit > 0) {
+        if (progress.isOverBudget) {
           score -= 40;
-        } else if (budgetProgress > 0.8) {
+        } else if (progress.percentage > 0.8) {
           score -= 20;
-        } else if (budgetProgress > 0.5) {
+        } else if (progress.percentage > 0.5) {
           score -= 10;
         }
 
-        final allowance = await _budgetEngine.calculateDailyAllowance(date: now);
-        if (allowance != null && allowance.amount < 50000) { // < ₹500/day
+        // Penalty if recurring payments alone take > 50% of monthly budget
+        if (progress.committedRecurring > 0 && (progress.committedRecurring / progress.limit > 0.5)) {
           score -= 10;
         }
+      }
+
+      final allowance = await _budgetEngine!.calculateDailyAllowance(date: now);
+      if (allowance != null && allowance.amount < 50000) { // < ₹500/day
+        score -= 10;
+      }
+    } else if (_expenseEngine != null) {
+      final monthlySpendPaise = await _expenseEngine!.getMonthlyTotal(now, type: TransactionType.expense);
+      if (monthlySpendPaise > 0) {
+        score -= 5;
       }
     }
 
     if (_savingsEngine != null) {
-      final goals = await _savingsEngine.watchGoals().first;
+      final goals = await _savingsEngine!.watchGoals().first;
       if (goals.isEmpty) {
         score -= 15;
+      } else {
+        // Bonus for having active automated savings goals
+        final hasAutoDeduct = goals.any((g) => g.status.toLowerCase() == 'active' && g.autoDeduct);
+        if (hasAutoDeduct) {
+          score = min(100, score + 10);
+        }
       }
     }
 
     return max(0, score);
   }
 
-  /// Rule 3: Daily Advice
+  /// Daily Advice factoring in budget progress, recurring commitments, and savings.
   Future<String> getDailyAdvice() async {
     final now = DateTime.now();
 
-    if (_budgetEngine == null || _expenseEngine == null) {
+    if (_budgetEngine == null) {
       return 'Start tracking your expenses to build smart money habits.';
     }
 
-    final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
-    if (overallBudget == null || overallBudget.amount <= 0) {
+    final progress = await _budgetEngine!.calculateBudgetProgress(date: now);
+    if (progress == null || progress.limit <= 0) {
       return 'Set a monthly budget to unlock daily allowance guidance.';
     }
-
-    final monthlySpendPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-    final budgetAmountPaise = overallBudget.amount;
-    final remainingPaise = (budgetAmountPaise - monthlySpendPaise).clamp(0, budgetAmountPaise);
 
     final lastDay = DateTime(now.year, now.month + 1, 0).day;
     final daysRemaining = max(1, lastDay - now.day + 1);
 
-    final isOverBudget = monthlySpendPaise > budgetAmountPaise;
-    final budgetProgress = monthlySpendPaise / budgetAmountPaise;
+    final allowance = await _budgetEngine!.calculateDailyAllowance(date: now);
 
-    final allowance = await _budgetEngine.calculateDailyAllowance(date: now);
-
-    if (isOverBudget) {
-      return 'Budget exceeded. Pause non-essential spending today.';
+    if (progress.isOverBudget) {
+      if (progress.spent > progress.limit) {
+        return 'Budget exceeded. Pause non-essential spending today.';
+      } else {
+        return 'Budget over-committed with upcoming bills and savings. Stick to essentials.';
+      }
     } else if (daysRemaining == 1) {
       return 'Last day of the month — stay strong!';
     } else if (allowance != null && allowance.amount < 30000) { // < ₹300/day
       return 'Tight budget today. Stick to essentials.';
-    } else if (budgetProgress > 0.8) {
-      return "You're at ${(budgetProgress * 100).round()}% of budget. Slow down.";
+    } else if (progress.percentage > 0.8) {
+      return "You're at ${(progress.percentage * 100).round()}% of committed budget. Slow down.";
+    } else if (progress.committedRecurring > 0 && progress.remaining > 0) {
+      final formattedRemaining = CurrencyFormatter.formatPaiseNoDecimals(progress.remaining);
+      final formattedRecurring = CurrencyFormatter.formatPaiseNoDecimals(progress.committedRecurring);
+      return "On track! $formattedRemaining left to spend after $formattedRecurring in upcoming bills.";
     } else {
-      final formattedRemaining = CurrencyFormatter.formatPaiseNoDecimals(remainingPaise);
+      final formattedRemaining = CurrencyFormatter.formatPaiseNoDecimals(max(0, progress.remaining));
       return "You're on track! $formattedRemaining left to spend freely.";
     }
   }
 
-  /// Rule 2: Category Warnings (spending > 40% or > 30%)
+  /// Category Warnings (spending > 40% or > 30%)
   Future<List<AiInsight>> analyzeCategorySpending() async {
     final insights = <AiInsight>[];
     final now = DateTime.now();
 
     if (_transactionDao != null) {
       final startOfMonth = DateTime(now.year, now.month, 1);
-      final transactions = await _transactionDao.getTransactionsByDateRange(startOfMonth, now);
+      final transactions = await _transactionDao!.getTransactionsByDateRange(startOfMonth, now);
       final expenses = transactions.where((t) => t.type == 'expense').toList();
       final totalSpend = expenses.fold<int>(0, (sum, t) => sum + t.amount);
 
@@ -139,7 +155,7 @@ class IntelligenceEngine {
         for (final entry in sortedCategories.take(3)) {
           final ratio = entry.value / totalSpend;
           final pct = (ratio * 100).round();
-          final category = _categoryDao != null ? await _categoryDao.getCategoryById(entry.key) : null;
+          final category = _categoryDao != null ? await _categoryDao!.getCategoryById(entry.key) : null;
           final catName = category?.name ?? CategoryEngine.getDisplayName(entry.key);
 
           if (pct >= 40) {
@@ -168,17 +184,51 @@ class IntelligenceEngine {
     return insights;
   }
 
-  /// Rule 4: Savings Recommendations
+  /// Recurring Payment Commitment Insights
+  Future<List<AiInsight>> analyzeRecurringCommitments() async {
+    final insights = <AiInsight>[];
+    final now = DateTime.now();
+
+    if (_analyticsEngine != null) {
+      final summary = await _analyticsEngine!.getRecurringCommitments();
+      if (summary.recurringCount > 0) {
+        if (summary.upcomingRecurringThisMonthPaise > 0) {
+          final formattedUpcoming = CurrencyFormatter.formatPaiseNoDecimals(summary.upcomingRecurringThisMonthPaise);
+          insights.add(AiInsight(
+            id: 'recurring_upcoming_due',
+            title: 'Upcoming Recurring Bills',
+            description: 'You have $formattedUpcoming in scheduled recurring bills due before month-end.',
+            type: InsightType.tip,
+            generatedAt: now,
+            priority: 1,
+          ));
+        }
+
+        if (summary.recurringExpenseRatio >= 40) {
+          insights.add(AiInsight(
+            id: 'recurring_high_fixed_costs',
+            title: 'High Fixed Commitments',
+            description: 'Recurring payments make up ${summary.recurringExpenseRatio.round()}% of your monthly expenses. Review unused subscriptions.',
+            type: InsightType.warning,
+            generatedAt: now,
+            priority: 2,
+          ));
+        }
+      }
+    }
+
+    return insights;
+  }
+
+  /// Savings Recommendations & Velocity
   Future<List<AiInsight>> generateSavingsRecommendations() async {
     final insights = <AiInsight>[];
     final now = DateTime.now();
 
-    if (_budgetEngine != null && _expenseEngine != null) {
-      final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
-      if (overallBudget != null && overallBudget.amount > 0) {
-        final monthlySpendPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-
-        if (monthlySpendPaise > (overallBudget.amount * 0.9)) {
+    if (_budgetEngine != null) {
+      final progress = await _budgetEngine!.calculateBudgetProgress(date: now);
+      if (progress != null && progress.limit > 0) {
+        if (progress.percentage > 0.9) {
           insights.add(AiInsight(
             id: 'savings_pause_sub',
             title: 'Close to Budget Limit',
@@ -192,7 +242,7 @@ class IntelligenceEngine {
     }
 
     if (_savingsEngine != null) {
-      final goals = await _savingsEngine.watchGoals().first;
+      final goals = await _savingsEngine!.watchGoals().first;
       if (goals.isEmpty) {
         insights.add(AiInsight(
           id: 'savings_create_goal',
@@ -207,6 +257,18 @@ class IntelligenceEngine {
           final target = goal.targetAmount;
           final current = goal.currentAmount;
           final ratio = target > 0 ? current / target : 0.0;
+
+          if (goal.status.toLowerCase() == 'active' && goal.autoDeduct && goal.autoDeductAmount != null && goal.autoDeductAmount! > 0) {
+            final formattedAuto = CurrencyFormatter.formatPaiseNoDecimals(goal.autoDeductAmount!);
+            insights.add(AiInsight(
+              id: 'savings_autodeduct_${goal.id}',
+              title: '${goal.name} Auto-Saving',
+              description: 'Auto-deducting $formattedAuto/mo towards ${goal.name} (${(ratio * 100).round()}% complete).',
+              type: InsightType.tip,
+              generatedAt: now,
+              priority: 3,
+            ));
+          }
 
           if (goal.deadline != null && ratio < 0.5) {
             final deadlineDate = DateTime.fromMillisecondsSinceEpoch(goal.deadline!);
@@ -229,14 +291,14 @@ class IntelligenceEngine {
     return insights;
   }
 
-  /// Rule 5 Achievements & All Insights Consolidated
+  /// Achievements & All Insights Consolidated
   Future<List<AiInsight>> generateInsights() async {
     final insights = <AiInsight>[];
     final now = DateTime.now();
 
     // Achievements
     if (_budgetEngine != null) {
-      final overallBudget = await _budgetEngine.getOverallBudget(now.month, now.year);
+      final overallBudget = await _budgetEngine!.getOverallBudget(now.month, now.year);
       if (overallBudget != null) {
         insights.add(AiInsight(
           id: 'achieve_first_budget',
@@ -250,7 +312,7 @@ class IntelligenceEngine {
     }
 
     if (_savingsEngine != null) {
-      final goals = await _savingsEngine.watchGoals().first;
+      final goals = await _savingsEngine!.watchGoals().first;
       if (goals.isNotEmpty) {
         insights.add(AiInsight(
           id: 'achieve_first_goal',
@@ -263,11 +325,13 @@ class IntelligenceEngine {
       }
     }
 
-    // Category Warnings & Savings Recommendations
+    // Category Warnings, Recurring Commitments & Savings Recommendations
     final catInsights = await analyzeCategorySpending();
+    final recurringInsights = await analyzeRecurringCommitments();
     final savInsights = await generateSavingsRecommendations();
 
     insights.addAll(catInsights);
+    insights.addAll(recurringInsights);
     insights.addAll(savInsights);
 
     if (insights.isEmpty) {
@@ -311,7 +375,7 @@ class IntelligenceEngine {
       }
       final sorted = catMap.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
       final top = sorted.first;
-      final category = _categoryDao != null ? await _categoryDao.getCategoryById(top.key) : null;
+      final category = _categoryDao != null ? await _categoryDao!.getCategoryById(top.key) : null;
       final catName = category?.name ?? CategoryEngine.getDisplayName(top.key);
       final pct = (top.value / totalExpense * 100).round();
       final potentialSavingPaise = (top.value * 0.2).round();

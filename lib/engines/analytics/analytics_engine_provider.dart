@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/providers/database_providers.dart';
+import '../savings/savings_engine_provider.dart';
 import 'analytics_engine.dart';
 
 part 'analytics_engine_provider.g.dart';
@@ -8,5 +9,13 @@ part 'analytics_engine_provider.g.dart';
 AnalyticsEngine analyticsEngine(Ref ref) {
   final txRepo = ref.watch(transactionRepositoryProvider);
   final catRepo = ref.watch(categoryRepositoryProvider);
-  return AnalyticsEngine(txRepo, catRepo);
+  final recurringRepo = ref.watch(recurringRepositoryProvider);
+  final savingsEng = ref.watch(savingsEngineProvider);
+
+  return AnalyticsEngine(
+    txRepo,
+    catRepo,
+    recurringRepository: recurringRepo,
+    savingsEngine: savingsEng,
+  );
 }

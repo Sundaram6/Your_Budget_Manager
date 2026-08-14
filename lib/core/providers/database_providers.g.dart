@@ -48,7 +48,7 @@ final class AppDatabaseProvider
   }
 }
 
-String _$appDatabaseHash() => r'db5ec0cfe18c9502ec1b77b5c718110d9c5af1de';
+String _$appDatabaseHash() => r'b189f0af306321b262536f6598295ca9be3f1f7b';
 
 @ProviderFor(categoryRepository)
 final categoryRepositoryProvider = CategoryRepositoryProvider._();

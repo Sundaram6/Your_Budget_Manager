@@ -11,7 +11,9 @@ import '../../models/recurring_transaction.dart';
 import '../../repositories/recurring_repository.dart';
 
 class CreateRecurringScreen extends StatefulWidget {
-  const CreateRecurringScreen({super.key});
+  final RecurringTransactionModel? initialRecurring;
+
+  const CreateRecurringScreen({super.key, this.initialRecurring});
 
   @override
   State<CreateRecurringScreen> createState() => _CreateRecurringScreenState();
@@ -31,6 +33,32 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
   bool _hasNoEndDate = true;
   bool _autoConfirm = false;
   bool _isSaving = false;
+
+  bool get _isEdit => widget.initialRecurring != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final item = widget.initialRecurring;
+    if (item != null) {
+      _titleController.text = item.title;
+      final rupees = item.amountPaise / 100.0;
+      _amountStr = rupees % 1 == 0 ? rupees.toStringAsFixed(0) : rupees.toStringAsFixed(2);
+      _selectedType = item.type;
+      _selectedCategory = item.categoryId;
+      _selectedFrequency = item.frequency;
+      if (item.intervalDays != null) {
+        _intervalDaysController.text = item.intervalDays.toString();
+      }
+      _startDate = item.startDate;
+      _endDate = item.endDate;
+      _hasNoEndDate = item.endDate == null;
+      _autoConfirm = item.autoConfirm;
+      if (item.notes != null) {
+        _notesController.text = item.notes!;
+      }
+    }
+  }
 
   static const _frequencies = [
     MapEntry('daily', 'Daily'),
@@ -115,7 +143,7 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
     final now = DateTime.now();
     final amountPaise = (amountDouble * 100).round();
     final uuid = const Uuid();
-    final id = 'rec_${uuid.v4()}';
+    final id = _isEdit ? widget.initialRecurring!.id : 'rec_${uuid.v4()}';
 
     final recurringItem = RecurringTransactionModel(
       id: id,
@@ -127,17 +155,21 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
       intervalDays: intervalDays,
       startDate: _startDate,
       endDate: _hasNoEndDate ? null : _endDate,
-      nextDueDate: _startDate,
-      lastGeneratedDate: null,
-      isActive: true,
+      nextDueDate: _isEdit ? widget.initialRecurring!.nextDueDate : _startDate,
+      lastGeneratedDate: _isEdit ? widget.initialRecurring!.lastGeneratedDate : null,
+      isActive: _isEdit ? widget.initialRecurring!.isActive : true,
       autoConfirm: _autoConfirm,
       notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-      createdAt: now,
+      createdAt: _isEdit ? widget.initialRecurring!.createdAt : now,
       updatedAt: now,
     );
 
     try {
-      await RecurringRepository.instance.insert(recurringItem);
+      if (_isEdit) {
+        await RecurringRepository.instance.update(recurringItem);
+      } else {
+        await RecurringRepository.instance.insert(recurringItem);
+      }
       if (mounted) {
         if (context.canPop()) {
           context.pop();
@@ -162,13 +194,16 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
     final tokens = theme.extension<AppCustomTokens>()!;
     final dateFormat = DateFormat('yyyy-MM-dd');
 
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Add Recurring',
+          _isEdit ? 'Edit Recurring Payment' : 'Add Recurring',
           style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -176,46 +211,52 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
-                child: Column(
-                  children: [
-                    // Pill Toggles
-                    _buildPillToggles(context, tokens),
-                    const SizedBox(height: AppSpacing.space6),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
+                  child: Column(
+                    children: [
+                      // Pill Toggles
+                      _buildPillToggles(context, tokens),
+                      const SizedBox(height: AppSpacing.space6),
 
-                    // Amount Display
-                    Text(
-                      '₹$_amountStr',
-                      style: theme.textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: _selectedType == 'expense' 
-                          ? theme.colorScheme.onSurface 
-                          : tokens.accentSavings,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space6),
-
-                    // Title
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
-                      ),
-                      child: TextField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          hintText: 'Title (e.g. Netflix, Rent)',
-                          border: InputBorder.none,
-                          icon: Icon(Icons.title, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      // Amount Display
+                      Text(
+                        '₹$_amountStr',
+                        style: theme.textTheme.displayLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _selectedType == 'expense' 
+                            ? theme.colorScheme.onSurface 
+                            : tokens.accentSavings,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: AppSpacing.space6),
+
+                      // Title
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space2),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(tokens.cardBorderRadius),
+                        ),
+                        child: TextField(
+                          controller: _titleController,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => FocusScope.of(context).unfocus(),
+                          decoration: InputDecoration(
+                            hintText: 'Title (e.g. Netflix, Rent)',
+                            border: InputBorder.none,
+                            icon: Icon(Icons.title, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: AppSpacing.space4),
                     
                     // Quick Templates
@@ -294,6 +335,8 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
                         child: TextField(
                           controller: _intervalDaysController,
                           keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => FocusScope.of(context).unfocus(),
                           decoration: InputDecoration(
                             hintText: 'Interval Days (e.g. 10)',
                             border: InputBorder.none,
@@ -394,43 +437,45 @@ class _CreateRecurringScreenState extends State<CreateRecurringScreen> {
                       activeColor: tokens.accentTransport,
                       onChanged: (val) => setState(() => _autoConfirm = val),
                     ),
-                    const SizedBox(height: AppSpacing.space4),
+                    const SizedBox(height: AppSpacing.space6),
                   ],
                 ),
               ),
             ),
             
-            // Numeric Keypad fixed at bottom
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.space4),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: _isSaving
-                  ? const Center(child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: CircularProgressIndicator(),
-                    ))
-                  : NumericKeypad(
-                      onKeyPressed: _onKeyPressed,
-                      onBackspace: _onBackspace,
-                      onSubmit: _saveRecurringTransaction,
-                      submitLabel: 'Save Recurring',
+            // Numeric Keypad at bottom (hidden when software keyboard is open to avoid covering form)
+            if (!isKeyboardOpen)
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.space4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
                     ),
-            ),
+                  ],
+                ),
+                child: _isSaving
+                    ? const Center(child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(),
+                      ))
+                    : NumericKeypad(
+                        onKeyPressed: _onKeyPressed,
+                        onBackspace: _onBackspace,
+                        onSubmit: _saveRecurringTransaction,
+                        submitLabel: _isEdit ? 'Update Recurring' : 'Save Recurring',
+                      ),
+              ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildPillToggles(BuildContext context, AppCustomTokens tokens) {
     return Container(

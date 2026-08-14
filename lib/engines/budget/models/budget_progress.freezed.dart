@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BudgetProgress {
 
- int get spent; int get limit; double get percentage; bool get isOverBudget;
+ int get spent; int get limit; double get percentage; bool get isOverBudget; int get committedRecurring; int get committedSavings; int get totalCommitted; int get remaining;
 /// Create a copy of BudgetProgress
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $BudgetProgressCopyWith<BudgetProgress> get copyWith => _$BudgetProgressCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BudgetProgress&&(identical(other.spent, spent) || other.spent == spent)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.isOverBudget, isOverBudget) || other.isOverBudget == isOverBudget));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BudgetProgress&&(identical(other.spent, spent) || other.spent == spent)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.isOverBudget, isOverBudget) || other.isOverBudget == isOverBudget)&&(identical(other.committedRecurring, committedRecurring) || other.committedRecurring == committedRecurring)&&(identical(other.committedSavings, committedSavings) || other.committedSavings == committedSavings)&&(identical(other.totalCommitted, totalCommitted) || other.totalCommitted == totalCommitted)&&(identical(other.remaining, remaining) || other.remaining == remaining));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,spent,limit,percentage,isOverBudget);
+int get hashCode => Object.hash(runtimeType,spent,limit,percentage,isOverBudget,committedRecurring,committedSavings,totalCommitted,remaining);
 
 @override
 String toString() {
-  return 'BudgetProgress(spent: $spent, limit: $limit, percentage: $percentage, isOverBudget: $isOverBudget)';
+  return 'BudgetProgress(spent: $spent, limit: $limit, percentage: $percentage, isOverBudget: $isOverBudget, committedRecurring: $committedRecurring, committedSavings: $committedSavings, totalCommitted: $totalCommitted, remaining: $remaining)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $BudgetProgressCopyWith<$Res>  {
   factory $BudgetProgressCopyWith(BudgetProgress value, $Res Function(BudgetProgress) _then) = _$BudgetProgressCopyWithImpl;
 @useResult
 $Res call({
- int spent, int limit, double percentage, bool isOverBudget
+ int spent, int limit, double percentage, bool isOverBudget, int committedRecurring, int committedSavings, int totalCommitted, int remaining
 });
 
 
@@ -62,13 +62,17 @@ class _$BudgetProgressCopyWithImpl<$Res>
 
 /// Create a copy of BudgetProgress
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? spent = null,Object? limit = null,Object? percentage = null,Object? isOverBudget = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? spent = null,Object? limit = null,Object? percentage = null,Object? isOverBudget = null,Object? committedRecurring = null,Object? committedSavings = null,Object? totalCommitted = null,Object? remaining = null,}) {
   return _then(_self.copyWith(
 spent: null == spent ? _self.spent : spent // ignore: cast_nullable_to_non_nullable
 as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
 as int,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
 as double,isOverBudget: null == isOverBudget ? _self.isOverBudget : isOverBudget // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,committedRecurring: null == committedRecurring ? _self.committedRecurring : committedRecurring // ignore: cast_nullable_to_non_nullable
+as int,committedSavings: null == committedSavings ? _self.committedSavings : committedSavings // ignore: cast_nullable_to_non_nullable
+as int,totalCommitted: null == totalCommitted ? _self.totalCommitted : totalCommitted // ignore: cast_nullable_to_non_nullable
+as int,remaining: null == remaining ? _self.remaining : remaining // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -153,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int spent,  int limit,  double percentage,  bool isOverBudget)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int spent,  int limit,  double percentage,  bool isOverBudget,  int committedRecurring,  int committedSavings,  int totalCommitted,  int remaining)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BudgetProgress() when $default != null:
-return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget);case _:
+return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget,_that.committedRecurring,_that.committedSavings,_that.totalCommitted,_that.remaining);case _:
   return orElse();
 
 }
@@ -174,10 +178,10 @@ return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int spent,  int limit,  double percentage,  bool isOverBudget)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int spent,  int limit,  double percentage,  bool isOverBudget,  int committedRecurring,  int committedSavings,  int totalCommitted,  int remaining)  $default,) {final _that = this;
 switch (_that) {
 case _BudgetProgress():
-return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget);case _:
+return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget,_that.committedRecurring,_that.committedSavings,_that.totalCommitted,_that.remaining);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +198,10 @@ return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int spent,  int limit,  double percentage,  bool isOverBudget)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int spent,  int limit,  double percentage,  bool isOverBudget,  int committedRecurring,  int committedSavings,  int totalCommitted,  int remaining)?  $default,) {final _that = this;
 switch (_that) {
 case _BudgetProgress() when $default != null:
-return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget);case _:
+return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget,_that.committedRecurring,_that.committedSavings,_that.totalCommitted,_that.remaining);case _:
   return null;
 
 }
@@ -209,13 +213,17 @@ return $default(_that.spent,_that.limit,_that.percentage,_that.isOverBudget);cas
 
 
 class _BudgetProgress implements BudgetProgress {
-  const _BudgetProgress({required this.spent, required this.limit, required this.percentage, required this.isOverBudget});
+  const _BudgetProgress({required this.spent, required this.limit, required this.percentage, required this.isOverBudget, this.committedRecurring = 0, this.committedSavings = 0, this.totalCommitted = 0, this.remaining = 0});
   
 
 @override final  int spent;
 @override final  int limit;
 @override final  double percentage;
 @override final  bool isOverBudget;
+@override@JsonKey() final  int committedRecurring;
+@override@JsonKey() final  int committedSavings;
+@override@JsonKey() final  int totalCommitted;
+@override@JsonKey() final  int remaining;
 
 /// Create a copy of BudgetProgress
 /// with the given fields replaced by the non-null parameter values.
@@ -227,16 +235,16 @@ _$BudgetProgressCopyWith<_BudgetProgress> get copyWith => __$BudgetProgressCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BudgetProgress&&(identical(other.spent, spent) || other.spent == spent)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.isOverBudget, isOverBudget) || other.isOverBudget == isOverBudget));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BudgetProgress&&(identical(other.spent, spent) || other.spent == spent)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.isOverBudget, isOverBudget) || other.isOverBudget == isOverBudget)&&(identical(other.committedRecurring, committedRecurring) || other.committedRecurring == committedRecurring)&&(identical(other.committedSavings, committedSavings) || other.committedSavings == committedSavings)&&(identical(other.totalCommitted, totalCommitted) || other.totalCommitted == totalCommitted)&&(identical(other.remaining, remaining) || other.remaining == remaining));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,spent,limit,percentage,isOverBudget);
+int get hashCode => Object.hash(runtimeType,spent,limit,percentage,isOverBudget,committedRecurring,committedSavings,totalCommitted,remaining);
 
 @override
 String toString() {
-  return 'BudgetProgress(spent: $spent, limit: $limit, percentage: $percentage, isOverBudget: $isOverBudget)';
+  return 'BudgetProgress(spent: $spent, limit: $limit, percentage: $percentage, isOverBudget: $isOverBudget, committedRecurring: $committedRecurring, committedSavings: $committedSavings, totalCommitted: $totalCommitted, remaining: $remaining)';
 }
 
 
@@ -247,7 +255,7 @@ abstract mixin class _$BudgetProgressCopyWith<$Res> implements $BudgetProgressCo
   factory _$BudgetProgressCopyWith(_BudgetProgress value, $Res Function(_BudgetProgress) _then) = __$BudgetProgressCopyWithImpl;
 @override @useResult
 $Res call({
- int spent, int limit, double percentage, bool isOverBudget
+ int spent, int limit, double percentage, bool isOverBudget, int committedRecurring, int committedSavings, int totalCommitted, int remaining
 });
 
 
@@ -264,13 +272,17 @@ class __$BudgetProgressCopyWithImpl<$Res>
 
 /// Create a copy of BudgetProgress
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? spent = null,Object? limit = null,Object? percentage = null,Object? isOverBudget = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? spent = null,Object? limit = null,Object? percentage = null,Object? isOverBudget = null,Object? committedRecurring = null,Object? committedSavings = null,Object? totalCommitted = null,Object? remaining = null,}) {
   return _then(_BudgetProgress(
 spent: null == spent ? _self.spent : spent // ignore: cast_nullable_to_non_nullable
 as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
 as int,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
 as double,isOverBudget: null == isOverBudget ? _self.isOverBudget : isOverBudget // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,committedRecurring: null == committedRecurring ? _self.committedRecurring : committedRecurring // ignore: cast_nullable_to_non_nullable
+as int,committedSavings: null == committedSavings ? _self.committedSavings : committedSavings // ignore: cast_nullable_to_non_nullable
+as int,totalCommitted: null == totalCommitted ? _self.totalCommitted : totalCommitted // ignore: cast_nullable_to_non_nullable
+as int,remaining: null == remaining ? _self.remaining : remaining // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

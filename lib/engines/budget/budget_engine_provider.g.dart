@@ -48,7 +48,7 @@ final class BudgetEngineProvider
   }
 }
 
-String _$budgetEngineHash() => r'1afc0d37b8155c68a5de6437b4d3dfd68f8d5cfd';
+String _$budgetEngineHash() => r'2cc35b8836e5a0f78bfdbe817af3819a7c244623';
 
 @ProviderFor(dailyAllowance)
 final dailyAllowanceProvider = DailyAllowanceProvider._();

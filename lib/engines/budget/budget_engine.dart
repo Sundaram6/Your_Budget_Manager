@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
@@ -7,21 +8,32 @@ import '../../core/errors/app_exception.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../database/app_database.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
+import '../../models/recurring_transaction.dart';
+import '../../repositories/recurring_repository.dart';
 import '../expense/expense_engine.dart';
+import '../recurring/recurring_engine.dart';
+import '../savings/savings_engine.dart';
+import 'models/budget_progress.dart';
 import 'models/daily_allowance.dart';
 
 class BudgetEngine {
   final BudgetRepository _budgetRepository;
   final ExpenseEngine _expenseEngine;
+  final RecurringRepository? _recurringRepository;
+  final SavingsEngine? _savingsEngine;
   final Logger _logger;
   final Uuid _uuid;
 
   BudgetEngine(
     this._budgetRepository,
     this._expenseEngine, {
+    RecurringRepository? recurringRepository,
+    SavingsEngine? savingsEngine,
     Logger? logger,
     Uuid? uuid,
-  })  : _logger = logger ?? Logger(),
+  })  : _recurringRepository = recurringRepository,
+        _savingsEngine = savingsEngine,
+        _logger = logger ?? Logger(),
         _uuid = uuid ?? const Uuid();
 
   /// Gets overall budget for specified month/year.
@@ -68,31 +80,145 @@ class BudgetEngine {
     }
   }
 
-  /// Calculates Daily Allowance using integer math (paise).
+  /// Calculates upcoming active recurring expenses due within the target month.
+  /// Strictly filters for active expense rules and prevents double-counting with posted transactions.
+  Future<int> getUpcomingRecurringSpend({int? month, int? year, DateTime? date}) async {
+    if (_recurringRepository == null) return 0;
+
+    final targetDate = date ?? DateTime(year ?? DateTime.now().year, month ?? DateTime.now().month, 1);
+    final targetMonth = targetDate.month;
+    final targetYear = targetDate.year;
+
+    final startOfMonth = DateTime(targetYear, targetMonth, 1);
+    final endOfMonth = DateTime(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+
+    final allRecurring = await _recurringRepository!.watchAll().first;
+    int totalUpcomingPaise = 0;
+
+    for (final rt in allRecurring) {
+      // Must be active and an expense
+      if (!rt.isActive || rt.type.toLowerCase() != 'expense') continue;
+
+      // If end date exists and has already passed before the month starts, skip
+      if (rt.endDate != null && rt.endDate!.isBefore(startOfMonth)) continue;
+
+      var occurrence = rt.nextDueDate;
+
+      while (occurrence.compareTo(endOfMonth) <= 0) {
+        if (rt.endDate != null && occurrence.isAfter(rt.endDate!)) {
+          break;
+        }
+
+        if (occurrence.compareTo(startOfMonth) >= 0) {
+          totalUpcomingPaise += rt.amountPaise;
+        }
+
+        try {
+          occurrence = RecurringEngine.calculateNextDue(occurrence, rt);
+        } catch (_) {
+          break;
+        }
+      }
+    }
+
+    return totalUpcomingPaise;
+  }
+
+  /// Calculates scheduled unexecuted auto-deduct allocations for active, incomplete savings goals.
+  /// Filters for autoDeduct == true, status == 'active', currentAmount < targetAmount,
+  /// and lastAutoDeductedMonth != currentMonthKey (avoids double-counting if already deducted this month).
+  Future<int> getCommittedSavings({String? budgetId, DateTime? date}) async {
+    if (_savingsEngine == null) return 0;
+
+    final targetDate = date ?? DateTime.now();
+    final monthKey = DateFormat('yyyy-MM').format(targetDate);
+
+    final goals = await _savingsEngine!.watchGoals().first;
+    int totalCommittedSavings = 0;
+
+    for (final goal in goals) {
+      // Must be active, incomplete, and have auto-deduct enabled
+      if (goal.status.toLowerCase() != 'active') continue;
+      if (!goal.autoDeduct || goal.autoDeductAmount == null || goal.autoDeductAmount! <= 0) continue;
+      if (goal.currentAmount >= goal.targetAmount) continue;
+
+      // Filter by budgetId if specified and goal has budget linkage
+      if (budgetId != null && goal.budgetId != null && goal.budgetId != budgetId) {
+        continue;
+      }
+
+      // Check if already auto-deducted this month
+      if (goal.lastAutoDeductedMonth == monthKey) continue;
+
+      totalCommittedSavings += goal.autoDeductAmount!;
+    }
+
+    return totalCommittedSavings;
+  }
+
+  /// Calculates complete forward-looking BudgetProgress factoring in:
+  /// (a) already posted transactions (spent)
+  /// (b) upcoming unposted recurring payments due in the period (committedRecurring)
+  /// (c) active unexecuted savings auto-deduct allocations (committedSavings)
+  Future<BudgetProgress?> calculateBudgetProgress({int? month, int? year, DateTime? date}) async {
+    final targetDate = date ?? DateTime(year ?? DateTime.now().year, month ?? DateTime.now().month, 1);
+    final overallBudget = await _budgetRepository.getOverallBudget(targetDate.month, targetDate.year);
+
+    if (overallBudget == null || overallBudget.amount <= 0) {
+      return null;
+    }
+
+    final limit = overallBudget.amount;
+    final spentPaise = await _expenseEngine.getMonthlyTotal(targetDate, type: TransactionType.expense);
+    final committedRecurringPaise = await getUpcomingRecurringSpend(
+      month: targetDate.month,
+      year: targetDate.year,
+      date: targetDate,
+    );
+    final committedSavingsPaise = await getCommittedSavings(
+      budgetId: overallBudget.id,
+      date: targetDate,
+    );
+
+    final totalCommittedPaise = spentPaise + committedRecurringPaise + committedSavingsPaise;
+    final remainingPaise = limit - totalCommittedPaise; // signed
+    final isOverBudget = totalCommittedPaise > limit;
+    final percentage = limit > 0 ? (totalCommittedPaise / limit) : 0.0;
+
+    return BudgetProgress(
+      spent: spentPaise,
+      limit: limit,
+      percentage: percentage,
+      isOverBudget: isOverBudget,
+      committedRecurring: committedRecurringPaise,
+      committedSavings: committedSavingsPaise,
+      totalCommitted: totalCommittedPaise,
+      remaining: remainingPaise,
+    );
+  }
+
+  /// Calculates Daily Allowance using true effective remaining budget (budget minus total committed).
   /// Returns null if no overall monthly budget is set for current month.
   Future<DailyAllowance?> calculateDailyAllowance({DateTime? date}) async {
     final now = date ?? DateTime.now();
 
-    final overallBudget = await _budgetRepository.getOverallBudget(now.month, now.year);
-    if (overallBudget == null || overallBudget.amount <= 0) {
+    final progress = await calculateBudgetProgress(date: now);
+    if (progress == null) {
       return null; // Hide card when no budget is set
     }
 
-    final monthlyBudgetPaise = overallBudget.amount;
-
-    // Get total expense spend for the month in paise
-    final totalSpendThisMonthPaise = await _expenseEngine.getMonthlyTotal(now, type: TransactionType.expense);
-
-    final remainingPaise = monthlyBudgetPaise - totalSpendThisMonthPaise;
-
+    final remainingPaise = progress.remaining;
     final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
     final daysRemaining = max(1, lastDayOfMonth.day - now.day + 1);
 
     if (remainingPaise <= 0) {
-      final overBudgetFormatted = CurrencyFormatter.formatPaise(-remainingPaise);
+      final overFormatted = CurrencyFormatter.formatPaise(-remainingPaise);
+      final message = progress.spent > progress.limit
+          ? 'Budget exceeded by $overFormatted. Pause non-essential spending.'
+          : 'Budget over-committed by $overFormatted. Pause non-essential spending.';
       return DailyAllowance(
         amount: 0,
-        message: 'Budget exceeded by $overBudgetFormatted. Pause spending.',
+        message: message,
         isOverBudget: true,
         remaining: remainingPaise,
         daysLeft: daysRemaining,
@@ -142,14 +268,14 @@ class BudgetEngine {
     }
   }
 
-  /// Gets remaining overall budget in paise for specified month/year.
+  /// Gets remaining overall budget in paise for specified month/year (signed).
   Future<int?> getRemainingBudget({int? month, int? year}) async {
     final targetDate = DateTime(year ?? DateTime.now().year, month ?? DateTime.now().month, 1);
-    final overallBudget = await _budgetRepository.getOverallBudget(targetDate.month, targetDate.year);
-    if (overallBudget == null) return null;
-
-    final spentPaise = await _expenseEngine.getMonthlyTotal(targetDate, type: TransactionType.expense);
-
-    return overallBudget.amount - spentPaise;
+    final progress = await calculateBudgetProgress(
+      month: targetDate.month,
+      year: targetDate.year,
+      date: targetDate,
+    );
+    return progress?.remaining;
   }
 }

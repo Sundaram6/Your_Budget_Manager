@@ -74,6 +74,53 @@ class SavingsEngine {
     }
   }
 
+  /// Update an existing savings goal (targetAmount in paise).
+  Future<bool> updateGoal({
+    required String id,
+    required String name,
+    required int targetAmountPaise,
+    DateTime? deadline,
+    String? linkedBudgetId,
+    bool autoDeduct = false,
+    int? autoDeductAmountPaise,
+    String? categoryId,
+    String? iconName,
+    String? colorHex,
+    String? note,
+  }) async {
+    if (id.trim().isEmpty) {
+      throw const ValidationException('Goal ID must not be empty');
+    }
+    if (name.trim().isEmpty) {
+      throw const ValidationException('Goal name must not be empty');
+    }
+    if (targetAmountPaise <= 0) {
+      throw const ValidationException('Target amount must be positive');
+    }
+
+    final companion = SavingsGoalsTableCompanion(
+      id: Value(id),
+      name: Value(name),
+      targetAmount: Value(targetAmountPaise),
+      deadline: Value(deadline?.millisecondsSinceEpoch),
+      budgetId: Value(linkedBudgetId),
+      autoDeduct: Value(autoDeduct),
+      autoDeductAmount: Value(autoDeductAmountPaise),
+      categoryId: Value(categoryId),
+      targetDate: Value(deadline?.millisecondsSinceEpoch),
+      iconName: iconName != null ? Value(iconName) : const Value.absent(),
+      colorHex: colorHex != null ? Value(colorHex) : const Value.absent(),
+      note: Value(note),
+      updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+    );
+
+    if (_repo != null) {
+      return await _repo.updateGoal(companion);
+    } else {
+      return await _dao.updateGoal(companion);
+    }
+  }
+
   /// Contribute/deposit an amount in paise to a goal.
   Future<void> contributeToGoal(String goalId, int amountPaise) async {
     if (amountPaise <= 0) {

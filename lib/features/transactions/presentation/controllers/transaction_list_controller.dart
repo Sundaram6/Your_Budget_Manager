@@ -17,12 +17,34 @@ abstract class TransactionListState with _$TransactionListState {
 
 @riverpod
 class TransactionListController extends _$TransactionListController {
+  DateTime _currentMonth = DateTime.now();
+
   @override
-  FutureOr<TransactionListState> build() async {
-    return _loadForMonth(DateTime.now());
+  FutureOr<TransactionListState> build() {
+    final expenseEngine = ref.watch(expenseEngineProvider);
+    final sub = expenseEngine.watchTransactionsByMonth(_currentMonth).listen((transactions) {
+      final grouped = <DateTime, List<Transaction>>{};
+      for (final t in transactions) {
+        final dateOnly = DateTime(t.date.year, t.date.month, t.date.day);
+        grouped.putIfAbsent(dateOnly, () => []).add(t);
+      }
+      
+      final sortedGrouped = Map.fromEntries(
+        grouped.entries.toList()..sort((a, b) => b.key.compareTo(a.key))
+      );
+      
+      state = AsyncValue.data(TransactionListState(
+        selectedMonth: _currentMonth,
+        groupedTransactions: sortedGrouped,
+      ));
+    });
+    ref.onDispose(() => sub.cancel());
+
+    return _loadForMonth(_currentMonth);
   }
   
   Future<TransactionListState> _loadForMonth(DateTime month) async {
+    _currentMonth = month;
     final expenseEngine = ref.watch(expenseEngineProvider);
     final transactions = await expenseEngine.getTransactionsByMonth(month);
     
@@ -45,7 +67,7 @@ class TransactionListController extends _$TransactionListController {
   }
   
   Future<void> changeMonth(DateTime newMonth) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _loadForMonth(newMonth));
+    _currentMonth = newMonth;
+    ref.invalidateSelf();
   }
 }

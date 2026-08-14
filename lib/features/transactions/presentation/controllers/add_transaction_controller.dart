@@ -6,6 +6,8 @@ import '../../../../core/enums.dart';
 import '../../../../core/providers/database_providers.dart';
 import '../../../../engines/category/category_engine.dart';
 import '../../../../engines/expense/expense_engine_provider.dart';
+import '../../domain/entities/transaction.dart';
+import '../../domain/value_objects/amount.dart';
 
 part 'add_transaction_controller.freezed.dart';
 part 'add_transaction_controller.g.dart';
@@ -13,6 +15,7 @@ part 'add_transaction_controller.g.dart';
 @freezed
 abstract class AddTransactionState with _$AddTransactionState {
   const factory AddTransactionState({
+    Transaction? existingTransaction,
     @Default(0) int amount, // Integer paise
     @Default(TransactionType.expense) TransactionType type,
     String? selectedCategoryId,
@@ -32,6 +35,19 @@ class AddTransactionController extends _$AddTransactionController {
     return AddTransactionState(
       date: now,
       selectedCategoryId: null,
+    );
+  }
+
+  void initForEdit(Transaction tx) {
+    state = state.copyWith(
+      existingTransaction: tx,
+      amount: tx.amount.value,
+      type: tx.type,
+      selectedCategoryId: tx.categoryId,
+      date: tx.date,
+      note: tx.note ?? '',
+      paymentMethod: tx.paymentMethod,
+      error: null,
     );
   }
 
@@ -94,15 +110,29 @@ class AddTransactionController extends _$AddTransactionController {
 
     try {
       final expenseEngine = ref.read(expenseEngineProvider);
-      await expenseEngine.addTransaction(
-        amount: state.amount,
-        date: state.date,
-        categoryId: categoryId,
-        type: state.type,
-        note: state.note.isEmpty ? null : state.note,
-        sourceApp: 'manual',
-        paymentMethod: state.paymentMethod,
-      );
+      if (state.existingTransaction != null) {
+        final existing = state.existingTransaction!;
+        final updated = existing.copyWith(
+          amount: Amount(state.amount),
+          date: state.date,
+          categoryId: categoryId,
+          type: state.type,
+          note: state.note.isEmpty ? null : state.note,
+          paymentMethod: state.paymentMethod,
+          updatedAt: DateTime.now().millisecondsSinceEpoch,
+        );
+        await expenseEngine.updateTransaction(updated);
+      } else {
+        await expenseEngine.addTransaction(
+          amount: state.amount,
+          date: state.date,
+          categoryId: categoryId,
+          type: state.type,
+          note: state.note.isEmpty ? null : state.note,
+          sourceApp: 'manual',
+          paymentMethod: state.paymentMethod,
+        );
+      }
       state = state.copyWith(isSaving: false);
       return true;
     } catch (e) {

@@ -177,24 +177,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: _isFinishing
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      onPageChanged: (idx) => setState(() => _currentPage = idx),
-                      children: [
-                        _buildPage1Welcome(),
-                        _buildPage2Budget(),
-                        _buildPage3SavingsGoal(),
-                        _buildPage4SmsAutoTrack(),
-                        NotificationPermissionScreen(onCompleted: _finishOnboarding),
-                      ],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: _isFinishing
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        onPageChanged: (idx) => setState(() => _currentPage = idx),
+                        children: [
+                          _buildPage1Welcome(),
+                          _buildPage2Budget(),
+                          _buildPage3SavingsGoal(),
+                          _buildPage4SmsAutoTrack(),
+                          NotificationPermissionScreen(onCompleted: _finishOnboarding),
+                        ],
+                      ),
                     ),
-                  ),
 
                   // Progress Dots Indicator & Step Counter
                   Padding(
@@ -233,8 +236,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ],
                     ),
                   ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -291,6 +295,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildPage2Budget() {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -313,6 +318,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           TextField(
             controller: _budgetController,
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => FocusScope.of(context).unfocus(),
             style: const TextStyle(
               color: AppColors.darkTextPrimary,
               fontSize: 20,
@@ -358,6 +365,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildPage3SavingsGoal() {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

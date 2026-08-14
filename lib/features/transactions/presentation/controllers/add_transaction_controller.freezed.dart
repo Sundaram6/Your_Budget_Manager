@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AddTransactionState {
 
- int get amount; TransactionType get type; String? get selectedCategoryId; DateTime get date; String get note; PaymentMethod get paymentMethod; bool get isSaving; String? get error;
+ Transaction? get existingTransaction; int get amount; TransactionType get type; String? get selectedCategoryId; DateTime get date; String get note; PaymentMethod get paymentMethod; bool get isSaving; String? get error;
 /// Create a copy of AddTransactionState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $AddTransactionStateCopyWith<AddTransactionState> get copyWith => _$AddTransacti
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddTransactionState&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.selectedCategoryId, selectedCategoryId) || other.selectedCategoryId == selectedCategoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddTransactionState&&(identical(other.existingTransaction, existingTransaction) || other.existingTransaction == existingTransaction)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.selectedCategoryId, selectedCategoryId) || other.selectedCategoryId == selectedCategoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,amount,type,selectedCategoryId,date,note,paymentMethod,isSaving,error);
+int get hashCode => Object.hash(runtimeType,existingTransaction,amount,type,selectedCategoryId,date,note,paymentMethod,isSaving,error);
 
 @override
 String toString() {
-  return 'AddTransactionState(amount: $amount, type: $type, selectedCategoryId: $selectedCategoryId, date: $date, note: $note, paymentMethod: $paymentMethod, isSaving: $isSaving, error: $error)';
+  return 'AddTransactionState(existingTransaction: $existingTransaction, amount: $amount, type: $type, selectedCategoryId: $selectedCategoryId, date: $date, note: $note, paymentMethod: $paymentMethod, isSaving: $isSaving, error: $error)';
 }
 
 
@@ -45,11 +45,11 @@ abstract mixin class $AddTransactionStateCopyWith<$Res>  {
   factory $AddTransactionStateCopyWith(AddTransactionState value, $Res Function(AddTransactionState) _then) = _$AddTransactionStateCopyWithImpl;
 @useResult
 $Res call({
- int amount, TransactionType type, String? selectedCategoryId, DateTime date, String note, PaymentMethod paymentMethod, bool isSaving, String? error
+ Transaction? existingTransaction, int amount, TransactionType type, String? selectedCategoryId, DateTime date, String note, PaymentMethod paymentMethod, bool isSaving, String? error
 });
 
 
-
+$TransactionCopyWith<$Res>? get existingTransaction;
 
 }
 /// @nodoc
@@ -62,9 +62,10 @@ class _$AddTransactionStateCopyWithImpl<$Res>
 
 /// Create a copy of AddTransactionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? amount = null,Object? type = null,Object? selectedCategoryId = freezed,Object? date = null,Object? note = null,Object? paymentMethod = null,Object? isSaving = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? existingTransaction = freezed,Object? amount = null,Object? type = null,Object? selectedCategoryId = freezed,Object? date = null,Object? note = null,Object? paymentMethod = null,Object? isSaving = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
-amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+existingTransaction: freezed == existingTransaction ? _self.existingTransaction : existingTransaction // ignore: cast_nullable_to_non_nullable
+as Transaction?,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as TransactionType,selectedCategoryId: freezed == selectedCategoryId ? _self.selectedCategoryId : selectedCategoryId // ignore: cast_nullable_to_non_nullable
 as String?,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -75,7 +76,19 @@ as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_t
 as String?,
   ));
 }
+/// Create a copy of AddTransactionState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TransactionCopyWith<$Res>? get existingTransaction {
+    if (_self.existingTransaction == null) {
+    return null;
+  }
 
+  return $TransactionCopyWith<$Res>(_self.existingTransaction!, (value) {
+    return _then(_self.copyWith(existingTransaction: value));
+  });
+}
 }
 
 
@@ -157,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int amount,  TransactionType type,  String? selectedCategoryId,  DateTime date,  String note,  PaymentMethod paymentMethod,  bool isSaving,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Transaction? existingTransaction,  int amount,  TransactionType type,  String? selectedCategoryId,  DateTime date,  String note,  PaymentMethod paymentMethod,  bool isSaving,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddTransactionState() when $default != null:
-return $default(_that.amount,_that.type,_that.selectedCategoryId,_that.date,_that.note,_that.paymentMethod,_that.isSaving,_that.error);case _:
+return $default(_that.existingTransaction,_that.amount,_that.type,_that.selectedCategoryId,_that.date,_that.note,_that.paymentMethod,_that.isSaving,_that.error);case _:
   return orElse();
 
 }
@@ -178,10 +191,10 @@ return $default(_that.amount,_that.type,_that.selectedCategoryId,_that.date,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int amount,  TransactionType type,  String? selectedCategoryId,  DateTime date,  String note,  PaymentMethod paymentMethod,  bool isSaving,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Transaction? existingTransaction,  int amount,  TransactionType type,  String? selectedCategoryId,  DateTime date,  String note,  PaymentMethod paymentMethod,  bool isSaving,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _AddTransactionState():
-return $default(_that.amount,_that.type,_that.selectedCategoryId,_that.date,_that.note,_that.paymentMethod,_that.isSaving,_that.error);case _:
+return $default(_that.existingTransaction,_that.amount,_that.type,_that.selectedCategoryId,_that.date,_that.note,_that.paymentMethod,_that.isSaving,_that.error);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +211,10 @@ return $default(_that.amount,_that.type,_that.selectedCategoryId,_that.date,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int amount,  TransactionType type,  String? selectedCategoryId,  DateTime date,  String note,  PaymentMethod paymentMethod,  bool isSaving,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Transaction? existingTransaction,  int amount,  TransactionType type,  String? selectedCategoryId,  DateTime date,  String note,  PaymentMethod paymentMethod,  bool isSaving,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _AddTransactionState() when $default != null:
-return $default(_that.amount,_that.type,_that.selectedCategoryId,_that.date,_that.note,_that.paymentMethod,_that.isSaving,_that.error);case _:
+return $default(_that.existingTransaction,_that.amount,_that.type,_that.selectedCategoryId,_that.date,_that.note,_that.paymentMethod,_that.isSaving,_that.error);case _:
   return null;
 
 }
@@ -213,9 +226,10 @@ return $default(_that.amount,_that.type,_that.selectedCategoryId,_that.date,_tha
 
 
 class _AddTransactionState implements AddTransactionState {
-  const _AddTransactionState({this.amount = 0, this.type = TransactionType.expense, this.selectedCategoryId, required this.date, this.note = '', this.paymentMethod = PaymentMethod.cash, this.isSaving = false, this.error});
+  const _AddTransactionState({this.existingTransaction, this.amount = 0, this.type = TransactionType.expense, this.selectedCategoryId, required this.date, this.note = '', this.paymentMethod = PaymentMethod.cash, this.isSaving = false, this.error});
   
 
+@override final  Transaction? existingTransaction;
 @override@JsonKey() final  int amount;
 @override@JsonKey() final  TransactionType type;
 @override final  String? selectedCategoryId;
@@ -235,16 +249,16 @@ _$AddTransactionStateCopyWith<_AddTransactionState> get copyWith => __$AddTransa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddTransactionState&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.selectedCategoryId, selectedCategoryId) || other.selectedCategoryId == selectedCategoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddTransactionState&&(identical(other.existingTransaction, existingTransaction) || other.existingTransaction == existingTransaction)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.selectedCategoryId, selectedCategoryId) || other.selectedCategoryId == selectedCategoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.note, note) || other.note == note)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,amount,type,selectedCategoryId,date,note,paymentMethod,isSaving,error);
+int get hashCode => Object.hash(runtimeType,existingTransaction,amount,type,selectedCategoryId,date,note,paymentMethod,isSaving,error);
 
 @override
 String toString() {
-  return 'AddTransactionState(amount: $amount, type: $type, selectedCategoryId: $selectedCategoryId, date: $date, note: $note, paymentMethod: $paymentMethod, isSaving: $isSaving, error: $error)';
+  return 'AddTransactionState(existingTransaction: $existingTransaction, amount: $amount, type: $type, selectedCategoryId: $selectedCategoryId, date: $date, note: $note, paymentMethod: $paymentMethod, isSaving: $isSaving, error: $error)';
 }
 
 
@@ -255,11 +269,11 @@ abstract mixin class _$AddTransactionStateCopyWith<$Res> implements $AddTransact
   factory _$AddTransactionStateCopyWith(_AddTransactionState value, $Res Function(_AddTransactionState) _then) = __$AddTransactionStateCopyWithImpl;
 @override @useResult
 $Res call({
- int amount, TransactionType type, String? selectedCategoryId, DateTime date, String note, PaymentMethod paymentMethod, bool isSaving, String? error
+ Transaction? existingTransaction, int amount, TransactionType type, String? selectedCategoryId, DateTime date, String note, PaymentMethod paymentMethod, bool isSaving, String? error
 });
 
 
-
+@override $TransactionCopyWith<$Res>? get existingTransaction;
 
 }
 /// @nodoc
@@ -272,9 +286,10 @@ class __$AddTransactionStateCopyWithImpl<$Res>
 
 /// Create a copy of AddTransactionState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? amount = null,Object? type = null,Object? selectedCategoryId = freezed,Object? date = null,Object? note = null,Object? paymentMethod = null,Object? isSaving = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? existingTransaction = freezed,Object? amount = null,Object? type = null,Object? selectedCategoryId = freezed,Object? date = null,Object? note = null,Object? paymentMethod = null,Object? isSaving = null,Object? error = freezed,}) {
   return _then(_AddTransactionState(
-amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+existingTransaction: freezed == existingTransaction ? _self.existingTransaction : existingTransaction // ignore: cast_nullable_to_non_nullable
+as Transaction?,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as TransactionType,selectedCategoryId: freezed == selectedCategoryId ? _self.selectedCategoryId : selectedCategoryId // ignore: cast_nullable_to_non_nullable
 as String?,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -286,7 +301,19 @@ as String?,
   ));
 }
 
+/// Create a copy of AddTransactionState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TransactionCopyWith<$Res>? get existingTransaction {
+    if (_self.existingTransaction == null) {
+    return null;
+  }
 
+  return $TransactionCopyWith<$Res>(_self.existingTransaction!, (value) {
+    return _then(_self.copyWith(existingTransaction: value));
+  });
+}
 }
 
 // dart format on

@@ -50,7 +50,11 @@ class SettingsScreen extends StatelessWidget {
                   title: const Text('Monthly Budget', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('Set and manage your spending limit', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () => context.pushNamed(RouteNames.budgets),
+                  onTap: () {
+                    try {
+                      context.pushNamed(RouteNames.budgets);
+                    } catch (_) {}
+                  },
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(
@@ -58,7 +62,11 @@ class SettingsScreen extends StatelessWidget {
                   title: const Text('Savings Goals', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('Track and manage your savings', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () => context.pushNamed(RouteNames.savingsGoals),
+                  onTap: () {
+                    try {
+                      context.pushNamed(RouteNames.savingsGoals);
+                    } catch (_) {}
+                  },
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(
@@ -66,7 +74,11 @@ class SettingsScreen extends StatelessWidget {
                   title: const Text('AI Financial Insights', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('View full rule-based financial advice & score', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () => context.pushNamed(RouteNames.insights),
+                  onTap: () {
+                    try {
+                      context.pushNamed(RouteNames.insights);
+                    } catch (_) {}
+                  },
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(
@@ -74,7 +86,11 @@ class SettingsScreen extends StatelessWidget {
                   title: const Text('SMS Auto-Tracking', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('Extract expenses from messages', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () => context.pushNamed(RouteNames.smsSettings),
+                  onTap: () {
+                    try {
+                      context.pushNamed(RouteNames.smsSettings);
+                    } catch (_) {}
+                  },
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
                 ListTile(
@@ -82,7 +98,11 @@ class SettingsScreen extends StatelessWidget {
                   title: const Text('Payment Notifications', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
                   subtitle: const Text('Auto-track payments from UPI, wallets, and banks', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
                   trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () => context.push('/notification-settings'),
+                  onTap: () {
+                    try {
+                      context.push('/notification-settings');
+                    } catch (_) {}
+                  },
                 ),
               ],
             ),
@@ -109,6 +129,7 @@ class SettingsScreen extends StatelessWidget {
                   color: AppColors.darkGoldPrimary,
                   title: 'PIN & Security',
                   subtitle: 'Change PIN, biometric & app lock',
+                  routeName: RouteNames.security,
                   screen: const PinSecurityScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
@@ -118,6 +139,7 @@ class SettingsScreen extends StatelessWidget {
                   color: AppColors.darkIncome,
                   title: 'Categories',
                   subtitle: 'Manage custom expense categories',
+                  routeName: RouteNames.categories,
                   screen: const CategoryManagementScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
@@ -127,6 +149,7 @@ class SettingsScreen extends StatelessWidget {
                   color: Colors.blueAccent,
                   title: 'Recurring Transactions',
                   subtitle: 'Bills, subscriptions, and reminders',
+                  routeName: RouteNames.recurring,
                   screen: const RecurringListScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
@@ -149,7 +172,9 @@ class SettingsScreen extends StatelessWidget {
                     await prefs.remove('onboardingCompletedAt');
                     await prefs.reload();
                     if (context.mounted) {
-                      context.go('/onboarding');
+                      try {
+                        context.go('/onboarding');
+                      } catch (_) {}
                     }
                   },
                 ),
@@ -226,6 +251,7 @@ class SettingsScreen extends StatelessWidget {
                   color: Colors.purpleAccent,
                   title: 'Backup & Restore',
                   subtitle: 'Export encrypted JSON backup',
+                  routeName: RouteNames.backup,
                   screen: const BackupScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
@@ -235,6 +261,7 @@ class SettingsScreen extends StatelessWidget {
                   color: Colors.orangeAccent,
                   title: 'Appearance',
                   subtitle: 'Dark theme & accent customization',
+                  routeName: RouteNames.appearance,
                   screen: const AppearanceScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
@@ -244,6 +271,7 @@ class SettingsScreen extends StatelessWidget {
                   color: AppColors.darkTextSecondary,
                   title: 'About App',
                   subtitle: 'Privacy promise & local storage details',
+                  routeName: RouteNames.about,
                   screen: const AboutScreen(),
                 ),
               ],
@@ -260,7 +288,8 @@ class SettingsScreen extends StatelessWidget {
     required Color color,
     required String title,
     required String subtitle,
-    required Widget screen,
+    required String routeName,
+    Widget? screen,
   }) {
     return ListTile(
       leading: Container(
@@ -280,10 +309,18 @@ class SettingsScreen extends StatelessWidget {
         style: const TextStyle(color: AppColors.darkTextTertiary, fontSize: 12),
       ),
       trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => screen),
-      ),
+      onTap: () {
+        try {
+          context.pushNamed(routeName);
+        } catch (_) {
+          if (screen != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => screen),
+            );
+          }
+        }
+      },
     );
   }
 }

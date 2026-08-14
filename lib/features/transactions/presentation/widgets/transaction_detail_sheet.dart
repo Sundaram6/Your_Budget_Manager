@@ -10,6 +10,7 @@ import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../engines/category/category_engine.dart';
 import '../../domain/entities/transaction.dart';
+import '../screens/add_transaction_screen.dart';
 import 'category_picker.dart';
 
 class TransactionDetailSheet extends ConsumerStatefulWidget {
@@ -82,6 +83,49 @@ class _TransactionDetailSheetState extends ConsumerState<TransactionDetailSheet>
     );
   }
 
+  void _editTransaction() {
+    Navigator.of(context).pop(); // close bottom sheet
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddTransactionScreen(initialTransaction: _transaction),
+      ),
+    );
+  }
+
+  Future<void> _deleteTransaction() async {
+    final formatted = _transaction.amount.value.toCurrency();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Transaction?'),
+        content: Text('Are you sure you want to delete this transaction of $formatted? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.darkExpense),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final repo = ref.read(transactionRepositoryProvider);
+    await repo.deleteTransaction(_transaction);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transaction deleted')),
+      );
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<AppCustomTokens>()!;
@@ -124,9 +168,28 @@ class _TransactionDetailSheetState extends ConsumerState<TransactionDetailSheet>
                 ),
               ),
               const SizedBox(height: AppSpacing.space4),
-              Text(
-                'Transaction Details',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Transaction Details',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, color: AppColors.darkGoldPrimary),
+                        tooltip: 'Edit Transaction',
+                        onPressed: _editTransaction,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppColors.darkExpense),
+                        tooltip: 'Delete Transaction',
+                        onPressed: _deleteTransaction,
+                      ),
+                    ],
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.space4),
               Center(
@@ -160,6 +223,38 @@ class _TransactionDetailSheetState extends ConsumerState<TransactionDetailSheet>
                   onPressed: () => _showCategoryPicker(context),
                   child: const Text('Change'),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.space4),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.darkGoldPrimary,
+                        side: const BorderSide(color: AppColors.darkGoldPrimary),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: _editTransaction,
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.darkExpense,
+                        side: const BorderSide(color: AppColors.darkExpense),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: _deleteTransaction,
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      label: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

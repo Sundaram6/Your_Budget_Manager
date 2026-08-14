@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/security/app_lock_controller.dart';
 import '../../../../core/utils/platform_guard.dart';
 import '../../../../routing/route_names.dart';
 
@@ -37,28 +38,33 @@ class _SmsSettingsScreenState extends ConsumerState<SmsSettingsScreen> {
 
   Future<void> _toggleAutoTrack(bool value) async {
     if (value) {
-      final status = await Permission.sms.request();
-      if (status.isGranted) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('autoTrackNewSms', true);
-        if (mounted) setState(() => _autoTrackSms = true);
-      } else {
-        if (mounted) {
-          setState(() => _autoTrackSms = false);
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('SMS Permission Required'),
-              content: const Text('SMS permission is required to automatically detect expenses from bank and UPI alerts.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
+      ref.read(appLockControllerProvider.notifier).setSystemDialogActive(true);
+      try {
+        final status = await Permission.sms.request();
+        if (status.isGranted) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('autoTrackNewSms', true);
+          if (mounted) setState(() => _autoTrackSms = true);
+        } else {
+          if (mounted) {
+            setState(() => _autoTrackSms = false);
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('SMS Permission Required'),
+                content: const Text('SMS permission is required to automatically detect expenses from bank and UPI alerts.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
         }
+      } finally {
+        ref.read(appLockControllerProvider.notifier).setSystemDialogActive(false);
       }
     } else {
       final prefs = await SharedPreferences.getInstance();

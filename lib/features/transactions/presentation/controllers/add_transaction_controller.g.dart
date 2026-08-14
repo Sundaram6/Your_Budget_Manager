@@ -42,7 +42,7 @@ final class AddTransactionControllerProvider
 }
 
 String _$addTransactionControllerHash() =>
-    r'659ab0a0e0cba1ec9a2efec880821aaa276c475c';
+    r'499a9c8e159ce2180c70c4d9f4fa2d0e7e68b8a8';
 
 abstract class _$AddTransactionController
     extends $Notifier<AddTransactionState> {

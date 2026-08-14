@@ -824,4 +824,554 @@ as double,
 
 }
 
+
+/// @nodoc
+mixin _$RecurringCommitmentSummary {
+
+ int get totalMonthlyRecurringPaise; int get upcomingRecurringThisMonthPaise; int get recurringCount; double get recurringExpenseRatio;
+/// Create a copy of RecurringCommitmentSummary
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RecurringCommitmentSummaryCopyWith<RecurringCommitmentSummary> get copyWith => _$RecurringCommitmentSummaryCopyWithImpl<RecurringCommitmentSummary>(this as RecurringCommitmentSummary, _$identity);
+
+  /// Serializes this RecurringCommitmentSummary to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecurringCommitmentSummary&&(identical(other.totalMonthlyRecurringPaise, totalMonthlyRecurringPaise) || other.totalMonthlyRecurringPaise == totalMonthlyRecurringPaise)&&(identical(other.upcomingRecurringThisMonthPaise, upcomingRecurringThisMonthPaise) || other.upcomingRecurringThisMonthPaise == upcomingRecurringThisMonthPaise)&&(identical(other.recurringCount, recurringCount) || other.recurringCount == recurringCount)&&(identical(other.recurringExpenseRatio, recurringExpenseRatio) || other.recurringExpenseRatio == recurringExpenseRatio));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,totalMonthlyRecurringPaise,upcomingRecurringThisMonthPaise,recurringCount,recurringExpenseRatio);
+
+@override
+String toString() {
+  return 'RecurringCommitmentSummary(totalMonthlyRecurringPaise: $totalMonthlyRecurringPaise, upcomingRecurringThisMonthPaise: $upcomingRecurringThisMonthPaise, recurringCount: $recurringCount, recurringExpenseRatio: $recurringExpenseRatio)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RecurringCommitmentSummaryCopyWith<$Res>  {
+  factory $RecurringCommitmentSummaryCopyWith(RecurringCommitmentSummary value, $Res Function(RecurringCommitmentSummary) _then) = _$RecurringCommitmentSummaryCopyWithImpl;
+@useResult
+$Res call({
+ int totalMonthlyRecurringPaise, int upcomingRecurringThisMonthPaise, int recurringCount, double recurringExpenseRatio
+});
+
+
+
+
+}
+/// @nodoc
+class _$RecurringCommitmentSummaryCopyWithImpl<$Res>
+    implements $RecurringCommitmentSummaryCopyWith<$Res> {
+  _$RecurringCommitmentSummaryCopyWithImpl(this._self, this._then);
+
+  final RecurringCommitmentSummary _self;
+  final $Res Function(RecurringCommitmentSummary) _then;
+
+/// Create a copy of RecurringCommitmentSummary
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? totalMonthlyRecurringPaise = null,Object? upcomingRecurringThisMonthPaise = null,Object? recurringCount = null,Object? recurringExpenseRatio = null,}) {
+  return _then(_self.copyWith(
+totalMonthlyRecurringPaise: null == totalMonthlyRecurringPaise ? _self.totalMonthlyRecurringPaise : totalMonthlyRecurringPaise // ignore: cast_nullable_to_non_nullable
+as int,upcomingRecurringThisMonthPaise: null == upcomingRecurringThisMonthPaise ? _self.upcomingRecurringThisMonthPaise : upcomingRecurringThisMonthPaise // ignore: cast_nullable_to_non_nullable
+as int,recurringCount: null == recurringCount ? _self.recurringCount : recurringCount // ignore: cast_nullable_to_non_nullable
+as int,recurringExpenseRatio: null == recurringExpenseRatio ? _self.recurringExpenseRatio : recurringExpenseRatio // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RecurringCommitmentSummary].
+extension RecurringCommitmentSummaryPatterns on RecurringCommitmentSummary {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RecurringCommitmentSummary value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RecurringCommitmentSummary() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RecurringCommitmentSummary value)  $default,){
+final _that = this;
+switch (_that) {
+case _RecurringCommitmentSummary():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RecurringCommitmentSummary value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RecurringCommitmentSummary() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalMonthlyRecurringPaise,  int upcomingRecurringThisMonthPaise,  int recurringCount,  double recurringExpenseRatio)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RecurringCommitmentSummary() when $default != null:
+return $default(_that.totalMonthlyRecurringPaise,_that.upcomingRecurringThisMonthPaise,_that.recurringCount,_that.recurringExpenseRatio);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalMonthlyRecurringPaise,  int upcomingRecurringThisMonthPaise,  int recurringCount,  double recurringExpenseRatio)  $default,) {final _that = this;
+switch (_that) {
+case _RecurringCommitmentSummary():
+return $default(_that.totalMonthlyRecurringPaise,_that.upcomingRecurringThisMonthPaise,_that.recurringCount,_that.recurringExpenseRatio);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalMonthlyRecurringPaise,  int upcomingRecurringThisMonthPaise,  int recurringCount,  double recurringExpenseRatio)?  $default,) {final _that = this;
+switch (_that) {
+case _RecurringCommitmentSummary() when $default != null:
+return $default(_that.totalMonthlyRecurringPaise,_that.upcomingRecurringThisMonthPaise,_that.recurringCount,_that.recurringExpenseRatio);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _RecurringCommitmentSummary implements RecurringCommitmentSummary {
+  const _RecurringCommitmentSummary({required this.totalMonthlyRecurringPaise, required this.upcomingRecurringThisMonthPaise, required this.recurringCount, required this.recurringExpenseRatio});
+  factory _RecurringCommitmentSummary.fromJson(Map<String, dynamic> json) => _$RecurringCommitmentSummaryFromJson(json);
+
+@override final  int totalMonthlyRecurringPaise;
+@override final  int upcomingRecurringThisMonthPaise;
+@override final  int recurringCount;
+@override final  double recurringExpenseRatio;
+
+/// Create a copy of RecurringCommitmentSummary
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RecurringCommitmentSummaryCopyWith<_RecurringCommitmentSummary> get copyWith => __$RecurringCommitmentSummaryCopyWithImpl<_RecurringCommitmentSummary>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$RecurringCommitmentSummaryToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecurringCommitmentSummary&&(identical(other.totalMonthlyRecurringPaise, totalMonthlyRecurringPaise) || other.totalMonthlyRecurringPaise == totalMonthlyRecurringPaise)&&(identical(other.upcomingRecurringThisMonthPaise, upcomingRecurringThisMonthPaise) || other.upcomingRecurringThisMonthPaise == upcomingRecurringThisMonthPaise)&&(identical(other.recurringCount, recurringCount) || other.recurringCount == recurringCount)&&(identical(other.recurringExpenseRatio, recurringExpenseRatio) || other.recurringExpenseRatio == recurringExpenseRatio));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,totalMonthlyRecurringPaise,upcomingRecurringThisMonthPaise,recurringCount,recurringExpenseRatio);
+
+@override
+String toString() {
+  return 'RecurringCommitmentSummary(totalMonthlyRecurringPaise: $totalMonthlyRecurringPaise, upcomingRecurringThisMonthPaise: $upcomingRecurringThisMonthPaise, recurringCount: $recurringCount, recurringExpenseRatio: $recurringExpenseRatio)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RecurringCommitmentSummaryCopyWith<$Res> implements $RecurringCommitmentSummaryCopyWith<$Res> {
+  factory _$RecurringCommitmentSummaryCopyWith(_RecurringCommitmentSummary value, $Res Function(_RecurringCommitmentSummary) _then) = __$RecurringCommitmentSummaryCopyWithImpl;
+@override @useResult
+$Res call({
+ int totalMonthlyRecurringPaise, int upcomingRecurringThisMonthPaise, int recurringCount, double recurringExpenseRatio
+});
+
+
+
+
+}
+/// @nodoc
+class __$RecurringCommitmentSummaryCopyWithImpl<$Res>
+    implements _$RecurringCommitmentSummaryCopyWith<$Res> {
+  __$RecurringCommitmentSummaryCopyWithImpl(this._self, this._then);
+
+  final _RecurringCommitmentSummary _self;
+  final $Res Function(_RecurringCommitmentSummary) _then;
+
+/// Create a copy of RecurringCommitmentSummary
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? totalMonthlyRecurringPaise = null,Object? upcomingRecurringThisMonthPaise = null,Object? recurringCount = null,Object? recurringExpenseRatio = null,}) {
+  return _then(_RecurringCommitmentSummary(
+totalMonthlyRecurringPaise: null == totalMonthlyRecurringPaise ? _self.totalMonthlyRecurringPaise : totalMonthlyRecurringPaise // ignore: cast_nullable_to_non_nullable
+as int,upcomingRecurringThisMonthPaise: null == upcomingRecurringThisMonthPaise ? _self.upcomingRecurringThisMonthPaise : upcomingRecurringThisMonthPaise // ignore: cast_nullable_to_non_nullable
+as int,recurringCount: null == recurringCount ? _self.recurringCount : recurringCount // ignore: cast_nullable_to_non_nullable
+as int,recurringExpenseRatio: null == recurringExpenseRatio ? _self.recurringExpenseRatio : recurringExpenseRatio // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$SavingsAnalyticsSummary {
+
+ int get totalGoalsCount; int get activeGoalsCount; int get totalSavedPaise; int get totalTargetPaise; int get monthlyCommittedAutoSavePaise; double get overallProgressPercent;
+/// Create a copy of SavingsAnalyticsSummary
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SavingsAnalyticsSummaryCopyWith<SavingsAnalyticsSummary> get copyWith => _$SavingsAnalyticsSummaryCopyWithImpl<SavingsAnalyticsSummary>(this as SavingsAnalyticsSummary, _$identity);
+
+  /// Serializes this SavingsAnalyticsSummary to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavingsAnalyticsSummary&&(identical(other.totalGoalsCount, totalGoalsCount) || other.totalGoalsCount == totalGoalsCount)&&(identical(other.activeGoalsCount, activeGoalsCount) || other.activeGoalsCount == activeGoalsCount)&&(identical(other.totalSavedPaise, totalSavedPaise) || other.totalSavedPaise == totalSavedPaise)&&(identical(other.totalTargetPaise, totalTargetPaise) || other.totalTargetPaise == totalTargetPaise)&&(identical(other.monthlyCommittedAutoSavePaise, monthlyCommittedAutoSavePaise) || other.monthlyCommittedAutoSavePaise == monthlyCommittedAutoSavePaise)&&(identical(other.overallProgressPercent, overallProgressPercent) || other.overallProgressPercent == overallProgressPercent));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,totalGoalsCount,activeGoalsCount,totalSavedPaise,totalTargetPaise,monthlyCommittedAutoSavePaise,overallProgressPercent);
+
+@override
+String toString() {
+  return 'SavingsAnalyticsSummary(totalGoalsCount: $totalGoalsCount, activeGoalsCount: $activeGoalsCount, totalSavedPaise: $totalSavedPaise, totalTargetPaise: $totalTargetPaise, monthlyCommittedAutoSavePaise: $monthlyCommittedAutoSavePaise, overallProgressPercent: $overallProgressPercent)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SavingsAnalyticsSummaryCopyWith<$Res>  {
+  factory $SavingsAnalyticsSummaryCopyWith(SavingsAnalyticsSummary value, $Res Function(SavingsAnalyticsSummary) _then) = _$SavingsAnalyticsSummaryCopyWithImpl;
+@useResult
+$Res call({
+ int totalGoalsCount, int activeGoalsCount, int totalSavedPaise, int totalTargetPaise, int monthlyCommittedAutoSavePaise, double overallProgressPercent
+});
+
+
+
+
+}
+/// @nodoc
+class _$SavingsAnalyticsSummaryCopyWithImpl<$Res>
+    implements $SavingsAnalyticsSummaryCopyWith<$Res> {
+  _$SavingsAnalyticsSummaryCopyWithImpl(this._self, this._then);
+
+  final SavingsAnalyticsSummary _self;
+  final $Res Function(SavingsAnalyticsSummary) _then;
+
+/// Create a copy of SavingsAnalyticsSummary
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? totalGoalsCount = null,Object? activeGoalsCount = null,Object? totalSavedPaise = null,Object? totalTargetPaise = null,Object? monthlyCommittedAutoSavePaise = null,Object? overallProgressPercent = null,}) {
+  return _then(_self.copyWith(
+totalGoalsCount: null == totalGoalsCount ? _self.totalGoalsCount : totalGoalsCount // ignore: cast_nullable_to_non_nullable
+as int,activeGoalsCount: null == activeGoalsCount ? _self.activeGoalsCount : activeGoalsCount // ignore: cast_nullable_to_non_nullable
+as int,totalSavedPaise: null == totalSavedPaise ? _self.totalSavedPaise : totalSavedPaise // ignore: cast_nullable_to_non_nullable
+as int,totalTargetPaise: null == totalTargetPaise ? _self.totalTargetPaise : totalTargetPaise // ignore: cast_nullable_to_non_nullable
+as int,monthlyCommittedAutoSavePaise: null == monthlyCommittedAutoSavePaise ? _self.monthlyCommittedAutoSavePaise : monthlyCommittedAutoSavePaise // ignore: cast_nullable_to_non_nullable
+as int,overallProgressPercent: null == overallProgressPercent ? _self.overallProgressPercent : overallProgressPercent // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [SavingsAnalyticsSummary].
+extension SavingsAnalyticsSummaryPatterns on SavingsAnalyticsSummary {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SavingsAnalyticsSummary value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SavingsAnalyticsSummary() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SavingsAnalyticsSummary value)  $default,){
+final _that = this;
+switch (_that) {
+case _SavingsAnalyticsSummary():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SavingsAnalyticsSummary value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SavingsAnalyticsSummary() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalGoalsCount,  int activeGoalsCount,  int totalSavedPaise,  int totalTargetPaise,  int monthlyCommittedAutoSavePaise,  double overallProgressPercent)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SavingsAnalyticsSummary() when $default != null:
+return $default(_that.totalGoalsCount,_that.activeGoalsCount,_that.totalSavedPaise,_that.totalTargetPaise,_that.monthlyCommittedAutoSavePaise,_that.overallProgressPercent);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalGoalsCount,  int activeGoalsCount,  int totalSavedPaise,  int totalTargetPaise,  int monthlyCommittedAutoSavePaise,  double overallProgressPercent)  $default,) {final _that = this;
+switch (_that) {
+case _SavingsAnalyticsSummary():
+return $default(_that.totalGoalsCount,_that.activeGoalsCount,_that.totalSavedPaise,_that.totalTargetPaise,_that.monthlyCommittedAutoSavePaise,_that.overallProgressPercent);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalGoalsCount,  int activeGoalsCount,  int totalSavedPaise,  int totalTargetPaise,  int monthlyCommittedAutoSavePaise,  double overallProgressPercent)?  $default,) {final _that = this;
+switch (_that) {
+case _SavingsAnalyticsSummary() when $default != null:
+return $default(_that.totalGoalsCount,_that.activeGoalsCount,_that.totalSavedPaise,_that.totalTargetPaise,_that.monthlyCommittedAutoSavePaise,_that.overallProgressPercent);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _SavingsAnalyticsSummary implements SavingsAnalyticsSummary {
+  const _SavingsAnalyticsSummary({required this.totalGoalsCount, required this.activeGoalsCount, required this.totalSavedPaise, required this.totalTargetPaise, required this.monthlyCommittedAutoSavePaise, required this.overallProgressPercent});
+  factory _SavingsAnalyticsSummary.fromJson(Map<String, dynamic> json) => _$SavingsAnalyticsSummaryFromJson(json);
+
+@override final  int totalGoalsCount;
+@override final  int activeGoalsCount;
+@override final  int totalSavedPaise;
+@override final  int totalTargetPaise;
+@override final  int monthlyCommittedAutoSavePaise;
+@override final  double overallProgressPercent;
+
+/// Create a copy of SavingsAnalyticsSummary
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SavingsAnalyticsSummaryCopyWith<_SavingsAnalyticsSummary> get copyWith => __$SavingsAnalyticsSummaryCopyWithImpl<_SavingsAnalyticsSummary>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SavingsAnalyticsSummaryToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavingsAnalyticsSummary&&(identical(other.totalGoalsCount, totalGoalsCount) || other.totalGoalsCount == totalGoalsCount)&&(identical(other.activeGoalsCount, activeGoalsCount) || other.activeGoalsCount == activeGoalsCount)&&(identical(other.totalSavedPaise, totalSavedPaise) || other.totalSavedPaise == totalSavedPaise)&&(identical(other.totalTargetPaise, totalTargetPaise) || other.totalTargetPaise == totalTargetPaise)&&(identical(other.monthlyCommittedAutoSavePaise, monthlyCommittedAutoSavePaise) || other.monthlyCommittedAutoSavePaise == monthlyCommittedAutoSavePaise)&&(identical(other.overallProgressPercent, overallProgressPercent) || other.overallProgressPercent == overallProgressPercent));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,totalGoalsCount,activeGoalsCount,totalSavedPaise,totalTargetPaise,monthlyCommittedAutoSavePaise,overallProgressPercent);
+
+@override
+String toString() {
+  return 'SavingsAnalyticsSummary(totalGoalsCount: $totalGoalsCount, activeGoalsCount: $activeGoalsCount, totalSavedPaise: $totalSavedPaise, totalTargetPaise: $totalTargetPaise, monthlyCommittedAutoSavePaise: $monthlyCommittedAutoSavePaise, overallProgressPercent: $overallProgressPercent)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SavingsAnalyticsSummaryCopyWith<$Res> implements $SavingsAnalyticsSummaryCopyWith<$Res> {
+  factory _$SavingsAnalyticsSummaryCopyWith(_SavingsAnalyticsSummary value, $Res Function(_SavingsAnalyticsSummary) _then) = __$SavingsAnalyticsSummaryCopyWithImpl;
+@override @useResult
+$Res call({
+ int totalGoalsCount, int activeGoalsCount, int totalSavedPaise, int totalTargetPaise, int monthlyCommittedAutoSavePaise, double overallProgressPercent
+});
+
+
+
+
+}
+/// @nodoc
+class __$SavingsAnalyticsSummaryCopyWithImpl<$Res>
+    implements _$SavingsAnalyticsSummaryCopyWith<$Res> {
+  __$SavingsAnalyticsSummaryCopyWithImpl(this._self, this._then);
+
+  final _SavingsAnalyticsSummary _self;
+  final $Res Function(_SavingsAnalyticsSummary) _then;
+
+/// Create a copy of SavingsAnalyticsSummary
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? totalGoalsCount = null,Object? activeGoalsCount = null,Object? totalSavedPaise = null,Object? totalTargetPaise = null,Object? monthlyCommittedAutoSavePaise = null,Object? overallProgressPercent = null,}) {
+  return _then(_SavingsAnalyticsSummary(
+totalGoalsCount: null == totalGoalsCount ? _self.totalGoalsCount : totalGoalsCount // ignore: cast_nullable_to_non_nullable
+as int,activeGoalsCount: null == activeGoalsCount ? _self.activeGoalsCount : activeGoalsCount // ignore: cast_nullable_to_non_nullable
+as int,totalSavedPaise: null == totalSavedPaise ? _self.totalSavedPaise : totalSavedPaise // ignore: cast_nullable_to_non_nullable
+as int,totalTargetPaise: null == totalTargetPaise ? _self.totalTargetPaise : totalTargetPaise // ignore: cast_nullable_to_non_nullable
+as int,monthlyCommittedAutoSavePaise: null == monthlyCommittedAutoSavePaise ? _self.monthlyCommittedAutoSavePaise : monthlyCommittedAutoSavePaise // ignore: cast_nullable_to_non_nullable
+as int,overallProgressPercent: null == overallProgressPercent ? _self.overallProgressPercent : overallProgressPercent // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+
+
+}
+
 // dart format on

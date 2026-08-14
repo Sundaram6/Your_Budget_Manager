@@ -142,5 +142,56 @@ void main() {
       final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
       expect(button.onPressed, isNull);
     });
+
+    testWidgets('renders without overflow on compact screen (360x640)', (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('App Locked'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Unlock'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('renders without overflow on small screen (320x568 - iPhone SE)', (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('App Locked'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Unlock'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('renders without overflow on 320x480 compressed viewport with lockout active', (tester) async {
+      when(() => mockPinService.getRemainingLockoutSeconds()).thenAnswer((_) async => 30);
+      when(() => mockPinService.isLockedOut()).thenAnswer((_) async => true);
+
+      tester.view.physicalSize = const Size(320, 480);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('App Locked'), findsOneWidget);
+      expect(find.textContaining('Too many failed attempts'), findsOneWidget);
+      expect(find.text('Locked Out'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

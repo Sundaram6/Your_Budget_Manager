@@ -8,10 +8,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../database/app_database.dart';
 import '../../../../engines/savings/savings_engine_provider.dart';
 
 class AddSavingsGoalScreen extends ConsumerStatefulWidget {
-  const AddSavingsGoalScreen({super.key});
+  final SavingsGoal? initialGoal;
+
+  const AddSavingsGoalScreen({super.key, this.initialGoal});
 
   @override
   ConsumerState<AddSavingsGoalScreen> createState() => _AddSavingsGoalScreenState();
@@ -30,6 +33,32 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
   bool _isLoading = false;
 
   ({int needs, int wants, int savings})? _ruleBreakdown;
+
+  bool get _isEdit => widget.initialGoal != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final goal = widget.initialGoal;
+    if (goal != null) {
+      _nameController.text = goal.name;
+      final targetRupees = goal.targetAmount / 100.0;
+      _targetAmountController.text = targetRupees % 1 == 0
+          ? targetRupees.toStringAsFixed(0)
+          : targetRupees.toStringAsFixed(2);
+      if (goal.deadline != null) {
+        _selectedDeadline = DateTime.fromMillisecondsSinceEpoch(goal.deadline!);
+      }
+      _linkToBudget = goal.budgetId != null;
+      _autoDeduct = goal.autoDeduct;
+      if (goal.autoDeductAmount != null && goal.autoDeductAmount! > 0) {
+        final autoRupees = goal.autoDeductAmount! / 100.0;
+        _autoDeductAmountController.text = autoRupees % 1 == 0
+            ? autoRupees.toStringAsFixed(0)
+            : autoRupees.toStringAsFixed(2);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -53,7 +82,7 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDeadline ?? now.add(const Duration(days: 90)),
-      firstDate: now,
+      firstDate: now.subtract(const Duration(days: 365)),
       lastDate: now.add(const Duration(days: 3650)),
     );
     if (picked != null) {
@@ -84,29 +113,59 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
         final now = DateTime.now();
         final budgetRepo = ref.read(budgetRepositoryProvider);
         final currentBudget = await budgetRepo.getOverallBudget(now.month, now.year);
-        budgetId = currentBudget?.id;
+        budgetId = currentBudget?.id ?? widget.initialGoal?.budgetId;
       }
 
       final savingsEngine = ref.read(savingsEngineProvider);
-      await savingsEngine.createGoal(
-        name: name,
-        targetAmountPaise: targetPaise,
-        deadline: _selectedDeadline,
-        linkedBudgetId: budgetId,
-        autoDeduct: _autoDeduct,
-        autoDeductAmountPaise: autoDeductPaise,
-      );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Savings Goal "$name" created!')),
+      if (_isEdit) {
+        await savingsEngine.updateGoal(
+          id: widget.initialGoal!.id,
+          name: name,
+          targetAmountPaise: targetPaise,
+          deadline: _selectedDeadline,
+          linkedBudgetId: budgetId,
+          autoDeduct: _autoDeduct,
+          autoDeductAmountPaise: autoDeductPaise,
+          categoryId: widget.initialGoal!.categoryId,
+          note: widget.initialGoal!.note,
         );
-        context.pop();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Savings Goal "$name" updated!')),
+          );
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            Navigator.of(context).pop();
+          }
+        }
+      } else {
+        await savingsEngine.createGoal(
+          name: name,
+          targetAmountPaise: targetPaise,
+          deadline: _selectedDeadline,
+          linkedBudgetId: budgetId,
+          autoDeduct: _autoDeduct,
+          autoDeductAmountPaise: autoDeductPaise,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Savings Goal "$name" created!')),
+          );
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            Navigator.of(context).pop();
+          }
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create goal: $e')),
+          SnackBar(content: Text('Failed to ${_isEdit ? 'update' : 'create'} goal: $e')),
         );
       }
     } finally {
@@ -123,16 +182,21 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
     );
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text('Create Savings Goal'),
+        title: Text(_isEdit ? 'Edit Savings Goal' : 'Create Savings Goal'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.space4),
-                children: [
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Form(
+                key: _formKey,
+                child: ListView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(AppSpacing.space4),
+                  children: [
                   TextFormField(
                     controller: _nameController,
                     style: const TextStyle(color: AppColors.darkTextPrimary),
@@ -242,87 +306,89 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: AppSpacing.space6),
+                  if (!_isEdit) ...[
+                    const SizedBox(height: AppSpacing.space6),
 
-                  // 50/30/20 Rule AI Financial Tip Card
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.space4),
-                    decoration: BoxDecoration(
-                      color: AppColors.darkSurface2,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.darkGoldPrimary.withValues(alpha: 0.3)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.lightbulb_outline, color: AppColors.darkGoldPrimary, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              '50/30/20 Rule Calculator',
-                              style: TextStyle(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold),
+                    // 50/30/20 Rule AI Financial Tip Card
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.space4),
+                      decoration: BoxDecoration(
+                        color: AppColors.darkSurface2,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.darkGoldPrimary.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.lightbulb_outline, color: AppColors.darkGoldPrimary, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                '50/30/20 Rule Calculator',
+                                style: TextStyle(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Enter your monthly income to calculate recommended savings.',
+                            style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 12),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _incomeController,
+                            keyboardType: TextInputType.number,
+                            onChanged: _calculate50_30_20,
+                            style: const TextStyle(color: AppColors.darkTextPrimary, fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: 'Enter Monthly Income (₹)',
+                              prefixText: '₹ ',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                          ),
+                          if (_ruleBreakdown != null && _ruleBreakdown!.savings > 0) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.darkSurface3,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('50% Needs:', style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary)),
+                                      Text(currencyFormat.format(_ruleBreakdown!.needs / 100), style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('30% Wants:', style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary)),
+                                      Text(currencyFormat.format(_ruleBreakdown!.wants / 100), style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('20% Savings (Recommended):', style: AppTypography.caption.copyWith(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
+                                      Text(currencyFormat.format(_ruleBreakdown!.savings / 100), style: AppTypography.caption.copyWith(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Enter your monthly income to calculate recommended savings.',
-                          style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary, fontSize: 12),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _incomeController,
-                          keyboardType: TextInputType.number,
-                          onChanged: _calculate50_30_20,
-                          style: const TextStyle(color: AppColors.darkTextPrimary, fontSize: 14),
-                          decoration: InputDecoration(
-                            hintText: 'Enter Monthly Income (₹)',
-                            prefixText: '₹ ',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          ),
-                        ),
-                        if (_ruleBreakdown != null && _ruleBreakdown!.savings > 0) ...[
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.darkSurface3,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('50% Needs:', style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary)),
-                                    Text(currencyFormat.format(_ruleBreakdown!.needs / 100), style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('30% Wants:', style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary)),
-                                    Text(currencyFormat.format(_ruleBreakdown!.wants / 100), style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('20% Savings (Recommended):', style: AppTypography.caption.copyWith(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
-                                    Text(currencyFormat.format(_ruleBreakdown!.savings / 100), style: AppTypography.caption.copyWith(color: AppColors.darkGoldPrimary, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
 
                   const SizedBox(height: AppSpacing.space6),
 
@@ -337,12 +403,14 @@ class _AddSavingsGoalScreenState extends ConsumerState<AddSavingsGoalScreen> {
                       ),
                       onPressed: _saveGoal,
                       icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Create Goal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      label: Text(_isEdit ? 'Update Goal' : 'Create Goal', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.space6),
                 ],
               ),
             ),
+      ),
     );
   }
 }

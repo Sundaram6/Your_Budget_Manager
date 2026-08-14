@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/security/app_lock_controller.dart';
 import '../../core/security/biometric_service.dart';
 import '../../core/security/pin_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -56,6 +57,7 @@ class _PinSecurityScreenState extends ConsumerState<PinSecurityScreen> {
 
   Future<void> _toggleBiometric(bool value) async {
     if (value) {
+      ref.read(appLockControllerProvider.notifier).setSystemDialogActive(true);
       try {
         final biometricService = ref.read(biometricServiceProvider);
         final isAvailable = await biometricService.isBiometricAvailable();
@@ -81,6 +83,8 @@ class _PinSecurityScreenState extends ConsumerState<PinSecurityScreen> {
           );
         }
         return;
+      } finally {
+        ref.read(appLockControllerProvider.notifier).setSystemDialogActive(false);
       }
     }
 

@@ -21,6 +21,9 @@ import '../screens/recurring/recurring_list_screen.dart';
 import '../features/savings/presentation/screens/add_savings_goal_screen.dart';
 import '../features/savings/presentation/screens/savings_goal_detail_screen.dart';
 import '../features/savings/presentation/screens/savings_goals_screen.dart';
+import '../features/categories/presentation/screens/category_management_screen.dart';
+import '../features/settings/presentation/screens/about_screen.dart';
+import '../features/settings/presentation/screens/appearance_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/settings/presentation/screens/sms_settings_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
@@ -49,7 +52,7 @@ class RouterNotifier extends ChangeNotifier {
 
 final routerNotifierProvider = Provider((ref) => RouterNotifier(ref));
 
-@riverpod
+@Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   // initialLocation is set synchronously in main.dart before the app starts.
   // The router NEVER re-evaluates onboarding state reactively — that was the
@@ -62,7 +65,7 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: notifier,
     // ── REDIRECT: PIN lock only. Onboarding is NOT guarded here. ──────────
     redirect: (context, state) async {
-      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final prefs = await SharedPreferences.getInstance();
       final isPinSetupComplete =
           (prefs.getBool('pin_setup_complete') ?? prefs.getBool('pinSetupComplete')) ?? false;
       final hasSkippedPin =
@@ -224,6 +227,21 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id']!;
           return SavingsGoalDetailScreen(id: id);
         },
+      ),
+      GoRoute(
+        path: '/categories',
+        name: RouteNames.categories,
+        builder: (context, state) => const CategoryManagementScreen(),
+      ),
+      GoRoute(
+        path: '/appearance',
+        name: RouteNames.appearance,
+        builder: (context, state) => const AppearanceScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        name: RouteNames.about,
+        builder: (context, state) => const AboutScreen(),
       ),
     ],
   );

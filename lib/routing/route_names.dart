@@ -24,4 +24,7 @@ class RouteNames {
   // Security & Intelligence
   static const String security = 'security';
   static const String insights = 'insights';
+  static const String categories = 'categories';
+  static const String appearance = 'appearance';
+  static const String about = 'about';
 }

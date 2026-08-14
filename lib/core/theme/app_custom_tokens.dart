@@ -48,6 +48,28 @@ class AppCustomTokens extends ThemeExtension<AppCustomTokens> {
     required this.textGold,
   });
 
+  static const AppCustomTokens dark = AppCustomTokens(
+    heroSurfaceColor: Color(0xFF1E1E1E),
+    heroTextColor: Color(0xFFD4AF37),
+    accentGroceries: Color(0xFF26A69A),
+    accentShopping: Color(0xFFAB47BC),
+    accentBills: Color(0xFF42A5F5),
+    accentTransport: Color(0xFFFF7043),
+    accentSavings: Color(0xFF66BB6A),
+    accentAlert: Color(0xFFEF5350),
+    statusTileTintOpacity: 0.15,
+    cardBorderRadius: 24.0,
+    gridUnit: 8.0,
+    incomeColor: Color(0xFF66BB6A),
+    expenseColor: Color(0xFFEF5350),
+    goldAccent: Color(0xFFD4AF37),
+    goldGlow: Color(0x33FFC64B),
+    surfaceGlass: Color(0x0AFFFFFF),
+    borderGlass: Color(0x26FFFFFF),
+    borderGoldRim: Color(0x33FFC64B),
+    textGold: Color(0xFFD4AF37),
+  );
+
   @override
   AppCustomTokens copyWith({
     Color? heroSurfaceColor,

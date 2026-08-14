@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/security/app_lock_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../services/notification_reader_service.dart';
 
-class NotificationSettingsScreen extends StatefulWidget {
+class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  ConsumerState<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState extends ConsumerState<NotificationSettingsScreen> {
   bool _upiEnabled = true;
   bool _walletsEnabled = true;
   bool _bankingEnabled = true;
@@ -30,21 +32,25 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     final prefs = await SharedPreferences.getInstance();
     final permission = await NotificationReaderService.instance.isPermissionGranted();
 
-    setState(() {
-      _upiEnabled = prefs.getBool('pref_notify_upi') ?? true;
-      _walletsEnabled = prefs.getBool('pref_notify_wallets') ?? true;
-      _bankingEnabled = prefs.getBool('pref_notify_banking') ?? true;
-      _hasPermission = permission;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _upiEnabled = prefs.getBool('pref_notify_upi') ?? true;
+        _walletsEnabled = prefs.getBool('pref_notify_wallets') ?? true;
+        _bankingEnabled = prefs.getBool('pref_notify_banking') ?? true;
+        _hasPermission = permission;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _toggleSetting(String key, bool value, Function(bool) updateState) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, value);
-    setState(() {
-      updateState(value);
-    });
+    if (mounted) {
+      setState(() {
+        updateState(value);
+      });
+    }
   }
 
   @override
@@ -112,7 +118,12 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                       if (!_hasPermission)
                         TextButton(
                           onPressed: () async {
-                            await NotificationReaderService.instance.openNotificationSettings();
+                            ref.read(appLockControllerProvider.notifier).setSystemDialogActive(true);
+                            try {
+                              await NotificationReaderService.instance.openNotificationSettings();
+                            } finally {
+                              ref.read(appLockControllerProvider.notifier).setSystemDialogActive(false);
+                            }
                             await _loadSettings();
                           },
                           child: const Text(
@@ -146,8 +157,10 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.darkBorderGlass),
                   ),
-                  child: Column(
-                    children: [
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
+                      children: [
                       _buildSwitchTile(
                         title: 'UPI Payment Apps',
                         subtitle: 'Google Pay, PhonePe, Paytm, BHIM, CRED, WhatsApp, etc.',
@@ -186,6 +199,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     ],
                   ),
                 ),
+              ),
                 const SizedBox(height: AppSpacing.space6),
 
                 // Privacy Disclaimer Box

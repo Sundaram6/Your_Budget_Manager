@@ -15,7 +15,7 @@ class MainNavigationShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tokens = theme.extension<AppCustomTokens>()!;
+    final tokens = theme.extension<AppCustomTokens>() ?? AppCustomTokens.dark;
     
     // Determine current index based on route
     final String location = GoRouterState.of(context).matchedLocation;

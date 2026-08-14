@@ -1,13 +1,27 @@
+import 'dart:math';
+
 import '../../core/enums.dart';
 import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
+import '../../models/recurring_transaction.dart';
+import '../../repositories/recurring_repository.dart';
+import '../recurring/recurring_engine.dart';
+import '../savings/savings_engine.dart';
 import 'models/analytics_models.dart';
 
 class AnalyticsEngine {
   final TransactionRepository _transactionRepository;
   final CategoryRepository _categoryRepository;
+  final RecurringRepository? _recurringRepository;
+  final SavingsEngine? _savingsEngine;
 
-  AnalyticsEngine(this._transactionRepository, this._categoryRepository);
+  AnalyticsEngine(
+    this._transactionRepository,
+    this._categoryRepository, {
+    RecurringRepository? recurringRepository,
+    SavingsEngine? savingsEngine,
+  })  : _recurringRepository = recurringRepository,
+        _savingsEngine = savingsEngine;
 
   /// Returns monthly total expenses in integer paise.
   Future<int> getMonthlyTotal(int year, int month) async {
@@ -160,5 +174,142 @@ class AnalyticsEngine {
     if (breakdown.isEmpty) return null;
     final top = breakdown.first; // already sorted desc
     return (top.categoryName, top.total);
+  }
+
+  /// Returns summary of recurring payment commitments.
+  Future<RecurringCommitmentSummary> getRecurringCommitments({int? year, int? month}) async {
+    final now = DateTime.now();
+    final targetYear = year ?? now.year;
+    final targetMonth = month ?? now.month;
+
+    if (_recurringRepository == null) {
+      return const RecurringCommitmentSummary(
+        totalMonthlyRecurringPaise: 0,
+        upcomingRecurringThisMonthPaise: 0,
+        recurringCount: 0,
+        recurringExpenseRatio: 0.0,
+      );
+    }
+
+    final all = await _recurringRepository!.watchAll().first;
+    final activeExpenses = all.where((rt) => rt.isActive && rt.type.toLowerCase() == 'expense').toList();
+
+    int totalMonthlyNormalizedPaise = 0;
+    for (final rt in activeExpenses) {
+      final freq = rt.frequency.toLowerCase();
+      switch (freq) {
+        case 'daily':
+          totalMonthlyNormalizedPaise += rt.amountPaise * 30;
+          break;
+        case 'weekly':
+          totalMonthlyNormalizedPaise += (rt.amountPaise * 52) ~/ 12;
+          break;
+        case 'biweekly':
+          totalMonthlyNormalizedPaise += (rt.amountPaise * 26) ~/ 12;
+          break;
+        case 'yearly':
+          totalMonthlyNormalizedPaise += rt.amountPaise ~/ 12;
+          break;
+        case 'custom':
+          final interval = rt.intervalDays ?? 30;
+          totalMonthlyNormalizedPaise += (rt.amountPaise * 30) ~/ max(1, interval);
+          break;
+        case 'monthly':
+        default:
+          totalMonthlyNormalizedPaise += rt.amountPaise;
+          break;
+      }
+    }
+
+    final upcomingThisMonthPaise = await getUpcomingRecurringTotal(targetYear, targetMonth);
+    final monthlyTotalSpend = await getMonthlyTotal(targetYear, targetMonth);
+
+    double ratio = 0.0;
+    if (monthlyTotalSpend > 0) {
+      ratio = (totalMonthlyNormalizedPaise / monthlyTotalSpend) * 100;
+    }
+
+    return RecurringCommitmentSummary(
+      totalMonthlyRecurringPaise: totalMonthlyNormalizedPaise,
+      upcomingRecurringThisMonthPaise: upcomingThisMonthPaise,
+      recurringCount: activeExpenses.length,
+      recurringExpenseRatio: ratio,
+    );
+  }
+
+  /// Calculates upcoming recurring payments due in the given month.
+  Future<int> getUpcomingRecurringTotal(int year, int month) async {
+    if (_recurringRepository == null) return 0;
+
+    final startOfMonth = DateTime(year, month, 1);
+    final endOfMonth = DateTime(year, month + 1, 0, 23, 59, 59, 999);
+
+    final all = await _recurringRepository!.watchAll().first;
+    int upcomingTotal = 0;
+
+    for (final rt in all) {
+      if (!rt.isActive || rt.type.toLowerCase() != 'expense') continue;
+      if (rt.endDate != null && rt.endDate!.isBefore(startOfMonth)) continue;
+
+      var occurrence = rt.nextDueDate;
+      while (occurrence.compareTo(endOfMonth) <= 0) {
+        if (rt.endDate != null && occurrence.isAfter(rt.endDate!)) break;
+
+        if (occurrence.compareTo(startOfMonth) >= 0) {
+          upcomingTotal += rt.amountPaise;
+        }
+
+        try {
+          occurrence = RecurringEngine.calculateNextDue(occurrence, rt);
+        } catch (_) {
+          break;
+        }
+      }
+    }
+
+    return upcomingTotal;
+  }
+
+  /// Returns summary of all savings goals (both automated and manual).
+  Future<SavingsAnalyticsSummary> getSavingsAnalytics() async {
+    if (_savingsEngine == null) {
+      return const SavingsAnalyticsSummary(
+        totalGoalsCount: 0,
+        activeGoalsCount: 0,
+        totalSavedPaise: 0,
+        totalTargetPaise: 0,
+        monthlyCommittedAutoSavePaise: 0,
+        overallProgressPercent: 0.0,
+      );
+    }
+
+    final goals = await _savingsEngine!.watchGoals().first;
+    final activeGoals = goals.where((g) => g.status.toLowerCase() == 'active').toList();
+
+    final totalSaved = goals.fold<int>(0, (s, g) => s + g.currentAmount);
+    final totalTarget = goals.fold<int>(0, (s, g) => s + g.targetAmount);
+
+    final autoSaveCommitted = activeGoals
+        .where((g) => g.autoDeduct && g.currentAmount < g.targetAmount && g.autoDeductAmount != null)
+        .fold<int>(0, (s, g) => s + (g.autoDeductAmount ?? 0));
+
+    final overallProgress = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0.0;
+
+    return SavingsAnalyticsSummary(
+      totalGoalsCount: goals.length,
+      activeGoalsCount: activeGoals.length,
+      totalSavedPaise: totalSaved,
+      totalTargetPaise: totalTarget,
+      monthlyCommittedAutoSavePaise: autoSaveCommitted,
+      overallProgressPercent: overallProgress,
+    );
+  }
+
+  /// Calculates total committed spend for the month: spent + upcoming recurring + committed savings.
+  Future<int> getTotalCommittedMonthlySpend(int year, int month) async {
+    final spent = await getMonthlyTotal(year, month);
+    final upcomingRecurring = await getUpcomingRecurringTotal(year, month);
+    final savingsSummary = await getSavingsAnalytics();
+    return spent + upcomingRecurring + savingsSummary.monthlyCommittedAutoSavePaise;
   }
 }

@@ -84,6 +84,56 @@ void main() {
       expect(container.read(appLockControllerProvider), isFalse);
     });
 
+    test('lifecycle pause is IGNORED when system dialog / permissions active', () async {
+      final controller = container.read(appLockControllerProvider.notifier);
+      controller.unlock();
+      expect(container.read(appLockControllerProvider), isFalse);
+
+      // System permissions dialog opens
+      controller.setSystemDialogActive(true);
+
+      controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      // Should NOT lock while permission dialog is presented
+      expect(container.read(appLockControllerProvider), isFalse);
+
+      // Permission dialog closes
+      controller.setSystemDialogActive(false);
+      controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      expect(container.read(appLockControllerProvider), isFalse);
+    });
+
+    test('transient inactive state (permission popup / notification drop) with quick resume does not lock', () async {
+      final controller = container.read(appLockControllerProvider.notifier);
+      controller.unlock();
+      expect(container.read(appLockControllerProvider), isFalse);
+
+      // Transient inactive (e.g. system notification pull or dialog)
+      controller.didChangeAppLifecycleState(AppLifecycleState.inactive);
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // User resumes within debounce threshold
+      controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await Future.delayed(const Duration(milliseconds: 600));
+
+      expect(container.read(appLockControllerProvider), isFalse);
+    });
+
+    test('persistent inactive state > 500ms without resume triggers lock', () async {
+      final controller = container.read(appLockControllerProvider.notifier);
+      controller.unlock();
+      expect(container.read(appLockControllerProvider), isFalse);
+
+      // Inactive without resume
+      controller.didChangeAppLifecycleState(AppLifecycleState.inactive);
+      await Future.delayed(const Duration(milliseconds: 650));
+
+      expect(container.read(appLockControllerProvider), isTrue);
+    });
+
     test('successful biometric authentication transitions state to unlocked', () async {
       when(() => mockLocalAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockLocalAuth.isDeviceSupported()).thenAnswer((_) async => true);
@@ -137,23 +187,11 @@ void main() {
       controller.didChangeAppLifecycleState(AppLifecycleState.inactive);
       controller.didChangeAppLifecycleState(AppLifecycleState.hidden);
 
-      // User turns screen back on quickly (resumed fired before async disk reads complete)
+      // User turns screen back on quickly
       controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
       await Future.delayed(const Duration(milliseconds: 50));
 
       // Must reliably lock
-      expect(container.read(appLockControllerProvider), isTrue);
-    });
-
-    test('screen-lock (inactive) without full backgrounding triggers lock when not authenticating', () async {
-      final controller = container.read(appLockControllerProvider.notifier);
-      controller.unlock();
-      expect(container.read(appLockControllerProvider), isFalse);
-
-      // Lock screen appears over app
-      controller.didChangeAppLifecycleState(AppLifecycleState.inactive);
-      await Future.delayed(const Duration(milliseconds: 50));
-
       expect(container.read(appLockControllerProvider), isTrue);
     });
 

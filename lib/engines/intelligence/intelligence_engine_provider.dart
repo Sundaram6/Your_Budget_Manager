@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/providers/database_providers.dart';
+import '../analytics/analytics_engine_provider.dart';
 import '../budget/budget_engine_provider.dart';
 import '../expense/expense_engine_provider.dart';
 import '../savings/savings_engine_provider.dart';
@@ -14,6 +15,8 @@ IntelligenceEngine intelligenceEngine(Ref ref) {
   final budgetEngine = ref.watch(budgetEngineProvider);
   final savingsEngine = ref.watch(savingsEngineProvider);
   final expenseEngine = ref.watch(expenseEngineProvider);
+  final recurringRepo = ref.watch(recurringRepositoryProvider);
+  final analyticsEngine = ref.watch(analyticsEngineProvider);
 
   return IntelligenceEngine(
     budgetEngine: budgetEngine,
@@ -21,5 +24,7 @@ IntelligenceEngine intelligenceEngine(Ref ref) {
     expenseEngine: expenseEngine,
     transactionDao: db.transactionDao,
     categoryDao: db.categoryDao,
+    recurringRepository: recurringRepo,
+    analyticsEngine: analyticsEngine,
   );
 }
