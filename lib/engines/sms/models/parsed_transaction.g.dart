@@ -11,6 +11,7 @@ _ParsedTransaction _$ParsedTransactionFromJson(Map<String, dynamic> json) =>
       smsId: json['smsId'] as String,
       amount: (json['amount'] as num).toInt(),
       date: DateTime.parse(json['date'] as String),
+      type: $enumDecode(_$TransactionTypeEnumMap, json['type']),
       merchantName: json['merchantName'] as String,
       merchantId: json['merchantId'] as String,
       categoryId: json['categoryId'] as String,
@@ -20,6 +21,8 @@ _ParsedTransaction _$ParsedTransactionFromJson(Map<String, dynamic> json) =>
           $enumDecodeNullable(_$PaymentMethodEnumMap, json['paymentMethod']) ??
           PaymentMethod.unknown,
       cardLast4: json['cardLast4'] as String?,
+      accountLast4: json['accountLast4'] as String?,
+      transactionRef: json['transactionRef'] as String?,
     );
 
 Map<String, dynamic> _$ParsedTransactionToJson(_ParsedTransaction instance) =>
@@ -27,6 +30,7 @@ Map<String, dynamic> _$ParsedTransactionToJson(_ParsedTransaction instance) =>
       'smsId': instance.smsId,
       'amount': instance.amount,
       'date': instance.date.toIso8601String(),
+      'type': _$TransactionTypeEnumMap[instance.type]!,
       'merchantName': instance.merchantName,
       'merchantId': instance.merchantId,
       'categoryId': instance.categoryId,
@@ -34,7 +38,14 @@ Map<String, dynamic> _$ParsedTransactionToJson(_ParsedTransaction instance) =>
       'sourceApp': instance.sourceApp,
       'paymentMethod': _$PaymentMethodEnumMap[instance.paymentMethod]!,
       'cardLast4': instance.cardLast4,
+      'accountLast4': instance.accountLast4,
+      'transactionRef': instance.transactionRef,
     };
+
+const _$TransactionTypeEnumMap = {
+  TransactionType.expense: 'expense',
+  TransactionType.income: 'income',
+};
 
 const _$PaymentMethodEnumMap = {
   PaymentMethod.upi: 'upi',

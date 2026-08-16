@@ -50,6 +50,9 @@ void main() {
         'sourceApp': null,
         'paymentMethod': 'unknown',
         'cardLast4': null,
+        'accountLast4': null,
+        'transactionRef': null,
+        'transferPairId': null,
         'isRecurring': false,
         'recurringId': null,
         'merchantName': null,
@@ -64,7 +67,7 @@ void main() {
       expect(fromJson, equals(tTransaction));
     });
 
-    test('should correctly serialize and deserialize with debit card and cardLast4', () {
+    test('should correctly serialize and deserialize with debit card, cardLast4, accountLast4, and transactionRef', () {
       final cardTx = Transaction(
         id: '2',
         amount: const Amount(25000),
@@ -75,16 +78,22 @@ void main() {
         sourceApp: 'sms:hdfc',
         paymentMethod: PaymentMethod.debit_card,
         cardLast4: '4521',
+        accountLast4: '1234',
+        transactionRef: 'REF998877',
       );
 
       final json = cardTx.toJson();
       expect(json['paymentMethod'], 'debit_card');
       expect(json['cardLast4'], '4521');
+      expect(json['accountLast4'], '1234');
+      expect(json['transactionRef'], 'REF998877');
 
       final fromJson = Transaction.fromJson(json);
       expect(fromJson, equals(cardTx));
       expect(fromJson.paymentMethod, PaymentMethod.debit_card);
       expect(fromJson.cardLast4, '4521');
+      expect(fromJson.accountLast4, '1234');
+      expect(fromJson.transactionRef, 'REF998877');
     });
   });
 }

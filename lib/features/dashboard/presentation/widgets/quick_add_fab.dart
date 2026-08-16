@@ -8,7 +8,7 @@ class QuickAddFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<AppCustomTokens>()!;
+    final tokens = Theme.of(context).extension<AppCustomTokens>() ?? AppCustomTokens.dark;
     
     return Container(
       decoration: BoxDecoration(
@@ -22,6 +22,7 @@ class QuickAddFab extends StatelessWidget {
         ],
       ),
       child: FloatingActionButton(
+        heroTag: 'quick_add_fab',
         onPressed: onPressed,
         backgroundColor: tokens.goldAccent,
         foregroundColor: Colors.black, // Dark text/icon on gold background

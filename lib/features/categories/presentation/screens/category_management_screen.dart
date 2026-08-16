@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_animation.dart';
 import '../../../../engines/category/category_engine_provider.dart';
 import '../../domain/entities/category.dart';
 
@@ -38,7 +39,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           await ref.read(categoryEngineProvider).delete(cat);
                         },
                       ),
-              );
+              ).animateEntrance(context, index: index);
             },
           );
         },

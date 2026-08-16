@@ -64,8 +64,22 @@ class _TransactionItem extends StatelessWidget {
         : null;
     final hasNote = transaction.note != null && transaction.note!.trim().isNotEmpty;
 
+    final isTransfer = transaction.isSelfTransfer;
+    final isIncome = transaction.type == TransactionType.income;
+    final amountFormatted = isTransfer
+        ? '↔ ${transaction.amount.value.toCurrency()}'
+        : transaction.amount.value.toCurrency();
+    final amountColor = isTransfer
+        ? AppColors.darkGoldPrimary
+        : (isIncome ? tokens.incomeColor : tokens.expenseColor);
+
     String subtitleText = dateStr;
-    if (methodStr != null && hasNote) {
+    if (isTransfer) {
+      final extra = transaction.note ?? transaction.merchantName;
+      subtitleText = extra != null && extra.isNotEmpty
+          ? '$dateStr • Self Transfer • $extra'
+          : '$dateStr • Self Transfer';
+    } else if (methodStr != null && hasNote) {
       subtitleText = '$dateStr • $methodStr • ${transaction.note}';
     } else if (methodStr != null) {
       subtitleText = '$dateStr • $methodStr';
@@ -93,6 +107,10 @@ class _TransactionItem extends StatelessWidget {
         ),
         child: Row(
           children: [
+            if (isTransfer) ...[
+              const Icon(Icons.swap_horiz, color: AppColors.darkGoldPrimary, size: 20),
+              const SizedBox(width: 8),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,9 +134,9 @@ class _TransactionItem extends StatelessWidget {
               ),
             ),
             Text(
-              transaction.amount.value.toCurrency(),
+              amountFormatted,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: transaction.amount.value > 0 ? tokens.incomeColor : tokens.expenseColor,
+                    color: amountColor,
                     fontWeight: FontWeight.bold,
                   ),
             ),

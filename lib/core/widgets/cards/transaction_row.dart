@@ -11,6 +11,7 @@ class TransactionRow extends StatelessWidget {
   final DateTime date;
   final Color categoryColor;
   final bool isIncome;
+  final bool isTransfer;
   final VoidCallback? onTap;
 
   const TransactionRow({
@@ -21,6 +22,7 @@ class TransactionRow extends StatelessWidget {
     required this.date,
     required this.categoryColor,
     this.isIncome = false,
+    this.isTransfer = false,
     this.onTap,
   });
 
@@ -29,9 +31,11 @@ class TransactionRow extends StatelessWidget {
     final theme = Theme.of(context);
     final tokens = theme.extension<AppCustomTokens>()!;
     
-    final formattedAmount = isIncome
-        ? '+${CurrencyFormatter.formatPaise(amount)}'
-        : '-${CurrencyFormatter.formatPaise(amount)}';
+    final formattedAmount = isTransfer
+        ? '↔ ${CurrencyFormatter.formatPaise(amount)}'
+        : (isIncome
+            ? '+${CurrencyFormatter.formatPaise(amount)}'
+            : '-${CurrencyFormatter.formatPaise(amount)}');
     
     // In dark mode, text might be slightly different. We use onSurface for primary text.
     final primaryTextColor = theme.colorScheme.onSurface;
@@ -85,7 +89,9 @@ class TransactionRow extends StatelessWidget {
                   formattedAmount,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: isIncome ? tokens.accentSavings : primaryTextColor,
+                    color: isTransfer
+                        ? primaryTextColor
+                        : (isIncome ? tokens.accentSavings : primaryTextColor),
                     fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),

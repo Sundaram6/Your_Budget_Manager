@@ -41,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -355,6 +355,23 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_source_message_id ON transactions(source_message_id) WHERE source_message_id IS NOT NULL;',
           );
+        }
+
+        // v9 → v10: account_last_4 and transaction_ref columns added to transactions table
+        if (from < 10) {
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.accountLast4);
+          } catch (_) {}
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.transactionRef);
+          } catch (_) {}
+        }
+
+        // v10 → v11: transfer_pair_id column added to transactions table
+        if (from < 11) {
+          try {
+            await m.addColumn(transactionsTable, transactionsTable.transferPairId);
+          } catch (_) {}
         }
       },
       beforeOpen: (details) async {

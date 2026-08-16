@@ -30,8 +30,8 @@ class MainNavigationShell extends StatelessWidget {
       extendBody: true, // Allows body to scroll behind the floating nav bar
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.fromLTRB(AppSpacing.space4, 0, AppSpacing.space4, AppSpacing.space4),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space3, vertical: 8),
+          margin: const EdgeInsets.fromLTRB(AppSpacing.space3, 0, AppSpacing.space3, AppSpacing.space3),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2, vertical: 6),
           decoration: BoxDecoration(
             color: tokens.heroSurfaceColor,
             borderRadius: BorderRadius.circular(100),
@@ -81,7 +81,7 @@ class MainNavigationShell extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: isSelected ? 12 : 10, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? Colors.white.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(100),

@@ -28,9 +28,12 @@ class TransactionTile extends ConsumerWidget {
           orElse: () => categories.first, // fallback
         );
         
+        final isTransfer = transaction.isSelfTransfer;
         final isExpense = transaction.type == TransactionType.expense;
-        final amountColor = isExpense ? Colors.red : Colors.green;
-        final amountPrefix = isExpense ? '-' : '+';
+        final amountColor = isTransfer
+            ? const Color(0xFFD4AF37) // AppColors.darkGoldPrimary
+            : (isExpense ? Colors.red : Colors.green);
+        final amountPrefix = isTransfer ? '↔ ' : (isExpense ? '-' : '+');
 
         String? subtitle;
         final hasMethod = transaction.paymentMethod != PaymentMethod.unknown;
@@ -40,23 +43,35 @@ class TransactionTile extends ConsumerWidget {
                 : transaction.paymentMethod.displayName)
             : null;
 
-        if (transaction.note != null && transaction.note!.isNotEmpty) {
+        if (isTransfer) {
+          final extra = transaction.note ?? transaction.merchantName;
+          subtitle = extra != null && extra.isNotEmpty ? 'Self Transfer • $extra' : 'Self Transfer';
+        } else if (transaction.note != null && transaction.note!.isNotEmpty) {
           subtitle = methodStr != null ? '$methodStr • ${transaction.note}' : transaction.note;
         } else {
           subtitle = methodStr;
         }
 
+        final iconBgColor = isTransfer
+            ? const Color(0xFFD4AF37).withValues(alpha: 0.2)
+            : Color(category.color).withValues(alpha: 0.2);
+        final iconColor = isTransfer
+            ? const Color(0xFFD4AF37)
+            : Color(category.color);
+
         return ListTile(
           onTap: onTap,
           leading: CircleAvatar(
-            backgroundColor: Color(category.color).withValues(alpha: 0.2),
+            backgroundColor: iconBgColor,
             child: Icon(
-              // Using a placeholder icon mapping if needed, or just a default
-              Icons.category, 
-              color: Color(category.color),
+              isTransfer ? Icons.swap_horiz : Icons.category,
+              color: iconColor,
             ),
           ),
-          title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+          title: Text(
+            category.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           subtitle: subtitle != null
               ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
               : null,

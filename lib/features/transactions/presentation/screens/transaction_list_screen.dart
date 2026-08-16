@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_animation.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../screens/analytics/monthly_analytics_screen.dart';
 import '../controllers/transaction_list_controller.dart';
 import '../widgets/transaction_timeline_card.dart';
+import '../widgets/transfer_suggestion_banner.dart';
 
 class TransactionListScreen extends ConsumerWidget {
   const TransactionListScreen({super.key});
@@ -67,7 +69,7 @@ class TransactionListScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              
+              const TransferSuggestionBanner(),
               Expanded(
                 child: state.groupedTransactions.isEmpty
                     ? const Center(child: Text('No transactions for this month.'))
@@ -79,7 +81,7 @@ class TransactionListScreen extends ConsumerWidget {
                           return TransactionTimelineCard(
                             date: date,
                             transactions: transactions,
-                          );
+                          ).animateEntrance(context, index: index);
                         },
                       ),
               ),
@@ -92,4 +94,3 @@ class TransactionListScreen extends ConsumerWidget {
     );
   }
 }
-

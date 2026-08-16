@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/enums.dart';
+import '../../../../core/theme/app_animation.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -18,10 +20,35 @@ import '../../../../routing/route_names.dart';
 import '../../../../services/notification_reader_service.dart';
 import '../../../../services/notification_router.dart';
 import '../../../../widgets/notification_transaction_sheet.dart';
+import '../../../transactions/presentation/widgets/transfer_suggestion_banner.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/hero_balance_card.dart';
 import '../widgets/quick_add_fab.dart';
 import '../widgets/recent_transactions.dart';
+
+/// Floating action button location that floats above the floating pill bottom navigation bar.
+class FloatingAboveBottomNavLocation extends FloatingActionButtonLocation {
+  const FloatingAboveBottomNavLocation({
+    this.bottomOffset = 88.0,
+    this.rightOffset = 16.0,
+  });
+
+  final double bottomOffset;
+  final double rightOffset;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double fabX = scaffoldGeometry.scaffoldSize.width -
+        scaffoldGeometry.floatingActionButtonSize.width -
+        rightOffset;
+    final double bottomPadding = scaffoldGeometry.minViewPadding.bottom;
+    final double fabY = scaffoldGeometry.scaffoldSize.height -
+        scaffoldGeometry.floatingActionButtonSize.height -
+        bottomOffset -
+        bottomPadding;
+    return Offset(fabX, fabY);
+  }
+}
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -67,6 +94,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final tokens = theme.extension<AppCustomTokens>()!;
     
     return Scaffold(
+      floatingActionButtonLocation: const FloatingAboveBottomNavLocation(),
+      floatingActionButton: QuickAddFab(
+        onPressed: () {
+          _showAddOptionsSheet(context);
+        },
+      ),
       body: SafeArea(
         child: state.when(
           data: (data) {
@@ -76,6 +109,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 padding: const EdgeInsets.all(AppSpacing.space4),
                 children: [
                   _buildTopBar(context, tokens),
+                  const TransferSuggestionBanner(),
                   const SizedBox(height: AppSpacing.space4),
                   HeroBalanceCard(totalBalance: data.monthlyTotal), // TODO: Use real total balance
                   const SizedBox(height: AppSpacing.space4),
@@ -94,23 +128,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   SectionHeader(
                     title: 'Recent Transactions',
                     actionLabel: 'See All',
-                    onActionPressed: () => context.pushNamed('transactionList'),
+                    onActionPressed: () => context.pushNamed(RouteNames.transactionList),
                   ),
                   const SizedBox(height: AppSpacing.space3),
                   RecentTransactionsWidget(transactions: data.recentTransactions),
-                  const SizedBox(height: 80), // Padding for FAB
-                ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, end: 0, duration: 300.ms, curve: Curves.easeOutQuad),
+                  const SizedBox(height: 120), // Padding for FAB + bottom nav bar
+                ].animateStaggered(context),
               ),
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
         ),
-      ),
-      floatingActionButton: QuickAddFab(
-        onPressed: () {
-          _showAddOptionsSheet(context);
-        },
       ),
     );
   }
@@ -160,15 +189,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   // Account pill helpers removed — using real data only, no hardcoded placeholders
 
   Widget _buildStatusTiles(BuildContext context, AppCustomTokens tokens, int healthScore, String insight) {
-    final isHealthy = healthScore > 70;
+    final isHealthy = healthScore >= 80;
+    final isCaution = healthScore >= 50 && healthScore < 80;
+    final isCritical = healthScore < 0;
+
+    final title = isHealthy
+        ? 'Safe to spend'
+        : isCaution
+            ? 'Watch spending'
+            : isCritical
+                ? 'Critical Deficit'
+                : 'Over Budget';
+
+    final statusColor = isHealthy
+        ? tokens.accentSavings
+        : isCaution
+            ? tokens.accentTransport
+            : tokens.accentAlert;
+
     return Row(
       children: [
         Expanded(
           child: StatusTile(
             icon: isHealthy ? Icons.check_circle_outline : Icons.warning_amber_rounded,
-            title: isHealthy ? 'Safe to spend' : 'Watch spending',
+            title: title,
             subtitle: 'Health: $healthScore',
-            statusColor: isHealthy ? tokens.accentSavings : tokens.accentAlert,
+            statusColor: statusColor,
             onTap: () => context.push('/insights'),
           ),
         ),
@@ -178,7 +224,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             icon: Icons.lightbulb_outline,
             title: 'Insight',
             subtitle: insight,
-            statusColor: tokens.accentBills,
+            statusColor: AppColors.darkGoldPrimary,
             onTap: () => context.push('/insights'),
           ),
         ),
@@ -253,7 +299,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
 
   void _showAddOptionsSheet(BuildContext context) {
-    // Keep original logic or style to match v2
+    final tokens = Theme.of(context).extension<AppCustomTokens>() ?? AppCustomTokens.dark;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -278,8 +325,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: Theme.of(context).extension<AppCustomTokens>()!.accentTransport.withOpacity(0.2),
-                  child: Icon(Icons.add, color: Theme.of(context).extension<AppCustomTokens>()!.accentTransport),
+                  backgroundColor: tokens.accentTransport.withOpacity(0.2),
+                  child: Icon(Icons.add, color: tokens.accentTransport),
                 ),
                 title: Text(
                   'One-Time Transaction',
@@ -288,15 +335,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 subtitle: const Text('Record a single expense or income'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.pushNamed('addTransaction');
+                  context.pushNamed(RouteNames.addTransaction);
                 },
               ),
               const Divider(),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: Theme.of(context).extension<AppCustomTokens>()!.accentBills.withOpacity(0.2),
-                  child: Icon(Icons.repeat, color: Theme.of(context).extension<AppCustomTokens>()!.accentBills),
+                  backgroundColor: tokens.accentBills.withOpacity(0.2),
+                  child: Icon(Icons.repeat, color: tokens.accentBills),
                 ),
                 title: Text(
                   'Recurring Payment',

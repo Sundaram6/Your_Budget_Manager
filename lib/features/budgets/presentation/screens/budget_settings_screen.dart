@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/providers/database_providers.dart';
+import '../../../../core/theme/app_animation.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -112,16 +113,16 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Monthly Budget?'),
-        content: const Text('Are you sure you want to remove your overall monthly budget for this month?'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Budget?'),
+        content: const Text('Are you sure you want to remove your overall monthly budget?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.darkExpense),
             child: const Text('Delete'),
           ),
@@ -132,13 +133,13 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
     if (confirm != true) return;
 
     setState(() => _isLoading = true);
+    final now = DateTime.now();
     final budgetRepo = ref.read(budgetRepositoryProvider);
 
     try {
       await budgetRepo.deleteBudget(_currentBudget!);
-      _amountController.clear();
-
       ref.invalidate(dashboardControllerProvider);
+      _amountController.clear();
       await _loadBudgetData();
 
       if (mounted) {
@@ -160,12 +161,11 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-
     final budgetPaise = _currentBudget?.amount ?? 0;
     final spentPaise = _budgetProgress?.spent ?? 0;
     final committedRecurring = _budgetProgress?.committedRecurring ?? 0;
     final committedSavings = _budgetProgress?.committedSavings ?? 0;
-    final totalCommitted = _budgetProgress?.totalCommitted ?? spentPaise;
+    final totalCommitted = _budgetProgress?.totalCommitted ?? (spentPaise + committedRecurring + committedSavings);
     final remainingPaise = _budgetProgress?.remaining ?? (budgetPaise - spentPaise);
     final isOverBudget = _budgetProgress?.isOverBudget ?? (totalCommitted > budgetPaise);
 
@@ -203,12 +203,16 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${DateFormat('MMMM yyyy').format(now)} Budget',
-                                style: AppTypography.heading3.copyWith(
-                                  color: isOverBudget ? AppColors.darkExpense : AppColors.darkGoldPrimary,
+                              Expanded(
+                                child: Text(
+                                  '${DateFormat('MMMM yyyy').format(now)} Budget',
+                                  style: AppTypography.heading3.copyWith(
+                                    color: isOverBudget ? AppColors.darkExpense : AppColors.darkGoldPrimary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(width: AppSpacing.space2),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
@@ -237,50 +241,136 @@ class _BudgetSettingsScreenState extends ConsumerState<BudgetSettingsScreen> {
                           ),
                           const SizedBox(height: AppSpacing.space3),
                           // Committed breakdown
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            spacing: AppSpacing.space2,
+                            runSpacing: AppSpacing.space1,
                             children: [
                               Text(
                                 'Spent: ${CurrencyFormatter.formatPaise(spentPaise)}',
                                 style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                               ),
-                              if (committedRecurring > 0)
+                              if (committedRecurring > 0) ...[
+                                Text('•', style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary)),
                                 Text(
                                   'Recurring: ${CurrencyFormatter.formatPaise(committedRecurring)}',
                                   style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                                 ),
-                              if (committedSavings > 0)
+                              ],
+                              if (committedSavings > 0) ...[
+                                Text('•', style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary)),
                                 Text(
                                   'Savings: ${CurrencyFormatter.formatPaise(committedSavings)}',
                                   style: AppTypography.caption.copyWith(color: AppColors.darkTextSecondary),
                                 ),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: AppSpacing.space2),
+                          const SizedBox(height: AppSpacing.space3),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Total Committed: ${CurrencyFormatter.formatPaise(totalCommitted)}',
+                                'Total Committed',
                                 style: AppTypography.caption.copyWith(
-                                  color: AppColors.darkTextPrimary,
-                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.darkTextSecondary,
                                 ),
                               ),
-                              Text(
-                                isOverBudget
-                                    ? 'Over-committed by ${CurrencyFormatter.formatPaise(-remainingPaise)}'
-                                    : 'Remaining: ${CurrencyFormatter.formatPaise(remainingPaise)}',
-                                style: AppTypography.caption.copyWith(
-                                  color: isOverBudget ? AppColors.darkExpense : AppColors.darkIncome,
-                                  fontWeight: FontWeight.bold,
+                              const SizedBox(width: AppSpacing.space2),
+                              Flexible(
+                                child: Text(
+                                  CurrencyFormatter.formatPaise(totalCommitted),
+                                  style: AppTypography.caption.copyWith(
+                                    color: AppColors.darkTextPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.end,
                                 ),
                               ),
                             ],
                           ),
+                          const SizedBox(height: AppSpacing.space2),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: (isOverBudget ? AppColors.darkExpense : AppColors.darkIncome).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: (isOverBudget ? AppColors.darkExpense : AppColors.darkIncome).withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isOverBudget ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+                                  size: 14,
+                                  color: isOverBudget ? AppColors.darkExpense : AppColors.darkIncome,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    isOverBudget
+                                        ? 'Over-committed by ${CurrencyFormatter.formatPaise(-remainingPaise)}'
+                                        : 'Remaining: ${CurrencyFormatter.formatPaise(remainingPaise)}',
+                                    style: AppTypography.caption.copyWith(
+                                      color: isOverBudget ? AppColors.darkExpense : AppColors.darkIncome,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isOverBudget) ...[
+                            const SizedBox(height: AppSpacing.space3),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(AppSpacing.space3),
+                              decoration: BoxDecoration(
+                                color: AppColors.darkExpense.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: AppColors.darkExpense.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: AppColors.darkExpense, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          '🚨 Survival Mode Active',
+                                          style: TextStyle(
+                                            color: AppColors.darkExpense,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          "You've exceeded your budget by ${CurrencyFormatter.formatPaise(-remainingPaise)}. Freeze non-essential spending for the remaining ${max(1, DateTime(now.year, now.month + 1, 0).day - now.day + 1)} days.",
+                                          style: AppTypography.caption.copyWith(
+                                            color: AppColors.darkTextSecondary,
+                                            height: 1.3,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                    ),
+                    ).animateEntrance(context, index: 0),
                     const SizedBox(height: AppSpacing.space4),
                   ],
 

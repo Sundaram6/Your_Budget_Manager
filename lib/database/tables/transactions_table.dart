@@ -22,6 +22,9 @@ class TransactionsTable extends Table {
   TextColumn get sourceApp => text().nullable()();
   TextColumn get paymentMethod => text().nullable()();
   TextColumn get cardLast4 => text().nullable()();
+  TextColumn get accountLast4 => text().nullable()();
+  TextColumn get transactionRef => text().nullable()();
+  TextColumn get transferPairId => text().nullable()();
   TextColumn get recurrenceOccurrenceKey => text().nullable()();
   TextColumn get sourceMessageId => text().nullable()();
   IntColumn get createdAt => integer()();

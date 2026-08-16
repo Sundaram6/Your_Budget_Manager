@@ -38,41 +38,83 @@ class IntelligenceEngine {
         _recurringRepository = recurringRepository,
         _analyticsEngine = analyticsEngine;
 
-  /// Calculate Budget Health Score: 0 - 100
+  /// Calculate Budget Health Score: -100 to 100
+  /// Scoring Bands:
+  /// - Healthy (80 to 100): Utilization <= 70%, comfortable daily allowance, active savings goals.
+  /// - Caution (50 to 79): Utilization 70% - 90%, tight daily allowance or high fixed recurring ratio.
+  /// - Over-Budget (0 to 49): Utilization 90% - 125%, budget limit reached/exceeded.
+  /// - Severely Over-Budget (< 0 down to -100): Utilization > 125%, deep deficit.
+  ///
   /// Considers:
-  /// - Budget progress with total committed spend (spent + upcoming recurring + committed savings)
-  /// - Fixed recurring cost ratio
-  /// - Savings discipline and goals
-  /// - Daily allowance comfort
-  Future<int> calculateBudgetHealthScore() async {
-    int score = 100;
-    final now = DateTime.now();
+  /// - Forward-looking budget progress (spent + upcoming recurring + committed savings)
+  /// - Fixed recurring cost ratio penalty (> 50% of budget)
+  /// - Savings discipline and goals (+10 for auto-deduct goals, -10 if no goals)
+  /// - Daily allowance comfort (< ₹500/day penalty)
+  Future<int> calculateBudgetHealthScore({DateTime? date}) async {
+    final now = date ?? DateTime.now();
 
     if (_budgetEngine != null) {
       final progress = await _budgetEngine!.calculateBudgetProgress(date: now);
       if (progress != null && progress.limit > 0) {
-        if (progress.isOverBudget) {
-          score -= 40;
-        } else if (progress.percentage > 0.8) {
-          score -= 20;
-        } else if (progress.percentage > 0.5) {
-          score -= 10;
+        final double utilization = progress.totalCommitted / progress.limit;
+        int baseScore;
+
+        if (utilization <= 0.5) {
+          // 0% - 50% utilization -> 90 to 100
+          baseScore = 100 - (utilization * 20).round();
+        } else if (utilization <= 0.8) {
+          // 50% - 80% utilization -> 70 to 90
+          final ratio = (utilization - 0.5) / 0.3;
+          baseScore = 90 - (ratio * 20).round();
+        } else if (utilization <= 1.0) {
+          // 80% - 100% utilization -> 45 to 70 (Caution band)
+          final ratio = (utilization - 0.8) / 0.2;
+          baseScore = 70 - (ratio * 25).round();
+        } else if (utilization <= 1.25) {
+          // 100% - 125% utilization -> 0 to 45 (Over-Budget band)
+          final ratio = (utilization - 1.0) / 0.25;
+          baseScore = 45 - (ratio * 45).round();
+        } else {
+          // > 125% utilization -> negative scale down to -100 (Severely Over-Budget)
+          final excessRatio = utilization - 1.25;
+          baseScore = -min(100, (excessRatio * 100).round());
         }
 
-        // Penalty if recurring payments alone take > 50% of monthly budget
+        // Adjustments:
+        // 1. High fixed recurring cost penalty (> 50% of monthly budget)
         if (progress.committedRecurring > 0 && (progress.committedRecurring / progress.limit > 0.5)) {
-          score -= 10;
+          baseScore -= 10;
         }
-      }
 
-      final allowance = await _budgetEngine!.calculateDailyAllowance(date: now);
-      if (allowance != null && allowance.amount < 50000) { // < ₹500/day
-        score -= 10;
+        // 2. Daily allowance comfort penalty
+        final allowance = await _budgetEngine!.calculateDailyAllowance(date: now);
+        if (allowance != null && !allowance.isOverBudget && allowance.amount < 50000) {
+          baseScore -= 10;
+        }
+
+        // 3. Savings discipline adjustment
+        if (_savingsEngine != null) {
+          final goals = await _savingsEngine!.watchGoals().first;
+          if (goals.isEmpty) {
+            baseScore -= 10;
+          } else {
+            final hasAutoDeduct = goals.any((g) => g.status.toLowerCase() == 'active' && g.autoDeduct);
+            if (hasAutoDeduct) {
+              baseScore += 10;
+            }
+          }
+        }
+
+        return baseScore.clamp(-100, 100);
       }
-    } else if (_expenseEngine != null) {
+    }
+
+    // Fallback scoring when no budget is configured
+    int score = 100;
+    if (_expenseEngine != null) {
       final monthlySpendPaise = await _expenseEngine!.getMonthlyTotal(now, type: TransactionType.expense);
       if (monthlySpendPaise > 0) {
-        score -= 5;
+        score -= 10;
       }
     }
 
@@ -81,7 +123,6 @@ class IntelligenceEngine {
       if (goals.isEmpty) {
         score -= 15;
       } else {
-        // Bonus for having active automated savings goals
         final hasAutoDeduct = goals.any((g) => g.status.toLowerCase() == 'active' && g.autoDeduct);
         if (hasAutoDeduct) {
           score = min(100, score + 10);
@@ -89,7 +130,31 @@ class IntelligenceEngine {
       }
     }
 
-    return max(0, score);
+    return score.clamp(0, 100);
+  }
+
+  /// Calculates actionable survival-mode spending tip when over budget.
+  Future<String?> getSurvivalModeTip({DateTime? date}) async {
+    final now = date ?? DateTime.now();
+    if (_budgetEngine == null) return null;
+
+    final progress = await _budgetEngine!.calculateBudgetProgress(date: now);
+    if (progress == null || !progress.isOverBudget) return null;
+
+    final overPaise = progress.totalCommitted - progress.limit;
+    final overFormatted = CurrencyFormatter.formatPaise(overPaise);
+    final lastDay = DateTime(now.year, now.month + 1, 0).day;
+    final daysRemaining = max(1, lastDay - now.day + 1);
+
+    if (progress.spent > progress.limit) {
+      if (daysRemaining > 1) {
+        return "Survival Mode: You've exceeded your budget by $overFormatted with $daysRemaining days left. Freeze all discretionary spending (dining out, entertainment) to prevent further deficit.";
+      } else {
+        return "Survival Mode: Budget exceeded by $overFormatted on the last day of the month. Pause purchases until the new month begins.";
+      }
+    } else {
+      return "Survival Mode: Committed bills and savings exceed budget by $overFormatted. Set daily spending to ₹0 to ensure scheduled commitments clear.";
+    }
   }
 
   /// Daily Advice factoring in budget progress, recurring commitments, and savings.
@@ -107,14 +172,15 @@ class IntelligenceEngine {
 
     final lastDay = DateTime(now.year, now.month + 1, 0).day;
     final daysRemaining = max(1, lastDay - now.day + 1);
-
     final allowance = await _budgetEngine!.calculateDailyAllowance(date: now);
 
     if (progress.isOverBudget) {
+      final overPaise = progress.totalCommitted - progress.limit;
+      final formattedOver = CurrencyFormatter.formatPaise(overPaise);
       if (progress.spent > progress.limit) {
-        return 'Budget exceeded. Pause non-essential spending today.';
+        return "🚨 Budget exceeded by $formattedOver. Survival mode active: freeze non-essential spending.";
       } else {
-        return 'Budget over-committed with upcoming bills and savings. Stick to essentials.';
+        return "🚨 Over-committed by $formattedOver with upcoming bills & savings. Stick to essentials.";
       }
     } else if (daysRemaining == 1) {
       return 'Last day of the month — stay strong!';
@@ -140,7 +206,9 @@ class IntelligenceEngine {
     if (_transactionDao != null) {
       final startOfMonth = DateTime(now.year, now.month, 1);
       final transactions = await _transactionDao!.getTransactionsByDateRange(startOfMonth, now);
-      final expenses = transactions.where((t) => t.type == 'expense').toList();
+      final expenses = transactions
+          .where((t) => t.type == 'expense' && (t.transferPairId == null || t.transferPairId!.isEmpty))
+          .toList();
       final totalSpend = expenses.fold<int>(0, (sum, t) => sum + t.amount);
 
       if (totalSpend > 0) {
@@ -330,6 +398,24 @@ class IntelligenceEngine {
     final recurringInsights = await analyzeRecurringCommitments();
     final savInsights = await generateSavingsRecommendations();
 
+    // Survival Mode Active Insight (Highest Priority when over budget)
+    if (_budgetEngine != null) {
+      final progress = await _budgetEngine!.calculateBudgetProgress(date: now);
+      if (progress != null && progress.isOverBudget) {
+        final survivalTip = await getSurvivalModeTip(date: now);
+        if (survivalTip != null) {
+          insights.add(AiInsight(
+            id: 'survival_mode_tip',
+            title: '🚨 Survival Mode Active',
+            description: survivalTip,
+            type: InsightType.warning,
+            generatedAt: now,
+            priority: -1, // Topmost priority
+          ));
+        }
+      }
+    }
+
     insights.addAll(catInsights);
     insights.addAll(recurringInsights);
     insights.addAll(savInsights);
@@ -345,7 +431,7 @@ class IntelligenceEngine {
       ));
     }
 
-    // Sort by priority (0 = highest priority first)
+    // Sort by priority (lowest integer = highest priority first)
     insights.sort((a, b) => a.priority.compareTo(b.priority));
     return insights;
   }

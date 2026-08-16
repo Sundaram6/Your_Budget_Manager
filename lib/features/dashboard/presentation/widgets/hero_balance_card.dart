@@ -60,13 +60,32 @@ class HeroBalanceCard extends StatelessWidget {
             ),
           ),
           SizedBox(height: tokens.gridUnit * 2),
-          Row(
+          Wrap(
+            spacing: tokens.gridUnit,
+            runSpacing: tokens.gridUnit,
             children: [
-              _buildPillAction(context, Icons.add, 'Add Money', tokens, () => context.pushNamed(RouteNames.addTransaction)),
-              SizedBox(width: tokens.gridUnit),
-              _buildPillAction(context, Icons.arrow_upward, 'Transfer', tokens, () => context.pushNamed(RouteNames.addTransaction)),
+              _buildPillAction(
+                context,
+                Icons.arrow_upward,
+                'Add Debit',
+                tokens,
+                () => context.pushNamed(
+                  RouteNames.addTransaction,
+                  queryParameters: {'type': 'debit'},
+                ),
+              ),
+              _buildPillAction(
+                context,
+                Icons.arrow_downward,
+                'Add Credit',
+                tokens,
+                () => context.pushNamed(
+                  RouteNames.addTransaction,
+                  queryParameters: {'type': 'credit'},
+                ),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );

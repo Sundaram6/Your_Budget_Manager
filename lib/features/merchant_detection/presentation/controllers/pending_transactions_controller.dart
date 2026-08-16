@@ -140,7 +140,7 @@ class PendingTransactionsController extends _$PendingTransactionsController {
   Future<bool> confirmTransaction(
     ParsedTransaction transaction, {
     String? categoryId,
-    TransactionType type = TransactionType.expense,
+    TransactionType? type,
   }) async {
     try {
       final isDuplicate = await DatabaseHelper.instance.checkDuplicateTransaction(
@@ -161,7 +161,7 @@ class PendingTransactionsController extends _$PendingTransactionsController {
       final success = await engine.confirmPendingTransaction(
         transaction: transaction,
         categoryId: categoryId,
-        type: type,
+        type: type ?? transaction.type,
       );
 
       if (success) {

@@ -37,6 +37,7 @@ void main() {
       smsId: 'sms-123',
       amount: 49900,
       date: DateTime(2026, 8, 1),
+      type: TransactionType.expense,
       merchantName: 'Swiggy',
       merchantId: 'mer_swiggy',
       categoryId: CategoryEngine.catFood,

@@ -5,12 +5,19 @@ import '../../core/errors/app_exception.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/domain/value_objects/amount.dart';
+import '../transfer/self_transfer_engine.dart';
 
 class ExpenseEngine {
   final TransactionRepository _repository;
+  final SelfTransferEngine? _selfTransferEngine;
   final Uuid _uuid;
 
-  ExpenseEngine(this._repository, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+  ExpenseEngine(
+    this._repository, {
+    SelfTransferEngine? selfTransferEngine,
+    Uuid? uuid,
+  })  : _selfTransferEngine = selfTransferEngine,
+        _uuid = uuid ?? const Uuid();
 
   /// Adds transaction with [amount] in integer paise.
   Future<Transaction> addTransaction({
@@ -22,6 +29,9 @@ class ExpenseEngine {
     String? sourceApp,
     PaymentMethod paymentMethod = PaymentMethod.unknown,
     String? cardLast4,
+    String? accountLast4,
+    String? transactionRef,
+    String? transferPairId,
     bool isRecurring = false,
     String? recurringId,
     String? merchantName,
@@ -44,6 +54,9 @@ class ExpenseEngine {
       sourceApp: sourceApp,
       paymentMethod: paymentMethod,
       cardLast4: cardLast4,
+      accountLast4: accountLast4,
+      transactionRef: transactionRef,
+      transferPairId: transferPairId,
       isRecurring: isRecurring,
       recurringId: recurringId,
       merchantName: merchantName,
@@ -54,6 +67,15 @@ class ExpenseEngine {
       updatedAt: now,
     );
     await _repository.insertTransaction(transaction);
+
+    // Post-processing pass: scan for self-transfer match
+    if (_selfTransferEngine != null && !transaction.isSelfTransfer) {
+      final match = await _selfTransferEngine!.scanAndProcess(transaction);
+      if (match != null && match.isAutoLinked && match.transferPairId != null) {
+        return transaction.copyWith(transferPairId: match.transferPairId);
+      }
+    }
+
     return transaction;
   }
 
@@ -61,10 +83,24 @@ class ExpenseEngine {
     if (transaction.amount.value <= 0) {
       throw const ValidationException('Amount must be greater than 0');
     }
+
+    // Unlink transfer pair if amount or type is modified
+    if (transaction.isSelfTransfer && _selfTransferEngine != null) {
+      final existing = await getTransactionById(transaction.id);
+      if (existing != null && (existing.amount.value != transaction.amount.value || existing.type != transaction.type)) {
+        await _selfTransferEngine!.unlinkPair(existing.transferPairId!);
+        return await _repository.updateTransaction(transaction.copyWith(transferPairId: null));
+      }
+    }
+
     return await _repository.updateTransaction(transaction);
   }
 
   Future<int> deleteTransaction(Transaction transaction) async {
+    // If deleting one side of a linked pair, unlink the remaining counterpart first
+    if (transaction.isSelfTransfer && _selfTransferEngine != null && transaction.transferPairId != null) {
+      await _selfTransferEngine!.unlinkPair(transaction.transferPairId!);
+    }
     return await _repository.deleteTransaction(transaction);
   }
 
@@ -88,11 +124,12 @@ class ExpenseEngine {
     return await watchTransactionsByMonth(month).first;
   }
 
-  /// Calculates monthly total in integer paise.
+  /// Calculates monthly total in integer paise, strictly excluding self-transfers.
   Future<int> getMonthlyTotal(DateTime month, {TransactionType? type}) async {
     final transactions = await getTransactionsByMonth(month);
     int total = 0;
     for (final t in transactions) {
+      if (t.isSelfTransfer) continue;
       if (type == null || t.type == type) {
         total += t.amount.value;
       }

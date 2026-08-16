@@ -7,11 +7,16 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/cards/glass_card.dart';
 import '../../../../routing/route_names.dart';
 import '../../../../screens/recurring/recurring_list_screen.dart';
+import '../../../../screens/settings/notification_settings_screen.dart';
 import '../../../../screens/settings/pin_security_screen.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
+import '../../../budgets/presentation/screens/budget_settings_screen.dart';
 import '../../../categories/presentation/screens/category_management_screen.dart';
+import '../../../intelligence/presentation/screens/insights_screen.dart';
+import '../../../savings/presentation/screens/savings_goals_screen.dart';
 import 'about_screen.dart';
 import 'appearance_screen.dart';
+import 'sms_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -29,7 +34,8 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
           const Text(
             'FEATURES',
@@ -45,64 +51,54 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.account_balance_wallet, color: AppColors.darkGoldPrimary),
-                  title: const Text('Monthly Budget', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Set and manage your spending limit', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () {
-                    try {
-                      context.pushNamed(RouteNames.budgets);
-                    } catch (_) {}
-                  },
+                _buildTile(
+                  context,
+                  icon: Icons.account_balance_wallet_outlined,
+                  color: AppColors.darkGoldPrimary,
+                  title: 'Monthly Budget',
+                  subtitle: 'Set and manage your spending limit',
+                  routeName: RouteNames.budgets,
+                  screen: const BudgetSettingsScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
-                ListTile(
-                  leading: const Icon(Icons.savings, color: Colors.green),
-                  title: const Text('Savings Goals', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Track and manage your savings', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () {
-                    try {
-                      context.pushNamed(RouteNames.savingsGoals);
-                    } catch (_) {}
-                  },
+                _buildTile(
+                  context,
+                  icon: Icons.savings_outlined,
+                  color: Colors.green,
+                  title: 'Savings Goals',
+                  subtitle: 'Track and manage your savings',
+                  routeName: RouteNames.savingsGoals,
+                  screen: const SavingsGoalsScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
-                ListTile(
-                  leading: const Icon(Icons.auto_awesome, color: Colors.purpleAccent),
-                  title: const Text('AI Financial Insights', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
-                  subtitle: const Text('View full rule-based financial advice & score', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () {
-                    try {
-                      context.pushNamed(RouteNames.insights);
-                    } catch (_) {}
-                  },
+                _buildTile(
+                  context,
+                  icon: Icons.auto_awesome_outlined,
+                  color: Colors.purpleAccent,
+                  title: 'AI Financial Insights',
+                  subtitle: 'View full rule-based financial advice & score',
+                  routeName: RouteNames.insights,
+                  screen: const InsightsScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
-                ListTile(
-                  leading: const Icon(Icons.message, color: Colors.blue),
-                  title: const Text('SMS Auto-Tracking', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Extract expenses from messages', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () {
-                    try {
-                      context.pushNamed(RouteNames.smsSettings);
-                    } catch (_) {}
-                  },
+                _buildTile(
+                  context,
+                  icon: Icons.message_outlined,
+                  color: Colors.blueAccent,
+                  title: 'SMS Auto-Tracking',
+                  subtitle: 'Extract expenses from messages',
+                  routeName: RouteNames.smsSettings,
+                  screen: const SmsSettingsScreen(),
                 ),
                 const Divider(height: 1, color: AppColors.darkBorderGlass),
-                ListTile(
-                  leading: const Icon(Icons.notifications_active, color: AppColors.darkGoldPrimary),
-                  title: const Text('Payment Notifications', style: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Auto-track payments from UPI, wallets, and banks', style: TextStyle(color: AppColors.darkTextTertiary, fontSize: 12)),
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.darkTextTertiary),
-                  onTap: () {
-                    try {
-                      context.push('/notification-settings');
-                    } catch (_) {}
-                  },
+                _buildTile(
+                  context,
+                  icon: Icons.notifications_active_outlined,
+                  color: AppColors.darkGoldPrimary,
+                  title: 'Payment Notifications',
+                  subtitle: 'Auto-track payments from UPI, wallets, and banks',
+                  routeName: RouteNames.notificationSettings,
+                  screen: const NotificationSettingsScreen(),
                 ),
               ],
             ),
@@ -277,6 +273,7 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 32),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../../core/enums.dart';
+import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../models/recurring_transaction.dart';
@@ -30,19 +31,28 @@ class AnalyticsEngine {
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
     
     return txs
-        .where((t) => t.type == TransactionType.expense)
+        .where((t) => t.type == TransactionType.expense && !t.isSelfTransfer)
         .fold<int>(0, (sum, t) => sum + t.amount.value);
   }
 
-  /// Returns category breakdown with totals in integer paise.
-  Future<List<CategoryBreakdown>> getCategoryBreakdown(int year, int month) async {
+  /// Returns category breakdown with totals in integer paise, optionally excluding hidden categories.
+  Future<List<CategoryBreakdown>> getCategoryBreakdown(
+    int year,
+    int month, {
+    Set<String>? hiddenCategoryIds,
+  }) async {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
     
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
     final categories = await _categoryRepository.getCategories();
     
-    final expenses = txs.where((t) => t.type == TransactionType.expense).toList();
+    final expenses = txs.where((t) {
+      if (t.type != TransactionType.expense || t.isSelfTransfer) return false;
+      if (hiddenCategoryIds != null && hiddenCategoryIds.contains(t.categoryId)) return false;
+      return true;
+    }).toList();
+    
     final totalExpense = expenses.fold<int>(0, (sum, t) => sum + t.amount.value);
     
     if (totalExpense == 0) return [];
@@ -54,7 +64,15 @@ class AnalyticsEngine {
 
     final breakdowns = <CategoryBreakdown>[];
     for (final entry in categoryTotals.entries) {
-      final category = categories.firstWhere((c) => c.id == entry.key);
+      final category = categories.firstWhere(
+        (c) => c.id == entry.key,
+        orElse: () => Category(
+          id: entry.key,
+          name: 'Other',
+          icon: 'category',
+          color: 0xFF9E9E9E,
+        ),
+      );
       breakdowns.add(CategoryBreakdown(
         categoryId: category.id,
         categoryName: category.name,
@@ -75,7 +93,7 @@ class AnalyticsEngine {
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
     
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
-    final expenses = txs.where((t) => t.type == TransactionType.expense).toList();
+    final expenses = txs.where((t) => t.type == TransactionType.expense && !t.isSelfTransfer).toList();
     
     final dailyTotals = <int, int>{};
     for (var i = 1; i <= end.day; i++) {
@@ -125,7 +143,7 @@ class AnalyticsEngine {
     final end = DateTime(year, month + 1, 0, 23, 59, 59, 999);
     final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
     return txs
-        .where((t) => t.type == TransactionType.income)
+        .where((t) => t.type == TransactionType.income && !t.isSelfTransfer)
         .fold<int>(0, (sum, t) => sum + t.amount.value);
   }
 
@@ -158,7 +176,7 @@ class AnalyticsEngine {
       final start = DateTime(date.year, date.month, date.day);
       final end = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
       final txs = await _transactionRepository.watchTransactionsByDateRange(start, end).first;
-      final dayExpenses = txs.where((t) => t.type == TransactionType.expense).fold<int>(0, (s, t) => s + t.amount.value);
+      final dayExpenses = txs.where((t) => t.type == TransactionType.expense && !t.isSelfTransfer).fold<int>(0, (s, t) => s + t.amount.value);
       if (dayExpenses == 0) {
         streak++;
       } else {

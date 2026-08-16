@@ -57,18 +57,24 @@ class AiInsightsCard extends StatelessWidget {
                         width: 38,
                         height: 38,
                         child: CircularProgressIndicator(
-                          value: (healthScore / 100).clamp(0.0, 1.0),
+                          value: healthScore <= 0 ? 0.0 : (healthScore / 100).clamp(0.0, 1.0),
                           backgroundColor: AppColors.darkSurface3,
                           valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(healthScore)),
                           strokeWidth: 4,
                         ),
                       ),
-                      Text(
-                        '$healthScore',
-                        style: const TextStyle(
-                          color: AppColors.darkTextPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      SizedBox(
+                        width: 28,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '$healthScore',
+                            style: TextStyle(
+                              color: _getScoreColor(healthScore),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -133,9 +139,9 @@ class AiInsightsCard extends StatelessWidget {
   }
 
   Color _getScoreColor(int score) {
-    if (score >= 90) return AppColors.darkIncome;
-    if (score >= 70) return Colors.amber;
-    if (score >= 50) return Colors.orange;
+    if (score >= 80) return AppColors.darkIncome;
+    if (score >= 50) return Colors.amber;
+    if (score >= 0) return Colors.orange;
     return AppColors.darkExpense;
   }
 

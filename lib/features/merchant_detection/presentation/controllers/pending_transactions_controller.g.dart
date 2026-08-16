@@ -47,7 +47,7 @@ final class PendingTransactionsControllerProvider
 }
 
 String _$pendingTransactionsControllerHash() =>
-    r'ac4b5258af6d64cef2621d43935b57a3d2bb3f56';
+    r'e920eac197fe3c1244871359ae9b7ea351a7da9d';
 
 abstract class _$PendingTransactionsController
     extends $Notifier<PendingTransactionsState> {

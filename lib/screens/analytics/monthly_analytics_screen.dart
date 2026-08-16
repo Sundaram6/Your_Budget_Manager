@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/theme/app_animation.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../engines/analytics/analytics_engine.dart';
 import '../../engines/analytics/analytics_engine_provider.dart';
 import '../../engines/analytics/models/analytics_models.dart';
+import '../../engines/analytics/providers/analytics_customization_provider.dart';
+import '../../features/analytics/presentation/widgets/category_filter_dialog.dart';
+import '../../features/analytics/presentation/widgets/category_transactions_sheet.dart';
 
 class MonthlyAnalyticsScreen extends ConsumerStatefulWidget {
   final DateTime initialMonth;
@@ -113,7 +117,7 @@ class _MonthlyAnalyticsScreenState
                 _buildHeatMap(data.dailyTrends),
 
                 const SizedBox(height: 32),
-              ],
+              ].animateStaggered(context),
             ),
           );
         },
@@ -124,8 +128,10 @@ class _MonthlyAnalyticsScreenState
   Future<_AnalyticsData> _loadData(AnalyticsEngine engine) async {
     final y = _selectedMonth.year;
     final m = _selectedMonth.month;
+    final hiddenCategories = ref.watch(analyticsHiddenCategoriesProvider);
+
     final results = await Future.wait([
-      engine.getCategoryBreakdown(y, m),
+      engine.getCategoryBreakdown(y, m, hiddenCategoryIds: hiddenCategories),
       engine.getDailyTrend(y, m),
       engine.getMonthlyTotal(y, m),
       engine.getMonthlyIncome(y, m),
@@ -171,11 +177,40 @@ class _MonthlyAnalyticsScreenState
   }
 
   Widget _buildDonutCard(_AnalyticsData data) {
+    final hiddenCategories = ref.watch(analyticsHiddenCategoriesProvider);
+    final notifier = ref.read(analyticsHiddenCategoriesProvider.notifier);
+
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Category Breakdown'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _sectionTitle('Category Breakdown'),
+              InkWell(
+                onTap: () => CategoryFilterDialog.show(context),
+                borderRadius: BorderRadius.circular(8),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  child: Row(
+                    children: [
+                      Icon(Icons.tune_rounded, size: 14, color: AppColors.darkGoldPrimary),
+                      SizedBox(width: 4),
+                      Text(
+                        'Customize',
+                        style: TextStyle(
+                          color: AppColors.darkGoldPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           SizedBox(
             height: 220,
@@ -200,6 +235,20 @@ class _MonthlyAnalyticsScreenState
                     }).toList(),
                     pieTouchData: PieTouchData(
                       touchCallback: (event, response) {
+                        if (event is FlTapUpEvent && response?.touchedSection != null) {
+                          final idx = response!.touchedSection!.touchedSectionIndex;
+                          if (idx >= 0 && idx < data.breakdown.length) {
+                            final cb = data.breakdown[idx];
+                            CategoryTransactionsSheet.show(
+                              context,
+                              categoryId: cb.categoryId,
+                              categoryName: cb.categoryName,
+                              month: _selectedMonth.month,
+                              year: _selectedMonth.year,
+                              categoryColor: _chartColors[idx % _chartColors.length],
+                            );
+                          }
+                        }
                         setState(() {
                           _touchedIndex =
                               response?.touchedSection?.touchedSectionIndex;
@@ -234,26 +283,44 @@ class _MonthlyAnalyticsScreenState
             spacing: 12,
             runSpacing: 8,
             children: data.breakdown.asMap().entries.map((e) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: _chartColors[e.key % _chartColors.length],
-                      shape: BoxShape.circle,
+              final isHidden = hiddenCategories.contains(e.value.categoryId);
+              return InkWell(
+                onTap: () {
+                  notifier.toggleCategory(e.value.categoryId);
+                },
+                onLongPress: () {
+                  CategoryTransactionsSheet.show(
+                    context,
+                    categoryId: e.value.categoryId,
+                    categoryName: e.value.categoryName,
+                    month: _selectedMonth.month,
+                    year: _selectedMonth.year,
+                    categoryColor: _chartColors[e.key % _chartColors.length],
+                  );
+                },
+                borderRadius: BorderRadius.circular(100),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: isHidden ? Colors.grey : _chartColors[e.key % _chartColors.length],
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${e.value.categoryName} (${e.value.percentage.toStringAsFixed(0)}%)',
-                    style: const TextStyle(
-                      color: AppColors.darkTextSecondary,
-                      fontSize: 12,
+                    const SizedBox(width: 4),
+                    Text(
+                      '${e.value.categoryName} (${e.value.percentage.toStringAsFixed(0)}%)',
+                      style: TextStyle(
+                        color: isHidden ? AppColors.darkTextTertiary : AppColors.darkTextSecondary,
+                        fontSize: 12,
+                        decoration: isHidden ? TextDecoration.lineThrough : null,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             }).toList(),
           ),

@@ -156,6 +156,8 @@ class DatabaseHelper {
             sourceApp: Value(tx.sourceApp),
             paymentMethod: Value(tx.paymentMethod),
             cardLast4: Value(tx.cardLast4),
+            accountLast4: Value(tx.accountLast4),
+            transactionRef: Value(tx.transactionRef),
             createdAt: nowMillis,
             updatedAt: nowMillis,
           ),
@@ -170,7 +172,7 @@ class DatabaseHelper {
     required String occurrenceKey,
     required String recurringId,
     required String nextDueDate,
-    required String? lastGeneratedDate,
+    String? lastGeneratedDate,
     required String updatedAt,
   }) async {
     final dbInstance = await db;
@@ -201,6 +203,9 @@ class DatabaseHelper {
                 sourceApp: Value(transaction.sourceApp),
                 paymentMethod: Value(transaction.paymentMethod),
                 cardLast4: Value(transaction.cardLast4),
+                accountLast4: Value(transaction.accountLast4),
+                transactionRef: Value(transaction.transactionRef),
+                transferPairId: Value(transaction.transferPairId),
                 createdAt: nowMillis,
                 updatedAt: nowMillis,
               ),

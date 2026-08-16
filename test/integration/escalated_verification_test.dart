@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
+import 'package:your_budget_manager/core/enums.dart';
 import 'package:your_budget_manager/core/widgets/layout/empty_state.dart';
 import 'package:your_budget_manager/database/app_database.dart';
 import 'package:your_budget_manager/database/daos/category_dao.dart';
@@ -68,12 +69,13 @@ void main() {
       final pendingGroceriesTx = ParsedTransaction(
         smsId: 'sms-groceries-101',
         amount: 45000,
+        date: DateTime.now(),
+        type: TransactionType.expense,
         merchantName: 'Zepto',
         merchantId: 'mer_zepto',
         sourceApp: 'sms:unknown',
         categoryId: CategoryEngine.catGroceries,
         originalSmsBody: 'Paid Rs 450 to Zepto for groceries',
-        date: DateTime.now(),
       );
 
       final confirmed = await merchantEngine.confirmPendingTransaction(transaction: pendingGroceriesTx);

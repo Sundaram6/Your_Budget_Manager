@@ -21,6 +21,9 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       sourceApp: json['source_app'] as String?,
       paymentMethod: json['payment_method'] as String?,
       cardLast4: json['card_last_4'] as String?,
+      accountLast4: json['account_last_4'] as String?,
+      transactionRef: json['transaction_ref'] as String?,
+      transferPairId: json['transfer_pair_id'] as String?,
       recurrenceOccurrenceKey: json['recurrence_occurrence_key'] as String?,
       sourceMessageId: json['source_message_id'] as String?,
       createdAt: _$JsonConverterFromJson<String, DateTime>(
@@ -44,6 +47,9 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'source_app': instance.sourceApp,
       'payment_method': instance.paymentMethod,
       'card_last_4': instance.cardLast4,
+      'account_last_4': instance.accountLast4,
+      'transaction_ref': instance.transactionRef,
+      'transfer_pair_id': instance.transferPairId,
       'recurrence_occurrence_key': instance.recurrenceOccurrenceKey,
       'source_message_id': instance.sourceMessageId,
       'created_at': _$JsonConverterToJson<String, DateTime>(

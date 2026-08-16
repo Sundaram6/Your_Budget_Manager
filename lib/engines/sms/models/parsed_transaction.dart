@@ -10,6 +10,7 @@ abstract class ParsedTransaction with _$ParsedTransaction {
     required String smsId, // unique ID of the SMS
     required int amount,
     required DateTime date,
+    required TransactionType type,
     required String merchantName,
     required String merchantId,
     required String categoryId,
@@ -17,6 +18,8 @@ abstract class ParsedTransaction with _$ParsedTransaction {
     required String sourceApp,
     @Default(PaymentMethod.unknown) PaymentMethod paymentMethod,
     String? cardLast4,
+    String? accountLast4,
+    String? transactionRef,
   }) = _ParsedTransaction;
 
   factory ParsedTransaction.fromJson(Map<String, dynamic> json) =>

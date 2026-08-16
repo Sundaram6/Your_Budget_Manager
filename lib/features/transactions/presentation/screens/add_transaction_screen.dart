@@ -14,8 +14,13 @@ import '../widgets/category_picker.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
   final Transaction? initialTransaction;
+  final TransactionType? initialType;
 
-  const AddTransactionScreen({super.key, this.initialTransaction});
+  const AddTransactionScreen({
+    super.key,
+    this.initialTransaction,
+    this.initialType,
+  });
 
   @override
   ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -34,6 +39,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
           _amountStr = (widget.initialTransaction!.amount.value / 100.0).toString().replaceAll(RegExp(r'\.0$'), '');
         });
       } else {
+        if (widget.initialType != null) {
+          ref.read(addTransactionControllerProvider.notifier).setType(widget.initialType!);
+        }
         final initialAmt = ref.read(addTransactionControllerProvider).amount;
         if (initialAmt > 0) {
           setState(() {

@@ -48,4 +48,4 @@ final class ExpenseEngineProvider
   }
 }
 
-String _$expenseEngineHash() => r'77054e1bf3a85e747ae15f2a0fc0cd55d14b9458';
+String _$expenseEngineHash() => r'900cf6a7aa11027b7776edfdd62977535a502480';

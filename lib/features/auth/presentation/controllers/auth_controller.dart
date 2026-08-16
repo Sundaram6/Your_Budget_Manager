@@ -63,8 +63,6 @@ class AuthController extends _$AuthController {
       }
       return success;
     } finally {
-      // Allow native OS prompt dismissal & window focus animations to settle
-      await Future.delayed(const Duration(milliseconds: 300));
       appLockNotifier.setAuthenticating(false);
     }
   }

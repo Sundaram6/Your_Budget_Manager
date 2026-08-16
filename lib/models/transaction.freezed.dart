@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TransactionModel {
 
- String get id; String? get title;@JsonKey(name: 'amount_paise') int get amountPaise;@JsonKey(name: 'category_id') String get categoryId; String get type;@YyyyMmDdConverter() DateTime get date; String? get notes;@JsonKey(name: 'is_recurring') bool get isRecurring;@JsonKey(name: 'recurring_id') String? get recurringId;@JsonKey(name: 'is_auto_captured') bool get isAutoCaptured;@JsonKey(name: 'source_app') String? get sourceApp;@JsonKey(name: 'payment_method') String? get paymentMethod;@JsonKey(name: 'card_last_4') String? get cardLast4;@JsonKey(name: 'recurrence_occurrence_key') String? get recurrenceOccurrenceKey;@JsonKey(name: 'source_message_id') String? get sourceMessageId;@Iso8601Converter()@JsonKey(name: 'created_at') DateTime? get createdAt;
+ String get id; String? get title;@JsonKey(name: 'amount_paise') int get amountPaise;@JsonKey(name: 'category_id') String get categoryId; String get type;@YyyyMmDdConverter() DateTime get date; String? get notes;@JsonKey(name: 'is_recurring') bool get isRecurring;@JsonKey(name: 'recurring_id') String? get recurringId;@JsonKey(name: 'is_auto_captured') bool get isAutoCaptured;@JsonKey(name: 'source_app') String? get sourceApp;@JsonKey(name: 'payment_method') String? get paymentMethod;@JsonKey(name: 'card_last_4') String? get cardLast4;@JsonKey(name: 'account_last_4') String? get accountLast4;@JsonKey(name: 'transaction_ref') String? get transactionRef;@JsonKey(name: 'transfer_pair_id') String? get transferPairId;@JsonKey(name: 'recurrence_occurrence_key') String? get recurrenceOccurrenceKey;@JsonKey(name: 'source_message_id') String? get sourceMessageId;@Iso8601Converter()@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $TransactionModelCopyWith<TransactionModel> get copyWith => _$TransactionModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.amountPaise, amountPaise) || other.amountPaise == amountPaise)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.date, date) || other.date == date)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isRecurring, isRecurring) || other.isRecurring == isRecurring)&&(identical(other.recurringId, recurringId) || other.recurringId == recurringId)&&(identical(other.isAutoCaptured, isAutoCaptured) || other.isAutoCaptured == isAutoCaptured)&&(identical(other.sourceApp, sourceApp) || other.sourceApp == sourceApp)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.cardLast4, cardLast4) || other.cardLast4 == cardLast4)&&(identical(other.recurrenceOccurrenceKey, recurrenceOccurrenceKey) || other.recurrenceOccurrenceKey == recurrenceOccurrenceKey)&&(identical(other.sourceMessageId, sourceMessageId) || other.sourceMessageId == sourceMessageId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.amountPaise, amountPaise) || other.amountPaise == amountPaise)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.date, date) || other.date == date)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isRecurring, isRecurring) || other.isRecurring == isRecurring)&&(identical(other.recurringId, recurringId) || other.recurringId == recurringId)&&(identical(other.isAutoCaptured, isAutoCaptured) || other.isAutoCaptured == isAutoCaptured)&&(identical(other.sourceApp, sourceApp) || other.sourceApp == sourceApp)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.cardLast4, cardLast4) || other.cardLast4 == cardLast4)&&(identical(other.accountLast4, accountLast4) || other.accountLast4 == accountLast4)&&(identical(other.transactionRef, transactionRef) || other.transactionRef == transactionRef)&&(identical(other.transferPairId, transferPairId) || other.transferPairId == transferPairId)&&(identical(other.recurrenceOccurrenceKey, recurrenceOccurrenceKey) || other.recurrenceOccurrenceKey == recurrenceOccurrenceKey)&&(identical(other.sourceMessageId, sourceMessageId) || other.sourceMessageId == sourceMessageId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,amountPaise,categoryId,type,date,notes,isRecurring,recurringId,isAutoCaptured,sourceApp,paymentMethod,cardLast4,recurrenceOccurrenceKey,sourceMessageId,createdAt);
+int get hashCode => Object.hashAll([runtimeType,id,title,amountPaise,categoryId,type,date,notes,isRecurring,recurringId,isAutoCaptured,sourceApp,paymentMethod,cardLast4,accountLast4,transactionRef,transferPairId,recurrenceOccurrenceKey,sourceMessageId,createdAt]);
 
 @override
 String toString() {
-  return 'TransactionModel(id: $id, title: $title, amountPaise: $amountPaise, categoryId: $categoryId, type: $type, date: $date, notes: $notes, isRecurring: $isRecurring, recurringId: $recurringId, isAutoCaptured: $isAutoCaptured, sourceApp: $sourceApp, paymentMethod: $paymentMethod, cardLast4: $cardLast4, recurrenceOccurrenceKey: $recurrenceOccurrenceKey, sourceMessageId: $sourceMessageId, createdAt: $createdAt)';
+  return 'TransactionModel(id: $id, title: $title, amountPaise: $amountPaise, categoryId: $categoryId, type: $type, date: $date, notes: $notes, isRecurring: $isRecurring, recurringId: $recurringId, isAutoCaptured: $isAutoCaptured, sourceApp: $sourceApp, paymentMethod: $paymentMethod, cardLast4: $cardLast4, accountLast4: $accountLast4, transactionRef: $transactionRef, transferPairId: $transferPairId, recurrenceOccurrenceKey: $recurrenceOccurrenceKey, sourceMessageId: $sourceMessageId, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $TransactionModelCopyWith<$Res>  {
   factory $TransactionModelCopyWith(TransactionModel value, $Res Function(TransactionModel) _then) = _$TransactionModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String? title,@JsonKey(name: 'amount_paise') int amountPaise,@JsonKey(name: 'category_id') String categoryId, String type,@YyyyMmDdConverter() DateTime date, String? notes,@JsonKey(name: 'is_recurring') bool isRecurring,@JsonKey(name: 'recurring_id') String? recurringId,@JsonKey(name: 'is_auto_captured') bool isAutoCaptured,@JsonKey(name: 'source_app') String? sourceApp,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'card_last_4') String? cardLast4,@JsonKey(name: 'recurrence_occurrence_key') String? recurrenceOccurrenceKey,@JsonKey(name: 'source_message_id') String? sourceMessageId,@Iso8601Converter()@JsonKey(name: 'created_at') DateTime? createdAt
+ String id, String? title,@JsonKey(name: 'amount_paise') int amountPaise,@JsonKey(name: 'category_id') String categoryId, String type,@YyyyMmDdConverter() DateTime date, String? notes,@JsonKey(name: 'is_recurring') bool isRecurring,@JsonKey(name: 'recurring_id') String? recurringId,@JsonKey(name: 'is_auto_captured') bool isAutoCaptured,@JsonKey(name: 'source_app') String? sourceApp,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'card_last_4') String? cardLast4,@JsonKey(name: 'account_last_4') String? accountLast4,@JsonKey(name: 'transaction_ref') String? transactionRef,@JsonKey(name: 'transfer_pair_id') String? transferPairId,@JsonKey(name: 'recurrence_occurrence_key') String? recurrenceOccurrenceKey,@JsonKey(name: 'source_message_id') String? sourceMessageId,@Iso8601Converter()@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -65,7 +65,7 @@ class _$TransactionModelCopyWithImpl<$Res>
 
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = freezed,Object? amountPaise = null,Object? categoryId = null,Object? type = null,Object? date = null,Object? notes = freezed,Object? isRecurring = null,Object? recurringId = freezed,Object? isAutoCaptured = null,Object? sourceApp = freezed,Object? paymentMethod = freezed,Object? cardLast4 = freezed,Object? recurrenceOccurrenceKey = freezed,Object? sourceMessageId = freezed,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = freezed,Object? amountPaise = null,Object? categoryId = null,Object? type = null,Object? date = null,Object? notes = freezed,Object? isRecurring = null,Object? recurringId = freezed,Object? isAutoCaptured = null,Object? sourceApp = freezed,Object? paymentMethod = freezed,Object? cardLast4 = freezed,Object? accountLast4 = freezed,Object? transactionRef = freezed,Object? transferPairId = freezed,Object? recurrenceOccurrenceKey = freezed,Object? sourceMessageId = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -80,6 +80,9 @@ as String?,isAutoCaptured: null == isAutoCaptured ? _self.isAutoCaptured : isAut
 as bool,sourceApp: freezed == sourceApp ? _self.sourceApp : sourceApp // ignore: cast_nullable_to_non_nullable
 as String?,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,cardLast4: freezed == cardLast4 ? _self.cardLast4 : cardLast4 // ignore: cast_nullable_to_non_nullable
+as String?,accountLast4: freezed == accountLast4 ? _self.accountLast4 : accountLast4 // ignore: cast_nullable_to_non_nullable
+as String?,transactionRef: freezed == transactionRef ? _self.transactionRef : transactionRef // ignore: cast_nullable_to_non_nullable
+as String?,transferPairId: freezed == transferPairId ? _self.transferPairId : transferPairId // ignore: cast_nullable_to_non_nullable
 as String?,recurrenceOccurrenceKey: freezed == recurrenceOccurrenceKey ? _self.recurrenceOccurrenceKey : recurrenceOccurrenceKey // ignore: cast_nullable_to_non_nullable
 as String?,sourceMessageId: freezed == sourceMessageId ? _self.sourceMessageId : sourceMessageId // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -168,10 +171,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? title, @JsonKey(name: 'amount_paise')  int amountPaise, @JsonKey(name: 'category_id')  String categoryId,  String type, @YyyyMmDdConverter()  DateTime date,  String? notes, @JsonKey(name: 'is_recurring')  bool isRecurring, @JsonKey(name: 'recurring_id')  String? recurringId, @JsonKey(name: 'is_auto_captured')  bool isAutoCaptured, @JsonKey(name: 'source_app')  String? sourceApp, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'card_last_4')  String? cardLast4, @JsonKey(name: 'recurrence_occurrence_key')  String? recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id')  String? sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? title, @JsonKey(name: 'amount_paise')  int amountPaise, @JsonKey(name: 'category_id')  String categoryId,  String type, @YyyyMmDdConverter()  DateTime date,  String? notes, @JsonKey(name: 'is_recurring')  bool isRecurring, @JsonKey(name: 'recurring_id')  String? recurringId, @JsonKey(name: 'is_auto_captured')  bool isAutoCaptured, @JsonKey(name: 'source_app')  String? sourceApp, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'card_last_4')  String? cardLast4, @JsonKey(name: 'account_last_4')  String? accountLast4, @JsonKey(name: 'transaction_ref')  String? transactionRef, @JsonKey(name: 'transfer_pair_id')  String? transferPairId, @JsonKey(name: 'recurrence_occurrence_key')  String? recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id')  String? sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TransactionModel() when $default != null:
-return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.type,_that.date,_that.notes,_that.isRecurring,_that.recurringId,_that.isAutoCaptured,_that.sourceApp,_that.paymentMethod,_that.cardLast4,_that.recurrenceOccurrenceKey,_that.sourceMessageId,_that.createdAt);case _:
+return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.type,_that.date,_that.notes,_that.isRecurring,_that.recurringId,_that.isAutoCaptured,_that.sourceApp,_that.paymentMethod,_that.cardLast4,_that.accountLast4,_that.transactionRef,_that.transferPairId,_that.recurrenceOccurrenceKey,_that.sourceMessageId,_that.createdAt);case _:
   return orElse();
 
 }
@@ -189,10 +192,10 @@ return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.ty
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? title, @JsonKey(name: 'amount_paise')  int amountPaise, @JsonKey(name: 'category_id')  String categoryId,  String type, @YyyyMmDdConverter()  DateTime date,  String? notes, @JsonKey(name: 'is_recurring')  bool isRecurring, @JsonKey(name: 'recurring_id')  String? recurringId, @JsonKey(name: 'is_auto_captured')  bool isAutoCaptured, @JsonKey(name: 'source_app')  String? sourceApp, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'card_last_4')  String? cardLast4, @JsonKey(name: 'recurrence_occurrence_key')  String? recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id')  String? sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? title, @JsonKey(name: 'amount_paise')  int amountPaise, @JsonKey(name: 'category_id')  String categoryId,  String type, @YyyyMmDdConverter()  DateTime date,  String? notes, @JsonKey(name: 'is_recurring')  bool isRecurring, @JsonKey(name: 'recurring_id')  String? recurringId, @JsonKey(name: 'is_auto_captured')  bool isAutoCaptured, @JsonKey(name: 'source_app')  String? sourceApp, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'card_last_4')  String? cardLast4, @JsonKey(name: 'account_last_4')  String? accountLast4, @JsonKey(name: 'transaction_ref')  String? transactionRef, @JsonKey(name: 'transfer_pair_id')  String? transferPairId, @JsonKey(name: 'recurrence_occurrence_key')  String? recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id')  String? sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _TransactionModel():
-return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.type,_that.date,_that.notes,_that.isRecurring,_that.recurringId,_that.isAutoCaptured,_that.sourceApp,_that.paymentMethod,_that.cardLast4,_that.recurrenceOccurrenceKey,_that.sourceMessageId,_that.createdAt);case _:
+return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.type,_that.date,_that.notes,_that.isRecurring,_that.recurringId,_that.isAutoCaptured,_that.sourceApp,_that.paymentMethod,_that.cardLast4,_that.accountLast4,_that.transactionRef,_that.transferPairId,_that.recurrenceOccurrenceKey,_that.sourceMessageId,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -209,10 +212,10 @@ return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.ty
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? title, @JsonKey(name: 'amount_paise')  int amountPaise, @JsonKey(name: 'category_id')  String categoryId,  String type, @YyyyMmDdConverter()  DateTime date,  String? notes, @JsonKey(name: 'is_recurring')  bool isRecurring, @JsonKey(name: 'recurring_id')  String? recurringId, @JsonKey(name: 'is_auto_captured')  bool isAutoCaptured, @JsonKey(name: 'source_app')  String? sourceApp, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'card_last_4')  String? cardLast4, @JsonKey(name: 'recurrence_occurrence_key')  String? recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id')  String? sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? title, @JsonKey(name: 'amount_paise')  int amountPaise, @JsonKey(name: 'category_id')  String categoryId,  String type, @YyyyMmDdConverter()  DateTime date,  String? notes, @JsonKey(name: 'is_recurring')  bool isRecurring, @JsonKey(name: 'recurring_id')  String? recurringId, @JsonKey(name: 'is_auto_captured')  bool isAutoCaptured, @JsonKey(name: 'source_app')  String? sourceApp, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'card_last_4')  String? cardLast4, @JsonKey(name: 'account_last_4')  String? accountLast4, @JsonKey(name: 'transaction_ref')  String? transactionRef, @JsonKey(name: 'transfer_pair_id')  String? transferPairId, @JsonKey(name: 'recurrence_occurrence_key')  String? recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id')  String? sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TransactionModel() when $default != null:
-return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.type,_that.date,_that.notes,_that.isRecurring,_that.recurringId,_that.isAutoCaptured,_that.sourceApp,_that.paymentMethod,_that.cardLast4,_that.recurrenceOccurrenceKey,_that.sourceMessageId,_that.createdAt);case _:
+return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.type,_that.date,_that.notes,_that.isRecurring,_that.recurringId,_that.isAutoCaptured,_that.sourceApp,_that.paymentMethod,_that.cardLast4,_that.accountLast4,_that.transactionRef,_that.transferPairId,_that.recurrenceOccurrenceKey,_that.sourceMessageId,_that.createdAt);case _:
   return null;
 
 }
@@ -224,7 +227,7 @@ return $default(_that.id,_that.title,_that.amountPaise,_that.categoryId,_that.ty
 @JsonSerializable()
 
 class _TransactionModel implements TransactionModel {
-  const _TransactionModel({required this.id, this.title, @JsonKey(name: 'amount_paise') required this.amountPaise, @JsonKey(name: 'category_id') required this.categoryId, required this.type, @YyyyMmDdConverter() required this.date, this.notes, @JsonKey(name: 'is_recurring') this.isRecurring = false, @JsonKey(name: 'recurring_id') this.recurringId, @JsonKey(name: 'is_auto_captured') this.isAutoCaptured = false, @JsonKey(name: 'source_app') this.sourceApp, @JsonKey(name: 'payment_method') this.paymentMethod, @JsonKey(name: 'card_last_4') this.cardLast4, @JsonKey(name: 'recurrence_occurrence_key') this.recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id') this.sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at') this.createdAt});
+  const _TransactionModel({required this.id, this.title, @JsonKey(name: 'amount_paise') required this.amountPaise, @JsonKey(name: 'category_id') required this.categoryId, required this.type, @YyyyMmDdConverter() required this.date, this.notes, @JsonKey(name: 'is_recurring') this.isRecurring = false, @JsonKey(name: 'recurring_id') this.recurringId, @JsonKey(name: 'is_auto_captured') this.isAutoCaptured = false, @JsonKey(name: 'source_app') this.sourceApp, @JsonKey(name: 'payment_method') this.paymentMethod, @JsonKey(name: 'card_last_4') this.cardLast4, @JsonKey(name: 'account_last_4') this.accountLast4, @JsonKey(name: 'transaction_ref') this.transactionRef, @JsonKey(name: 'transfer_pair_id') this.transferPairId, @JsonKey(name: 'recurrence_occurrence_key') this.recurrenceOccurrenceKey, @JsonKey(name: 'source_message_id') this.sourceMessageId, @Iso8601Converter()@JsonKey(name: 'created_at') this.createdAt});
   factory _TransactionModel.fromJson(Map<String, dynamic> json) => _$TransactionModelFromJson(json);
 
 @override final  String id;
@@ -240,6 +243,9 @@ class _TransactionModel implements TransactionModel {
 @override@JsonKey(name: 'source_app') final  String? sourceApp;
 @override@JsonKey(name: 'payment_method') final  String? paymentMethod;
 @override@JsonKey(name: 'card_last_4') final  String? cardLast4;
+@override@JsonKey(name: 'account_last_4') final  String? accountLast4;
+@override@JsonKey(name: 'transaction_ref') final  String? transactionRef;
+@override@JsonKey(name: 'transfer_pair_id') final  String? transferPairId;
 @override@JsonKey(name: 'recurrence_occurrence_key') final  String? recurrenceOccurrenceKey;
 @override@JsonKey(name: 'source_message_id') final  String? sourceMessageId;
 @override@Iso8601Converter()@JsonKey(name: 'created_at') final  DateTime? createdAt;
@@ -257,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.amountPaise, amountPaise) || other.amountPaise == amountPaise)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.date, date) || other.date == date)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isRecurring, isRecurring) || other.isRecurring == isRecurring)&&(identical(other.recurringId, recurringId) || other.recurringId == recurringId)&&(identical(other.isAutoCaptured, isAutoCaptured) || other.isAutoCaptured == isAutoCaptured)&&(identical(other.sourceApp, sourceApp) || other.sourceApp == sourceApp)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.cardLast4, cardLast4) || other.cardLast4 == cardLast4)&&(identical(other.recurrenceOccurrenceKey, recurrenceOccurrenceKey) || other.recurrenceOccurrenceKey == recurrenceOccurrenceKey)&&(identical(other.sourceMessageId, sourceMessageId) || other.sourceMessageId == sourceMessageId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.amountPaise, amountPaise) || other.amountPaise == amountPaise)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.date, date) || other.date == date)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isRecurring, isRecurring) || other.isRecurring == isRecurring)&&(identical(other.recurringId, recurringId) || other.recurringId == recurringId)&&(identical(other.isAutoCaptured, isAutoCaptured) || other.isAutoCaptured == isAutoCaptured)&&(identical(other.sourceApp, sourceApp) || other.sourceApp == sourceApp)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.cardLast4, cardLast4) || other.cardLast4 == cardLast4)&&(identical(other.accountLast4, accountLast4) || other.accountLast4 == accountLast4)&&(identical(other.transactionRef, transactionRef) || other.transactionRef == transactionRef)&&(identical(other.transferPairId, transferPairId) || other.transferPairId == transferPairId)&&(identical(other.recurrenceOccurrenceKey, recurrenceOccurrenceKey) || other.recurrenceOccurrenceKey == recurrenceOccurrenceKey)&&(identical(other.sourceMessageId, sourceMessageId) || other.sourceMessageId == sourceMessageId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,amountPaise,categoryId,type,date,notes,isRecurring,recurringId,isAutoCaptured,sourceApp,paymentMethod,cardLast4,recurrenceOccurrenceKey,sourceMessageId,createdAt);
+int get hashCode => Object.hashAll([runtimeType,id,title,amountPaise,categoryId,type,date,notes,isRecurring,recurringId,isAutoCaptured,sourceApp,paymentMethod,cardLast4,accountLast4,transactionRef,transferPairId,recurrenceOccurrenceKey,sourceMessageId,createdAt]);
 
 @override
 String toString() {
-  return 'TransactionModel(id: $id, title: $title, amountPaise: $amountPaise, categoryId: $categoryId, type: $type, date: $date, notes: $notes, isRecurring: $isRecurring, recurringId: $recurringId, isAutoCaptured: $isAutoCaptured, sourceApp: $sourceApp, paymentMethod: $paymentMethod, cardLast4: $cardLast4, recurrenceOccurrenceKey: $recurrenceOccurrenceKey, sourceMessageId: $sourceMessageId, createdAt: $createdAt)';
+  return 'TransactionModel(id: $id, title: $title, amountPaise: $amountPaise, categoryId: $categoryId, type: $type, date: $date, notes: $notes, isRecurring: $isRecurring, recurringId: $recurringId, isAutoCaptured: $isAutoCaptured, sourceApp: $sourceApp, paymentMethod: $paymentMethod, cardLast4: $cardLast4, accountLast4: $accountLast4, transactionRef: $transactionRef, transferPairId: $transferPairId, recurrenceOccurrenceKey: $recurrenceOccurrenceKey, sourceMessageId: $sourceMessageId, createdAt: $createdAt)';
 }
 
 
@@ -277,7 +283,7 @@ abstract mixin class _$TransactionModelCopyWith<$Res> implements $TransactionMod
   factory _$TransactionModelCopyWith(_TransactionModel value, $Res Function(_TransactionModel) _then) = __$TransactionModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? title,@JsonKey(name: 'amount_paise') int amountPaise,@JsonKey(name: 'category_id') String categoryId, String type,@YyyyMmDdConverter() DateTime date, String? notes,@JsonKey(name: 'is_recurring') bool isRecurring,@JsonKey(name: 'recurring_id') String? recurringId,@JsonKey(name: 'is_auto_captured') bool isAutoCaptured,@JsonKey(name: 'source_app') String? sourceApp,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'card_last_4') String? cardLast4,@JsonKey(name: 'recurrence_occurrence_key') String? recurrenceOccurrenceKey,@JsonKey(name: 'source_message_id') String? sourceMessageId,@Iso8601Converter()@JsonKey(name: 'created_at') DateTime? createdAt
+ String id, String? title,@JsonKey(name: 'amount_paise') int amountPaise,@JsonKey(name: 'category_id') String categoryId, String type,@YyyyMmDdConverter() DateTime date, String? notes,@JsonKey(name: 'is_recurring') bool isRecurring,@JsonKey(name: 'recurring_id') String? recurringId,@JsonKey(name: 'is_auto_captured') bool isAutoCaptured,@JsonKey(name: 'source_app') String? sourceApp,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'card_last_4') String? cardLast4,@JsonKey(name: 'account_last_4') String? accountLast4,@JsonKey(name: 'transaction_ref') String? transactionRef,@JsonKey(name: 'transfer_pair_id') String? transferPairId,@JsonKey(name: 'recurrence_occurrence_key') String? recurrenceOccurrenceKey,@JsonKey(name: 'source_message_id') String? sourceMessageId,@Iso8601Converter()@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -294,7 +300,7 @@ class __$TransactionModelCopyWithImpl<$Res>
 
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = freezed,Object? amountPaise = null,Object? categoryId = null,Object? type = null,Object? date = null,Object? notes = freezed,Object? isRecurring = null,Object? recurringId = freezed,Object? isAutoCaptured = null,Object? sourceApp = freezed,Object? paymentMethod = freezed,Object? cardLast4 = freezed,Object? recurrenceOccurrenceKey = freezed,Object? sourceMessageId = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = freezed,Object? amountPaise = null,Object? categoryId = null,Object? type = null,Object? date = null,Object? notes = freezed,Object? isRecurring = null,Object? recurringId = freezed,Object? isAutoCaptured = null,Object? sourceApp = freezed,Object? paymentMethod = freezed,Object? cardLast4 = freezed,Object? accountLast4 = freezed,Object? transactionRef = freezed,Object? transferPairId = freezed,Object? recurrenceOccurrenceKey = freezed,Object? sourceMessageId = freezed,Object? createdAt = freezed,}) {
   return _then(_TransactionModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -309,6 +315,9 @@ as String?,isAutoCaptured: null == isAutoCaptured ? _self.isAutoCaptured : isAut
 as bool,sourceApp: freezed == sourceApp ? _self.sourceApp : sourceApp // ignore: cast_nullable_to_non_nullable
 as String?,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,cardLast4: freezed == cardLast4 ? _self.cardLast4 : cardLast4 // ignore: cast_nullable_to_non_nullable
+as String?,accountLast4: freezed == accountLast4 ? _self.accountLast4 : accountLast4 // ignore: cast_nullable_to_non_nullable
+as String?,transactionRef: freezed == transactionRef ? _self.transactionRef : transactionRef // ignore: cast_nullable_to_non_nullable
+as String?,transferPairId: freezed == transferPairId ? _self.transferPairId : transferPairId // ignore: cast_nullable_to_non_nullable
 as String?,recurrenceOccurrenceKey: freezed == recurrenceOccurrenceKey ? _self.recurrenceOccurrenceKey : recurrenceOccurrenceKey // ignore: cast_nullable_to_non_nullable
 as String?,sourceMessageId: freezed == sourceMessageId ? _self.sourceMessageId : sourceMessageId // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

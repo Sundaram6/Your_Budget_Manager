@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:encrypt/encrypt.dart';
+import 'package:flutter/foundation.dart' hide Key;
 import 'package:pointycastle/export.dart' as pc;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -33,6 +34,38 @@ class EncryptionService {
     
     final encrypter = Encrypter(AES(_key, mode: AESMode.cbc));
     return encrypter.decrypt(encrypted, iv: iv);
+  }
+
+  /// Encrypts plainText asynchronously on a background isolate via [compute] to prevent UI freeze.
+  static Future<String> encryptWithPassphraseAsync(
+    String plainText,
+    String passphrase, {
+    int iterations = 100000,
+  }) async {
+    return compute(
+      _encryptWorker,
+      _EncryptParams(
+        plainText: plainText,
+        passphrase: passphrase,
+        iterations: iterations,
+      ),
+    );
+  }
+
+  /// Decrypts encryptedData asynchronously on a background isolate via [compute] to prevent UI freeze.
+  static Future<String> decryptWithPassphraseAsync(
+    String encryptedData,
+    String passphrase, {
+    int iterations = 100000,
+  }) async {
+    return compute(
+      _decryptWorker,
+      _DecryptParams(
+        encryptedData: encryptedData,
+        passphrase: passphrase,
+        iterations: iterations,
+      ),
+    );
   }
 
   /// Encrypts plainText using PBKDF2-HMAC-SHA256 key derivation and Encrypt-then-MAC (AES-256-CBC + HMAC-SHA256).
@@ -130,3 +163,44 @@ class EncryptionService {
 EncryptionService encryptionService(Ref ref, String base64Key) {
   return EncryptionService(base64Key);
 }
+
+class _EncryptParams {
+  final String plainText;
+  final String passphrase;
+  final int iterations;
+
+  const _EncryptParams({
+    required this.plainText,
+    required this.passphrase,
+    required this.iterations,
+  });
+}
+
+String _encryptWorker(_EncryptParams params) {
+  return EncryptionService.encryptWithPassphrase(
+    params.plainText,
+    params.passphrase,
+    iterations: params.iterations,
+  );
+}
+
+class _DecryptParams {
+  final String encryptedData;
+  final String passphrase;
+  final int iterations;
+
+  const _DecryptParams({
+    required this.encryptedData,
+    required this.passphrase,
+    required this.iterations,
+  });
+}
+
+String _decryptWorker(_DecryptParams params) {
+  return EncryptionService.decryptWithPassphrase(
+    params.encryptedData,
+    params.passphrase,
+    iterations: params.iterations,
+  );
+}
+

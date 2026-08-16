@@ -1,36 +1,40 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/enums.dart';
 import '../core/providers/initial_route_provider.dart';
 import '../core/security/app_lock_controller.dart';
 import '../core/security/pin_service.dart';
+import '../core/theme/app_animation.dart';
+import '../core/widgets/layout/main_navigation_shell.dart';
 import '../features/auth/presentation/screens/pin_lock_screen.dart';
 import '../features/auth/presentation/screens/pin_setup_screen.dart';
 import '../features/backup/presentation/screens/backup_screen.dart';
 import '../features/budgets/presentation/screens/budget_detail_screen.dart';
 import '../features/budgets/presentation/screens/budget_settings_screen.dart';
+import '../features/categories/presentation/screens/category_management_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/intelligence/presentation/screens/insights_screen.dart';
 import '../features/merchant_detection/presentation/screens/pending_transactions_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
-import '../screens/recurring/create_recurring_screen.dart';
-import '../screens/recurring/recurring_list_screen.dart';
 import '../features/savings/presentation/screens/add_savings_goal_screen.dart';
 import '../features/savings/presentation/screens/savings_goal_detail_screen.dart';
 import '../features/savings/presentation/screens/savings_goals_screen.dart';
-import '../features/categories/presentation/screens/category_management_screen.dart';
 import '../features/settings/presentation/screens/about_screen.dart';
 import '../features/settings/presentation/screens/appearance_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/settings/presentation/screens/sms_settings_screen.dart';
-import '../screens/settings/notification_settings_screen.dart';
-import '../screens/settings/pin_security_screen.dart';
+import '../features/transactions/domain/entities/transaction.dart';
 import '../features/transactions/presentation/screens/add_transaction_screen.dart';
 import '../features/transactions/presentation/screens/transaction_list_screen.dart';
-import '../core/widgets/layout/main_navigation_shell.dart';
+import '../screens/recurring/create_recurring_screen.dart';
+import '../screens/recurring/recurring_list_screen.dart';
+import '../screens/settings/notification_settings_screen.dart';
+import '../screens/settings/pin_security_screen.dart';
 import 'route_names.dart';
 
 part 'app_router.g.dart';
@@ -52,11 +56,50 @@ class RouterNotifier extends ChangeNotifier {
 
 final routerNotifierProvider = Provider((ref) => RouterNotifier(ref));
 
+/// Builds a standardized page transition that respects reduced-motion accessibility settings.
+Page<dynamic> _buildAppPage({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  final isReduced = AppAnimation.isReducedMotion(context);
+  if (isReduced) {
+    return NoTransitionPage(
+      key: state.pageKey,
+      name: state.name,
+      child: child,
+    );
+  }
+
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    name: state.name,
+    child: child,
+    transitionDuration: AppAnimation.durationMedium,
+    reverseTransitionDuration: AppAnimation.durationNormal,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: AppAnimation.curveStandard,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return FadeTransition(
+        opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.0, 0.03),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  // initialLocation is set synchronously in main.dart before the app starts.
-  // The router NEVER re-evaluates onboarding state reactively — that was the
-  // source of the infinite redirect loop.
   final initialLocation = ref.watch(initialRouteProvider);
   final notifier = ref.read(routerNotifierProvider);
 
@@ -106,17 +149,29 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/onboarding',
         name: RouteNames.onboarding,
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const OnboardingScreen(),
+        ),
       ),
       GoRoute(
         path: '/pin-setup',
         name: RouteNames.pinSetup,
-        builder: (context, state) => const PinSetupScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const PinSetupScreen(),
+        ),
       ),
       GoRoute(
         path: '/pin-lock',
         name: RouteNames.pinLock,
-        builder: (context, state) => const PinLockScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const PinLockScreen(),
+        ),
       ),
       ShellRoute(
         builder: (context, state, child) => MainNavigationShell(child: child),
@@ -124,124 +179,228 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: '/insights',
             name: RouteNames.insights,
-            builder: (context, state) => const InsightsScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const InsightsScreen(),
+            ),
           ),
           GoRoute(
             path: '/',
             name: RouteNames.dashboard,
-            builder: (context, state) => const DashboardScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const DashboardScreen(),
+            ),
           ),
           GoRoute(
             path: '/add-transaction',
             name: RouteNames.addTransaction,
-            builder: (context, state) => const AddTransactionScreen(),
+            pageBuilder: (context, state) {
+              final typeParam = state.uri.queryParameters['type'];
+              final initialType = (typeParam == 'income' || typeParam == 'credit')
+                  ? TransactionType.income
+                  : ((typeParam == 'expense' || typeParam == 'debit')
+                      ? TransactionType.expense
+                      : null);
+              final extraTx = state.extra is Transaction ? state.extra as Transaction : null;
+              return _buildAppPage(
+                context: context,
+                state: state,
+                child: AddTransactionScreen(
+                  initialTransaction: extraTx,
+                  initialType: initialType,
+                ),
+              );
+            },
           ),
           GoRoute(
             path: '/transactions',
             name: RouteNames.transactionList,
-            builder: (context, state) => const TransactionListScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const TransactionListScreen(),
+            ),
           ),
           GoRoute(
             path: '/settings',
             name: RouteNames.settings,
-            builder: (context, state) => const SettingsScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const SettingsScreen(),
+            ),
           ),
           GoRoute(
             path: '/budgets',
             name: RouteNames.budgets,
-            builder: (context, state) => const BudgetSettingsScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const BudgetSettingsScreen(),
+            ),
           ),
           GoRoute(
             path: '/budgets/:id',
             name: RouteNames.budgetDetail,
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final id = state.pathParameters['id']!;
-              return BudgetDetailScreen(budgetId: id);
+              return _buildAppPage(
+                context: context,
+                state: state,
+                child: BudgetDetailScreen(budgetId: id),
+              );
             },
           ),
           GoRoute(
             path: '/recurring',
             name: RouteNames.recurring,
-            builder: (context, state) => const RecurringListScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const RecurringListScreen(),
+            ),
           ),
           GoRoute(
             path: '/create-recurring',
-            builder: (context, state) => const CreateRecurringScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const CreateRecurringScreen(),
+            ),
           ),
           GoRoute(
             path: '/backup',
             name: RouteNames.backup,
-            builder: (context, state) => const BackupScreen(),
+            pageBuilder: (context, state) => _buildAppPage(
+              context: context,
+              state: state,
+              child: const BackupScreen(),
+            ),
           ),
         ],
       ),
       GoRoute(
         path: '/sms-consent',
         name: RouteNames.smsConsent,
-        builder: (context, state) => const PendingTransactionsScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const PendingTransactionsScreen(),
+        ),
       ),
       GoRoute(
         path: '/sms-settings',
         name: RouteNames.smsSettings,
-        builder: (context, state) => const SmsSettingsScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const SmsSettingsScreen(),
+        ),
       ),
       GoRoute(
         path: '/notification-settings',
         name: RouteNames.notificationSettings,
-        builder: (context, state) => const NotificationSettingsScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const NotificationSettingsScreen(),
+        ),
       ),
       GoRoute(
         path: '/security',
         name: RouteNames.security,
-        builder: (context, state) => const PinSecurityScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const PinSecurityScreen(),
+        ),
       ),
       GoRoute(
         path: '/savings',
         name: RouteNames.savingsGoals,
-        builder: (context, state) => const SavingsGoalsScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const SavingsGoalsScreen(),
+        ),
       ),
       GoRoute(
         path: '/savings-goals',
-        builder: (context, state) => const SavingsGoalsScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const SavingsGoalsScreen(),
+        ),
       ),
       GoRoute(
         path: '/savings/add',
         name: RouteNames.addSavingsGoal,
-        builder: (context, state) => const AddSavingsGoalScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const AddSavingsGoalScreen(),
+        ),
       ),
       GoRoute(
         path: '/savings-goals/add',
-        builder: (context, state) => const AddSavingsGoalScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const AddSavingsGoalScreen(),
+        ),
       ),
       GoRoute(
         path: '/savings/:id',
         name: RouteNames.savingsGoalDetail,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return SavingsGoalDetailScreen(id: id);
+          return _buildAppPage(
+            context: context,
+            state: state,
+            child: SavingsGoalDetailScreen(id: id),
+          );
         },
       ),
       GoRoute(
         path: '/savings-goals/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return SavingsGoalDetailScreen(id: id);
+          return _buildAppPage(
+            context: context,
+            state: state,
+            child: SavingsGoalDetailScreen(id: id),
+          );
         },
       ),
       GoRoute(
         path: '/categories',
         name: RouteNames.categories,
-        builder: (context, state) => const CategoryManagementScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const CategoryManagementScreen(),
+        ),
       ),
       GoRoute(
         path: '/appearance',
         name: RouteNames.appearance,
-        builder: (context, state) => const AppearanceScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const AppearanceScreen(),
+        ),
       ),
       GoRoute(
         path: '/about',
         name: RouteNames.about,
-        builder: (context, state) => const AboutScreen(),
+        pageBuilder: (context, state) => _buildAppPage(
+          context: context,
+          state: state,
+          child: const AboutScreen(),
+        ),
       ),
     ],
   );

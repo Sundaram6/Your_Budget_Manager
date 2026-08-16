@@ -39,7 +39,7 @@ void main() {
     when(() => mockPinService.hasPin()).thenAnswer((_) async => false);
     when(() => mockBiometricService.isBiometricAvailable()).thenAnswer((_) async => false);
     when(() => mockIntelligenceEngine.generateInsights()).thenAnswer((_) async => []);
-    when(() => mockIntelligenceEngine.calculateBudgetHealthScore()).thenAnswer((_) async => 85);
+    when(() => mockIntelligenceEngine.calculateBudgetHealthScore(date: any(named: 'date'))).thenAnswer((_) async => 85);
     when(() => mockAnalyticsEngine.getCategoryBreakdown(any(), any())).thenAnswer((_) async => []);
 
     SharedPreferences.setMockInitialValues({

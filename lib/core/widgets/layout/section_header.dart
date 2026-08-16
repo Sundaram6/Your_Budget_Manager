@@ -21,10 +21,13 @@ class SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: AppTypography.heading3.copyWith(
-            color: AppColors.darkTextPrimary,
+        Expanded(
+          child: Text(
+            title,
+            style: AppTypography.heading3.copyWith(
+              color: AppColors.darkTextPrimary,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         if (actionLabel != null && onActionPressed != null)

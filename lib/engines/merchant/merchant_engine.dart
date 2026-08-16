@@ -75,31 +75,77 @@ class MerchantEngine {
     if (!_isFinancial(lowerBody)) return null;
 
     final parsed = _parseUpi(body, lowerBody, msg) ??
-        _parseCard(body, lowerBody, msg) ??
         _parseImps(body, lowerBody, msg) ??
         _parseNeft(body, lowerBody, msg) ??
+        _parseCard(body, lowerBody, msg) ??
         _parseWallet(body, lowerBody, msg) ??
         _parseGenericBank(body, lowerBody, msg);
 
     if (parsed == null) return null;
 
     final patternMerchant = detectMerchant(body);
-    final finalMerchantName = patternMerchant?.name ?? parsed.merchantName;
-    final finalCategory = patternMerchant?.categoryId ?? parsed.categoryId;
+    final isGenericProvider = patternMerchant != null &&
+        const {
+          'mer_paytm',
+          'mer_phonepe',
+          'mer_gpay',
+          'mer_hdfc',
+          'mer_icici',
+          'mer_sbi',
+          'mer_axis'
+        }.contains(patternMerchant.id);
+
+    const genericParsedNames = {
+      'UPI Payment',
+      'UPI Credit',
+      'Card Transaction',
+      'Card Refund',
+      'IMPS Transfer',
+      'IMPS Credit',
+      'NEFT Transfer',
+      'NEFT Credit',
+      'RTGS Transfer',
+      'RTGS Credit',
+      'Bank Transaction',
+      'Bank Credit',
+      'Paytm',
+      'PhonePe',
+      'Google Pay',
+      'Amazon Pay',
+      'Mobikwik',
+      'Freecharge',
+    };
+
+    final isParsedSpecific = !genericParsedNames.contains(parsed.merchantName) && parsed.merchantName.trim().isNotEmpty;
+
+    final finalMerchantName = (patternMerchant != null && (!isGenericProvider || !isParsedSpecific))
+        ? patternMerchant.name
+        : parsed.merchantName;
+
+    // For credit transactions, default category to catIncome unless a specific merchant category is identified
+    final finalCategory = parsed.type == TransactionType.income &&
+            (patternMerchant == null ||
+                patternMerchant.categoryId == CategoryEngine.catUncategorized ||
+                patternMerchant.categoryId == CategoryEngine.catUtilities)
+        ? CategoryEngine.catIncome
+        : (patternMerchant?.categoryId ?? parsed.categoryId);
 
     final finalMerchantId = patternMerchant?.id ?? parsed.merchantId;
     String finalSourceApp = 'sms:unknown';
-    
+
     if (finalMerchantId.startsWith('mer_')) {
       finalSourceApp = 'sms:${finalMerchantId.substring(4)}';
     }
 
     final paymentEvidence = extractPaymentEvidence(body);
+    final accountLast4 = _extractAccountLast4(body);
+    final transactionRef = _extractTransactionRef(body);
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: parsed.amount,
       date: parsed.date,
+      type: parsed.type,
       merchantName: finalMerchantName,
       merchantId: finalMerchantId,
       categoryId: finalCategory,
@@ -107,6 +153,8 @@ class MerchantEngine {
       sourceApp: finalSourceApp,
       paymentMethod: paymentEvidence.method,
       cardLast4: paymentEvidence.cardLast4,
+      accountLast4: accountLast4,
+      transactionRef: transactionRef,
     );
   }
 
@@ -114,9 +162,10 @@ class MerchantEngine {
   Future<bool> confirmPendingTransaction({
     required ParsedTransaction transaction,
     String? categoryId,
-    TransactionType type = TransactionType.expense,
+    TransactionType? type,
   }) async {
     final targetCategoryId = categoryId ?? transaction.categoryId;
+    final targetType = type ?? transaction.type;
 
     try {
       final amountPaise = transaction.amount;
@@ -124,11 +173,13 @@ class MerchantEngine {
         amount: amountPaise,
         date: transaction.date,
         categoryId: targetCategoryId,
-        type: type,
+        type: targetType,
         note: 'Auto-tracked: ${transaction.merchantName}',
         sourceApp: transaction.sourceApp,
         paymentMethod: transaction.paymentMethod,
         cardLast4: transaction.cardLast4,
+        accountLast4: transaction.accountLast4,
+        transactionRef: transaction.transactionRef,
         merchantName: transaction.merchantName,
         sourceMessageId: transaction.smsId,
       );
@@ -167,7 +218,14 @@ class MerchantEngine {
     final amount = _extractAmount(body);
     if (amount == null) return null;
 
-    String merchant = 'UPI Payment';
+    final isCredit = lower.contains('credited') ||
+        lower.contains('received') ||
+        lower.contains('money added') ||
+        lower.contains('deposited') ||
+        (lower.contains('from') && !lower.contains('to') && !lower.contains('debited'));
+
+    final type = isCredit ? TransactionType.income : TransactionType.expense;
+    String merchant = isCredit ? 'UPI Credit' : 'UPI Payment';
 
     // Pattern 1: UPI/VPA/MERCHANT/REF/...
     final detailMatch = RegExp(
@@ -187,7 +245,7 @@ class MerchantEngine {
 
     // Pattern 2: "to MERCHANT" or "from MERCHANT" or "paid to MERCHANT"
     final toMatch = RegExp(
-      r'(?:to|from|paid to|sent to|received from|money sent to)\s+([a-zA-Z0-9\s\.\-]{3,40}?)(?:\s+upi|\s+ref|\s+txn|\s+for|\s+rs|\s+via|\n|$)',
+      r'(?:to|from|paid to|sent to|received from|credited by|money sent to)\s+([a-zA-Z0-9\s\.\-]{3,40}?)(?:\s+upi|\s+ref|\s+txn|\s+for|\s+rs|\s+via|\n|$)',
       caseSensitive: false,
     ).firstMatch(body);
 
@@ -196,20 +254,16 @@ class MerchantEngine {
       if (m != null && m.length > 2) merchant = m;
     }
 
-    final isCredit = lower.contains('credited') ||
-        lower.contains('received') ||
-        lower.contains('money added') ||
-        (lower.contains('from') && !lower.contains('to'));
-
-    if (isCredit) return null; // We focus on expenses / debit tracking
+    final categoryId = isCredit ? CategoryEngine.catIncome : _categorize(merchant);
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
+      type: type,
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_upi',
-      categoryId: _categorize(merchant),
+      categoryId: categoryId,
       originalSmsBody: body,
       sourceApp: 'sms:upi',
     );
@@ -217,19 +271,28 @@ class MerchantEngine {
 
   // ─── CARD PARSER ───
   ParsedTransaction? _parseCard(String body, String lower, SmsMessage msg) {
+    if (lower.contains('imps') || lower.contains('neft') || lower.contains('rtgs')) return null;
+
     final hasCard = ['debit card', 'credit card', 'card xx', 'card ending', 'card no']
         .any((i) => lower.contains(i));
-    final hasSpend = ['spent', 'purchase', 'payment made'].any((i) => lower.contains(i));
+    final hasSpend = ['spent', 'purchase', 'payment made', 'debited'].any((i) => lower.contains(i));
+    final hasCredit = ['credited', 'refund', 'cashback', 'reversed'].any((i) => lower.contains(i));
 
-    if (!hasCard && !hasSpend) return null;
+    if (!hasCard && !hasSpend && !hasCredit) return null;
 
     final amount = _extractAmount(body);
     if (amount == null) return null;
 
-    String merchant = 'Card Transaction';
+    final isCredit = lower.contains('credited') ||
+        lower.contains('refund') ||
+        lower.contains('cashback') ||
+        lower.contains('reversed');
+    final type = isCredit ? TransactionType.income : TransactionType.expense;
+
+    String merchant = isCredit ? 'Card Refund' : 'Card Transaction';
 
     final atMatch = RegExp(
-      r'(?:at|to|on|via|merchant)\s+([a-zA-Z0-9\s\.\-]{2,30}?)(?:\s+trxn|\s+txn|\s+ref|\s+avail|\s+a/c|\s+ac|\n|$)',
+      r'(?:at|to|on|via|merchant|from)\s+([a-zA-Z0-9\s\.\-]{2,30}?)(?:\s+trxn|\s+txn|\s+ref|\s+avail|\s+a/c|\s+ac|\n|$)',
       caseSensitive: false,
     ).firstMatch(body);
 
@@ -238,15 +301,16 @@ class MerchantEngine {
       if (m != null && m.length > 1) merchant = m;
     }
 
-    if (lower.contains('credited') || lower.contains('refund')) return null;
+    final categoryId = isCredit ? CategoryEngine.catIncome : _categorize(merchant);
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
+      type: type,
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_card',
-      categoryId: _categorize(merchant),
+      categoryId: categoryId,
       originalSmsBody: body,
       sourceApp: 'sms:card',
     );
@@ -259,7 +323,11 @@ class MerchantEngine {
     final amount = _extractAmount(body);
     if (amount == null) return null;
 
-    String merchant = 'IMPS Transfer';
+    final isCredit = lower.contains('credited') ||
+        (lower.contains('from') && !lower.contains('debited') && !lower.contains('to'));
+    final type = isCredit ? TransactionType.income : TransactionType.expense;
+
+    String merchant = isCredit ? 'IMPS Credit' : 'IMPS Transfer';
 
     final fromToMatch = RegExp(
       r'(?:from|to|by)\s+([a-zA-Z\s\.]{3,30}?)(?:\s+mobile|\s+ac\s+|\s+a/c|\s+rrn|\s+for|\n|$)',
@@ -271,18 +339,16 @@ class MerchantEngine {
       if (m != null && m.length > 2) merchant = m;
     }
 
-    final isCredit = lower.contains('credited') ||
-        (lower.contains('from') && !lower.contains('debited'));
-
-    if (isCredit) return null;
+    final categoryId = isCredit ? CategoryEngine.catIncome : CategoryEngine.catUncategorized;
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
+      type: type,
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_imps',
-      categoryId: CategoryEngine.catUncategorized,
+      categoryId: categoryId,
       originalSmsBody: body,
       sourceApp: 'sms:imps',
     );
@@ -295,7 +361,14 @@ class MerchantEngine {
     final amount = _extractAmount(body);
     if (amount == null) return null;
 
-    String merchant = lower.contains('neft') ? 'NEFT Transfer' : 'RTGS Transfer';
+    final isCredit = lower.contains('credited') ||
+        lower.contains('received') ||
+        (lower.contains('cr') && !lower.contains('card') && !lower.contains('across'));
+    final type = isCredit ? TransactionType.income : TransactionType.expense;
+
+    String merchant = isCredit
+        ? (lower.contains('neft') ? 'NEFT Credit' : 'RTGS Credit')
+        : (lower.contains('neft') ? 'NEFT Transfer' : 'RTGS Transfer');
 
     final fromToMatch = RegExp(
       r'(?:from|to|by|name)[:\s]+([a-zA-Z0-9\s\.\-]{3,30}?)(?:\s+ifsc|\s+utr|\s+ref|\s+for|\n|$)',
@@ -307,16 +380,16 @@ class MerchantEngine {
       if (m != null && m.length > 2) merchant = m;
     }
 
-    final isCredit = lower.contains('cr') || lower.contains('credited');
-    if (isCredit) return null;
+    final categoryId = isCredit ? CategoryEngine.catIncome : CategoryEngine.catUncategorized;
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
+      type: type,
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_neft',
-      categoryId: CategoryEngine.catUncategorized,
+      categoryId: categoryId,
       originalSmsBody: body,
       sourceApp: 'sms:neft',
     );
@@ -346,10 +419,17 @@ class MerchantEngine {
     final amount = _extractAmount(body);
     if (amount == null) return null;
 
+    final isCredit = lower.contains('credited') ||
+        lower.contains('added') ||
+        lower.contains('received') ||
+        lower.contains('cashback') ||
+        lower.contains('refund');
+    final type = isCredit ? TransactionType.income : TransactionType.expense;
+
     String merchant = walletName;
 
     final merchantMatches = RegExp(
-      r'(?:for|to|at|merchant|paid to)\s+([a-zA-Z0-9\s\.\-]{2,30}?)(?:\s+order|\s+txn|\s+ref|\s+upi|\n|$)',
+      r'(?:for|to|at|merchant|paid to|from|received from)\s+([a-zA-Z0-9\s\.\-]{2,30}?)(?:\s+order|\s+txn|\s+ref|\s+upi|\n|$)',
       caseSensitive: false,
     ).allMatches(body);
 
@@ -361,20 +441,16 @@ class MerchantEngine {
       }
     }
 
-    final isCredit = lower.contains('credited') ||
-        lower.contains('added') ||
-        lower.contains('received') ||
-        lower.contains('cashback');
-
-    if (isCredit) return null;
+    final categoryId = isCredit ? CategoryEngine.catIncome : _categorize(merchant);
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
+      type: type,
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_wallet',
-      categoryId: _categorize(merchant),
+      categoryId: categoryId,
       originalSmsBody: body,
       sourceApp: 'sms:wallet',
     );
@@ -388,10 +464,34 @@ class MerchantEngine {
     final amount = _extractAmount(body);
     if (amount == null) return null;
 
-    String merchant = 'Bank Transaction';
+    final isDebit = (lower.contains('debited') ||
+            lower.contains('spent') ||
+            lower.contains('paid') ||
+            lower.contains('sent to') ||
+            lower.contains('trf to') ||
+            lower.contains('transfer to') ||
+            lower.contains('withdrawn')) &&
+        !lower.contains('credited') &&
+        !lower.contains('deposited') &&
+        !lower.contains('requested');
+
+    final isCredit = (lower.contains('credited') ||
+            lower.contains('received') ||
+            lower.contains('deposited') ||
+            lower.contains('cr to') ||
+            lower.contains('credited to') ||
+            lower.contains('salary') ||
+            lower.contains('refund')) &&
+        !lower.contains('debited') &&
+        !lower.contains('requested');
+
+    if (!isDebit && !isCredit) return null;
+
+    final type = isCredit ? TransactionType.income : TransactionType.expense;
+    String merchant = isCredit ? 'Bank Credit' : 'Bank Transaction';
 
     final merchantMatch = RegExp(
-      r'(?:for|to|from|towards)[:\s]+([a-zA-Z0-9\s\.\-]{3,30}?)(?:\s+a/c|\s+ac|\s+bal|\s+ref|\n|$)',
+      r'(?:for|to|from|towards|by)[:\s]+([a-zA-Z0-9\s\.\-]{3,30}?)(?:\s+a/c|\s+ac|\s+bal|\s+ref|\n|$)',
       caseSensitive: false,
     ).firstMatch(body);
 
@@ -402,24 +502,16 @@ class MerchantEngine {
       }
     }
 
-    final isDebit = (lower.contains('debited') ||
-            lower.contains('spent') ||
-            lower.contains('paid') ||
-            lower.contains('sent to') ||
-            lower.contains('trf to') ||
-            lower.contains('transfer to')) &&
-        !lower.contains('credited') &&
-        !lower.contains('requested');
-
-    if (!isDebit) return null;
+    final categoryId = isCredit ? CategoryEngine.catIncome : _categorize(merchant);
 
     return ParsedTransaction(
       smsId: generateDurableSmsId(msg),
       amount: amount,
       date: _extractDate(body, msg),
+      type: type,
       merchantName: _cleanMerchant(merchant),
       merchantId: 'mer_bank',
-      categoryId: _categorize(merchant),
+      categoryId: categoryId,
       originalSmsBody: body,
       sourceApp: 'sms:bank',
     );
@@ -517,7 +609,7 @@ class MerchantEngine {
       'feb': 2, 'february': 2,
       'mar': 3, 'march': 3,
       'apr': 4, 'april': 4,
-      'may': 5,
+      'may': 5, 'may': 5,
       'jun': 6, 'june': 6,
       'jul': 7, 'july': 7,
       'aug': 8, 'august': 8,
@@ -649,10 +741,8 @@ class MerchantEngine {
     final patterns = [
       // "debit card ending 1234", "credit card ending in 1234", "debit card no. 1234", "card ending 1234"
       RegExp(r'(?:debit\s+card|credit\s+card|sbicard|card|dc|cc)\s*(?:ending(?:\s+(?:with|in|at))?|no\.?|number|xx+|\*+|\#)?\s*(\d{4})\b', caseSensitive: false),
-      // "ending with 1234" / "ending 1234"
-      RegExp(r'\bending(?:\s+(?:with|in|at))?\s*(\d{4})\b', caseSensitive: false),
-      // "Debit Card XX1234" / "Credit Card **1234" / "DC #1234"
-      RegExp(r'(?:debit\s+card|credit\s+card|sbicard|dc|cc)[^\d]*?(?:xx+|\*+|\#|\bno\.?\s*|\bending\s*)\s*(\d{4})\b', caseSensitive: false),
+      // "ending with 1234" / "ending 1234" (when preceded by card)
+      RegExp(r'(?:card|dc|cc)[^\d]*?(?:xx+|\*+|\#|\bno\.?\s*|\bending\s*)\s*(\d{4})\b', caseSensitive: false),
     ];
 
     for (final pattern in patterns) {
@@ -661,6 +751,47 @@ class MerchantEngine {
         final digits = match.group(1);
         if (digits != null && digits.length == 4) {
           return digits;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  String? _extractAccountLast4(String body) {
+    // Look specifically for bank account patterns (e.g. A/c *1234, A/c XX5678, Acct ending 1234, Account No 1234)
+    // Avoid matching card numbers
+    final patterns = [
+      RegExp(r'(?:a/c|acct|account|ac)\s*(?:no\.?|number|ending(?:\s+(?:with|in|at))?|xx+|\*+|\#|\.+)?\s*(\d{3,4})\b', caseSensitive: false),
+      RegExp(r'(?:a/c|acct|account)\s+[*xX#]*(\d{3,4})\b', caseSensitive: false),
+    ];
+
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(body);
+      if (match != null) {
+        final digits = match.group(1);
+        if (digits != null && (digits.length == 3 || digits.length == 4)) {
+          return digits;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  String? _extractTransactionRef(String body) {
+    // Extract UTR, RRN, Reference numbers, UPI transaction IDs before merchant cleanup
+    final patterns = [
+      RegExp(r'(?:upi\s*ref(?:\s*no\.?)?|ref(?:\s*no\.?)?|utr(?:\s*no\.?)?|rrn(?:\s*no\.?)?|txn\s*(?:id|no\.?)?|transaction\s*(?:id|no\.?)?)[:\s]+([a-zA-Z0-9]{6,25})\b', caseSensitive: false),
+      RegExp(r'upi[/\\](?:[a-zA-Z0-9]+[/\\])?([a-zA-Z0-9]{8,25})', caseSensitive: false),
+    ];
+
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(body);
+      if (match != null) {
+        final ref = match.group(1)?.trim();
+        if (ref != null && ref.isNotEmpty) {
+          return ref;
         }
       }
     }

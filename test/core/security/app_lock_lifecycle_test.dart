@@ -68,7 +68,7 @@ void main() {
       expect(container.read(appLockControllerProvider), isTrue);
     });
 
-    test('lifecycle pause is IGNORED when authenticating (protects OS biometric dialog)', () async {
+    test('transient inactive state during authentication does not trigger lock', () async {
       final controller = container.read(appLockControllerProvider.notifier);
       controller.unlock();
       expect(container.read(appLockControllerProvider), isFalse);
@@ -76,15 +76,19 @@ void main() {
       // System biometric dialog opens, setting authenticating to true
       controller.setAuthenticating(true);
 
-      // OS dialog causes Flutter activity to pause/lose focus
-      controller.didChangeAppLifecycleState(AppLifecycleState.paused);
-      await Future.delayed(const Duration(milliseconds: 50));
+      // OS dialog causes Flutter window to lose focus (inactive)
+      controller.didChangeAppLifecycleState(AppLifecycleState.inactive);
+      await Future.delayed(const Duration(milliseconds: 600));
 
       // Should NOT re-lock because isAuthenticating is true
       expect(container.read(appLockControllerProvider), isFalse);
+
+      controller.setAuthenticating(false);
+      controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      expect(container.read(appLockControllerProvider), isFalse);
     });
 
-    test('lifecycle pause is IGNORED when system dialog / permissions active', () async {
+    test('transient inactive state during system dialog does not trigger lock', () async {
       final controller = container.read(appLockControllerProvider.notifier);
       controller.unlock();
       expect(container.read(appLockControllerProvider), isFalse);
@@ -92,8 +96,8 @@ void main() {
       // System permissions dialog opens
       controller.setSystemDialogActive(true);
 
-      controller.didChangeAppLifecycleState(AppLifecycleState.paused);
-      await Future.delayed(const Duration(milliseconds: 50));
+      controller.didChangeAppLifecycleState(AppLifecycleState.inactive);
+      await Future.delayed(const Duration(milliseconds: 600));
 
       // Should NOT lock while permission dialog is presented
       expect(container.read(appLockControllerProvider), isFalse);

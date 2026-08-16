@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/theme/app_animation.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/recurring_transaction.dart';
@@ -94,7 +95,7 @@ class RecurringListScreen extends StatelessWidget {
                     },
                   ),
                 ],
-              ),
+              ).animateEntrance(context),
             );
           }
 
@@ -103,7 +104,7 @@ class RecurringListScreen extends StatelessWidget {
             itemCount: transactions.length,
             itemBuilder: (context, index) {
               final item = transactions[index];
-              return _buildRecurringCard(context, item);
+              return _buildRecurringCard(context, item).animateEntrance(context, index: index);
             },
           );
         },
