@@ -1,29 +1,28 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
-import '../../../../core/enums.dart';
 import '../../../../core/theme/app_animation.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_custom_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/layout/section_header.dart';
 import '../../../../core/widgets/charts/progress_donut_chart.dart';
-import '../../../../core/widgets/cards/status_tile.dart';
-import '../../../../core/widgets/cards/transaction_row.dart';
-import '../../../../features/categories/domain/entities/category.dart';
-import '../../../../features/transactions/presentation/widgets/category_picker.dart';
 import '../../../../routing/route_names.dart';
 import '../../../../services/notification_reader_service.dart';
 import '../../../../services/notification_router.dart';
 import '../../../../widgets/notification_transaction_sheet.dart';
 import '../../../transactions/presentation/widgets/transfer_suggestion_banner.dart';
 import '../controllers/dashboard_controller.dart';
+import '../widgets/category_breakdown.dart';
 import '../widgets/hero_balance_card.dart';
+import '../widgets/highlight_card.dart';
 import '../widgets/quick_add_fab.dart';
+import '../widgets/quick_stats_row.dart';
 import '../widgets/recent_transactions.dart';
 
 /// Floating action button location that floats above the floating pill bottom navigation bar.
@@ -62,8 +61,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void initState() {
     super.initState();
     NotificationReaderService.instance.initialize();
-    NotificationRouter.instance.pendingNotification.addListener(_onPendingNotification);
-
+    NotificationRouter.instance.pendingNotification
+        .addListener(_onPendingNotification);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onPendingNotification();
     });
@@ -71,7 +70,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   void dispose() {
-    NotificationRouter.instance.pendingNotification.removeListener(_onPendingNotification);
+    NotificationRouter.instance.pendingNotification
+        .removeListener(_onPendingNotification);
     super.dispose();
   }
 
@@ -92,47 +92,68 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final state = ref.watch(dashboardControllerProvider);
     final theme = Theme.of(context);
     final tokens = theme.extension<AppCustomTokens>()!;
-    
+
     return Scaffold(
       floatingActionButtonLocation: const FloatingAboveBottomNavLocation(),
       floatingActionButton: QuickAddFab(
-        onPressed: () {
-          _showAddOptionsSheet(context);
-        },
+        onPressed: () => _showAddOptionsSheet(context),
       ),
       body: SafeArea(
         child: state.when(
           data: (data) {
             return RefreshIndicator(
-              onRefresh: () => ref.read(dashboardControllerProvider.notifier).refresh(),
+              onRefresh: () =>
+                  ref.read(dashboardControllerProvider.notifier).refresh(),
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.space4),
                 children: [
                   _buildTopBar(context, tokens),
                   const TransferSuggestionBanner(),
                   const SizedBox(height: AppSpacing.space4),
-                  HeroBalanceCard(totalBalance: data.monthlyTotal), // TODO: Use real total balance
-                  const SizedBox(height: AppSpacing.space4),
-                  _buildAccountsStrip(context, tokens),
-                  const SizedBox(height: AppSpacing.space4),
-                  _buildStatusTiles(context, tokens, data.healthScore, data.insights.isNotEmpty ? data.insights.first.title : 'No new insights'),
-                  const SizedBox(height: AppSpacing.space4),
-                  
+
+                  // 1. Hero balance card
+                  HeroBalanceCard(totalBalance: data.monthlyTotal),
+                  const SizedBox(height: AppSpacing.space3),
+
+                  // 2. Quick stats 2x2 grid
+                  QuickStatsRow(data: data),
+                  const SizedBox(height: AppSpacing.space3),
+
+                  // 3. Highlight card � shown only when insights exist
+                  if (data.insights.isNotEmpty) ...[
+                    HighlightCard(insight: data.insights.first),
+                    const SizedBox(height: AppSpacing.space3),
+                  ],
+
+                  // 4. Budget progress donut
                   if (data.overallMonthlyBudget != null) ...[
                     const SectionHeader(title: 'Budget Progress'),
                     const SizedBox(height: AppSpacing.space3),
-                    _buildBudgetDonut(context, tokens, data.overallMonthlyBudget!.amount, data.monthlyTotal),
+                    _buildBudgetDonut(context, tokens,
+                        data.overallMonthlyBudget!.amount, data.monthlyTotal),
                     const SizedBox(height: AppSpacing.space4),
                   ],
 
+                  // 5. Category breakdown
+                  if (data.categoryBreakdown.isNotEmpty) ...[
+                    const SectionHeader(title: 'Spending Breakdown'),
+                    const SizedBox(height: AppSpacing.space3),
+                    CategoryBreakdownWidget(
+                        breakdowns: data.categoryBreakdown),
+                    const SizedBox(height: AppSpacing.space4),
+                  ],
+
+                  // 6. Recent transactions
                   SectionHeader(
-                    title: 'Recent Transactions',
+                    title: 'Recent',
                     actionLabel: 'See All',
-                    onActionPressed: () => context.pushNamed(RouteNames.transactionList),
+                    onActionPressed: () =>
+                        context.pushNamed(RouteNames.transactionList),
                   ),
                   const SizedBox(height: AppSpacing.space3),
-                  RecentTransactionsWidget(transactions: data.recentTransactions),
-                  const SizedBox(height: 120), // Padding for FAB + bottom nav bar
+                  RecentTransactionsWidget(
+                      transactions: data.recentTransactions),
+                  const SizedBox(height: 120),
                 ].animateStaggered(context),
               ),
             );
@@ -153,93 +174,52 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: CircleAvatar(
             radius: 20,
             backgroundColor: tokens.accentTransport.withOpacity(0.2),
-            child: Icon(Icons.person, color: tokens.accentTransport),
+            child: Icon(
+              PhosphorIcons.user,
+              color: tokens.accentTransport,
+              size: 20,
+            ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: tokens.accentSavings.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.shield_outlined, size: 14, color: tokens.accentSavings),
-              const SizedBox(width: 4),
-              Text(
-                'Local Only',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: tokens.accentSavings,
-                  fontWeight: FontWeight.w600,
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: tokens.accentSavings.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(PhosphorIcons.shieldCheck,
+                    size: 14, color: tokens.accentSavings),
+                const SizedBox(width: 4),
+                Text(
+                  'Local Only',
+                  style: AppTypography.buttonLabel.copyWith(
+                    color: tokens.accentSavings,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildAccountsStrip(BuildContext context, AppCustomTokens tokens) {
-    // This strip shows account summaries. Currently placeholder — real wallet balance
-    // would come from a dedicated accounts/wallet feature.
-    return const SizedBox.shrink();
-  }
-
-  // Account pill helpers removed — using real data only, no hardcoded placeholders
-
-  Widget _buildStatusTiles(BuildContext context, AppCustomTokens tokens, int healthScore, String insight) {
-    final isHealthy = healthScore >= 80;
-    final isCaution = healthScore >= 50 && healthScore < 80;
-    final isCritical = healthScore < 0;
-
-    final title = isHealthy
-        ? 'Safe to spend'
-        : isCaution
-            ? 'Watch spending'
-            : isCritical
-                ? 'Critical Deficit'
-                : 'Over Budget';
-
-    final statusColor = isHealthy
-        ? tokens.accentSavings
-        : isCaution
-            ? tokens.accentTransport
-            : tokens.accentAlert;
-
-    return Row(
-      children: [
-        Expanded(
-          child: StatusTile(
-            icon: isHealthy ? Icons.check_circle_outline : Icons.warning_amber_rounded,
-            title: title,
-            subtitle: 'Health: $healthScore',
-            statusColor: statusColor,
-            onTap: () => context.push('/insights'),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.space3),
-        Expanded(
-          child: StatusTile(
-            icon: Icons.lightbulb_outline,
-            title: 'Insight',
-            subtitle: insight,
-            statusColor: AppColors.darkGoldPrimary,
-            onTap: () => context.push('/insights'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBudgetDonut(BuildContext context, AppCustomTokens tokens, int budgetPaise, int spentPaise) {
+  Widget _buildBudgetDonut(BuildContext context, AppCustomTokens tokens,
+      int budgetPaise, int spentPaise) {
     final remainingPaise = budgetPaise - spentPaise;
     final data = {
       'Spent': spentPaise / 100.0,
-      'Remaining': remainingPaise > 0 ? (remainingPaise / 100.0) : 0.0,
+      'Remaining':
+          remainingPaise > 0 ? (remainingPaise / 100.0) : 0.0,
     };
-    final percentage = budgetPaise > 0 ? (spentPaise / budgetPaise) * 100 : 0.0;
-    
+    final percentage =
+        budgetPaise > 0 ? (spentPaise / budgetPaise) * 100 : 0.0;
+
     return GestureDetector(
       onTap: () => context.pushNamed(RouteNames.budgets),
       child: Container(
@@ -254,15 +234,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               child: ProgressDonutChart(
                 data: data,
                 colors: [
-                  percentage > 90 ? tokens.accentAlert : tokens.accentTransport,
-                  Theme.of(context).scaffoldBackgroundColor, // Empty part of donut
+                  percentage > 90
+                      ? tokens.accentAlert
+                      : tokens.accentTransport,
+                  Theme.of(context).scaffoldBackgroundColor,
                 ],
-                strokeWidth: 16,
-                centerRadius: 40,
+                strokeWidth: 20, // Bolder � was 16
+                centerRadius: 44,
                 centerWidget: Text(
                   '${percentage.toStringAsFixed(0)}%',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: AppTypography.statValue.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
@@ -275,16 +256,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   Text(
                     'Monthly Budget',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.sectionHeader.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${CurrencyFormatter.formatPaiseCompact(spentPaise)} of ${CurrencyFormatter.formatPaiseCompact(budgetPaise)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    style: AppTypography.bodyRegular.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -296,10 +280,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-
-
   void _showAddOptionsSheet(BuildContext context) {
-    final tokens = Theme.of(context).extension<AppCustomTokens>() ?? AppCustomTokens.dark;
+    final tokens =
+        Theme.of(context).extension<AppCustomTokens>() ?? AppCustomTokens.dark;
 
     showModalBottomSheet(
       context: context,
@@ -316,8 +299,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             children: [
               Text(
                 'Create New',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: AppTypography.sectionHeader.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
@@ -326,13 +308,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
                   backgroundColor: tokens.accentTransport.withOpacity(0.2),
-                  child: Icon(Icons.add, color: tokens.accentTransport),
+                  child: Icon(PhosphorIcons.plusFill,
+                      color: tokens.accentTransport),
                 ),
                 title: Text(
                   'One-Time Transaction',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 15,
+                  ),
                 ),
-                subtitle: const Text('Record a single expense or income'),
+                subtitle: Text(
+                  'Record a single expense or income',
+                  style: AppTypography.bodyRegular.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6),
+                    fontSize: 13,
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   context.pushNamed(RouteNames.addTransaction);
@@ -343,13 +338,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
                   backgroundColor: tokens.accentBills.withOpacity(0.2),
-                  child: Icon(Icons.repeat, color: tokens.accentBills),
+                  child: Icon(PhosphorIcons.arrowsClockwiseFill,
+                      color: tokens.accentBills),
                 ),
                 title: Text(
                   'Recurring Payment',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 15,
+                  ),
                 ),
-                subtitle: const Text('Rent, EMI, Netflix, SIP, Recharge...'),
+                subtitle: Text(
+                  'Rent, EMI, Netflix, SIP, Recharge...',
+                  style: AppTypography.bodyRegular.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6),
+                    fontSize: 13,
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   context.push('/create-recurring');

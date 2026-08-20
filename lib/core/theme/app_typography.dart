@@ -1,7 +1,64 @@
 import 'package:flutter/material.dart';
 
 class AppTypography {
+  // Existing body font — keeps all other app screens unchanged.
   static const String fontFamily = 'PlusJakartaSans';
+
+  // New premium font pair for the dashboard redesign.
+  static const String cabinetFontFamily = 'CabinetGrotesk';
+  static const String satoshiFontFamily = 'Satoshi';
+
+  // ─── Cabinet Grotesk styles ────────────────────────────────────────────────
+
+  /// Hero balance figure (~48sp). Use this directly — do NOT use displayLarge
+  /// from TextTheme for this size; displayLarge is 44sp for general screens.
+  static const TextStyle heroBalance = TextStyle(
+    fontFamily: cabinetFontFamily,
+    fontSize: 48,
+    height: 52 / 48,
+    fontWeight: FontWeight.w800, // ExtraBold
+    letterSpacing: -48 * 0.03,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  /// Section headers on the dashboard (18–20sp).
+  static const TextStyle sectionHeader = TextStyle(
+    fontFamily: cabinetFontFamily,
+    fontSize: 18,
+    height: 24 / 18,
+    fontWeight: FontWeight.w700, // Bold
+    letterSpacing: -18 * 0.01,
+  );
+
+  // ─── Satoshi styles ────────────────────────────────────────────────────────
+
+  /// Body copy on dashboard rows and descriptions (15sp).
+  static const TextStyle bodyRegular = TextStyle(
+    fontFamily: satoshiFontFamily,
+    fontSize: 15,
+    height: 22 / 15,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+  );
+
+  /// Button labels and emphasis text (14sp, Bold).
+  static const TextStyle buttonLabel = TextStyle(
+    fontFamily: satoshiFontFamily,
+    fontSize: 14,
+    height: 20 / 14,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.1,
+  );
+
+  /// Stat tile values on the dashboard (20sp, Bold Cabinet Grotesk).
+  static const TextStyle statValue = TextStyle(
+    fontFamily: cabinetFontFamily,
+    fontSize: 20,
+    height: 24 / 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -20 * 0.02,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
 
   static const TextStyle displayXL = TextStyle(
     fontFamily: fontFamily,

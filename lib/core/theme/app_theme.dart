@@ -21,14 +21,46 @@ class AppTheme {
         onError: AppColors.darkTextPrimary,
       ),
       textTheme: const TextTheme(
-        displayLarge: AppTypography.displayXL,
+        // Cabinet Grotesk — 44sp for general large displays (hero balance uses
+        // AppTypography.heroBalance directly at 48sp).
+        displayLarge: TextStyle(
+          fontFamily: AppTypography.cabinetFontFamily,
+          fontSize: 44,
+          height: 52 / 44,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -44 * 0.03,
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
         displayMedium: AppTypography.heading1,
         displaySmall: AppTypography.heading2,
         headlineMedium: AppTypography.heading3,
+        // Cabinet Grotesk Bold — section headers across dashboard.
+        titleLarge: TextStyle(
+          fontFamily: AppTypography.cabinetFontFamily,
+          fontSize: 20,
+          height: 24 / 20,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -20 * 0.015,
+        ),
         bodyLarge: AppTypography.bodyLg,
-        bodyMedium: AppTypography.bodyBase,
+        // Satoshi Regular — body copy on dashboard.
+        bodyMedium: TextStyle(
+          fontFamily: AppTypography.satoshiFontFamily,
+          fontSize: 14,
+          height: 20 / 14,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0,
+        ),
         bodySmall: AppTypography.caption,
         labelSmall: AppTypography.microTag,
+        // Satoshi Bold — button labels and emphasis.
+        labelMedium: TextStyle(
+          fontFamily: AppTypography.satoshiFontFamily,
+          fontSize: 13,
+          height: 18 / 13,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.1,
+        ),
       ),
       extensions: <ThemeExtension<dynamic>>[
         const AppCustomTokens(
@@ -70,14 +102,41 @@ class AppTheme {
         onError: AppColors.lightCanvas,
       ),
       textTheme: const TextTheme(
-        displayLarge: AppTypography.displayXL,
+        displayLarge: TextStyle(
+          fontFamily: AppTypography.cabinetFontFamily,
+          fontSize: 44,
+          height: 52 / 44,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -44 * 0.03,
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
         displayMedium: AppTypography.heading1,
         displaySmall: AppTypography.heading2,
         headlineMedium: AppTypography.heading3,
+        titleLarge: TextStyle(
+          fontFamily: AppTypography.cabinetFontFamily,
+          fontSize: 20,
+          height: 24 / 20,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -20 * 0.015,
+        ),
         bodyLarge: AppTypography.bodyLg,
-        bodyMedium: AppTypography.bodyBase,
+        bodyMedium: TextStyle(
+          fontFamily: AppTypography.satoshiFontFamily,
+          fontSize: 14,
+          height: 20 / 14,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0,
+        ),
         bodySmall: AppTypography.caption,
         labelSmall: AppTypography.microTag,
+        labelMedium: TextStyle(
+          fontFamily: AppTypography.satoshiFontFamily,
+          fontSize: 13,
+          height: 18 / 13,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.1,
+        ),
       ),
       extensions: <ThemeExtension<dynamic>>[
         const AppCustomTokens(

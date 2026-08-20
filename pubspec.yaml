@@ -40,6 +40,7 @@ dependencies:
   fl_chart: ^1.2.0
   shimmer: ^3.0.0
   lottie: ^3.5.1
+  phosphoricons_flutter: ^1.0.0  # Dart 3-compatible Phosphor icons (aliases IconData, no extension)
 
   # Utilities
   intl: ^0.20.3
@@ -55,6 +56,8 @@ dependencies:
 
   # Background Tasks
   workmanager: ^0.10.6
+
+
 
 dev_dependencies:
   flutter_test:
@@ -79,10 +82,27 @@ flutter:
   assets:
     - assets/animations/
     - assets/icons/
+    - assets/fonts/
 
   fonts:
     - family: PlusJakartaSans
       fonts:
         - asset: assets/fonts/PlusJakartaSans-VariableFont_wght.ttf
+
+    - family: CabinetGrotesk
+      fonts:
+        - asset: assets/fonts/CabinetGrotesk-Bold.otf
+          weight: 700
+        - asset: assets/fonts/CabinetGrotesk-Extrabold.otf
+          weight: 800
+
+    - family: Satoshi
+      fonts:
+        - asset: assets/fonts/Satoshi-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Satoshi-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Satoshi-Bold.otf
+          weight: 700
 
 
